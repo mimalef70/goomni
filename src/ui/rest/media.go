@@ -58,7 +58,7 @@ func (s *Server) saveUpload(c fiber.Ctx, d domains.Device, body io.Reader, name,
 		return domains.E("MEDIA_UPLOAD_FAILED", "media could not be persisted", 503)
 	}
 	m := domains.Media{ID: upload.ID(), ConnectionID: d.ConnectionID, Name: filepath.Base(name), ContentType: contentType, Size: n, Path: upload.RelativePath(), CreatedAt: time.Now().UTC()}
-	if e = s.store.SaveMedia(c.Context(), m); e != nil {
+	if e = s.service.RegisterMedia(c.Context(), d.ID, m); e != nil {
 		return e
 	}
 	return c.Status(201).JSON(map[string]any{"code": "SUCCESS", "message": "Media stored locally", "results": m})
@@ -71,7 +71,7 @@ func (s *Server) uploadManager() (*mediafile.Manager, error) {
 		if s.opts.MediaManager != nil {
 			return
 		}
-		s.opts.MediaManager, s.mediaErr = mediafile.Open(s.opts.MediaRoot, s.store.MediaFileRegistered)
+		s.opts.MediaManager, s.mediaErr = mediafile.Open(s.opts.MediaRoot, s.service.MediaFileRegistered)
 		if s.mediaErr != nil {
 			return
 		}
@@ -87,7 +87,7 @@ func (s *Server) download(c fiber.Ctx) error {
 	if e != nil {
 		return e
 	}
-	m, e := s.store.GetMedia(c.Context(), d.ConnectionID, c.Params("media_id"))
+	m, e := s.service.LocalMedia(c.Context(), d.ID, c.Params("media_id"))
 	if e != nil {
 		return e
 	}

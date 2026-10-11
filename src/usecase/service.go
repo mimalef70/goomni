@@ -15,8 +15,6 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/infrastructure/workpool"
 )
 
@@ -24,7 +22,7 @@ import (
 // authenticated service boundary; organization/operator authorization belongs to the consuming application.
 type Options struct {
 	Providers            *domains.ProviderRegistry
-	GlobalWebhooks       []storage.WebhookTarget
+	GlobalWebhooks       []domains.WebhookTarget
 	GlobalWebhookEvents  []string
 	MergeGlobal          bool
 	QueueLimit           int
@@ -55,8 +53,13 @@ type clientEntry struct {
 	nextConnect       time.Time
 }
 
-type Service struct {
-	store         *storage.Store
+type serviceRuntime struct {
+	accountStore  AccountStore
+	sendStore     SendStore
+	scheduleStore ScheduleStore
+	eventStore    EventStore
+	webhookStore  WebhookStore
+	mediaStore    MediaStore
 	options       Options
 	factory       domains.ClientFactory
 	lifecycleMu   sync.Mutex
@@ -72,12 +75,9 @@ type Service struct {
 	metrics       workerMetrics
 }
 
-func New(store *storage.Store, options Options, factory domains.ClientFactory) *Service {
-	if options.Providers == nil {
-		options.Providers, _ = domains.NewProviderRegistry(domains.ProviderRegistration{Contract: bale.Contract{}, Factory: factory})
-	}
+func New(store Store, options Options) *Service {
 	originalRegistry := options.Providers
-	factory = func(d domains.Device) domains.Client {
+	factory := func(d domains.Device) domains.Client {
 		r, err := originalRegistry.Get(d.Provider)
 		if err != nil || r.Factory == nil {
 			return nil
@@ -121,10 +121,25 @@ func New(store *storage.Store, options Options, factory domains.ClientFactory) *
 	if store != nil {
 		store.SetSendConcurrency(options.SendWorkers)
 	}
-	return &Service{store: store, options: options, factory: factory, clients: make(map[string]*clientEntry), done: make(chan struct{}), reconnectPool: workpool.New(options.ReconnectWorkers)}
+	runtime := &serviceRuntime{
+		accountStore: store, sendStore: store, scheduleStore: store,
+		eventStore: store, webhookStore: store, mediaStore: store,
+		options: options, factory: factory,
+		clients: make(map[string]*clientEntry), done: make(chan struct{}),
+		reconnectPool: workpool.New(options.ReconnectWorkers),
+	}
+	return &Service{
+		serviceRuntime:  runtime,
+		AccountService:  &AccountService{serviceRuntime: runtime, accountStore: store, webhookStore: store},
+		SendService:     &SendService{serviceRuntime: runtime, sendStore: store},
+		ScheduleService: &ScheduleService{serviceRuntime: runtime, scheduleStore: store, mediaStore: store},
+		QueryService:    &QueryService{serviceRuntime: runtime, eventStore: store},
+		WebhookService:  &WebhookService{serviceRuntime: runtime, webhookStore: store},
+		MediaService:    &MediaService{serviceRuntime: runtime, mediaStore: store, sendStore: store},
+	}
 }
 
-func (s *Service) Start(ctx context.Context) error {
+func (s *serviceRuntime) Start(ctx context.Context) error {
 	s.lifecycleMu.Lock()
 	defer s.lifecycleMu.Unlock()
 	s.mu.Lock()
@@ -136,12 +151,12 @@ func (s *Service) Start(ctx context.Context) error {
 		s.mu.Unlock()
 		return nil
 	}
-	if s.store == nil || s.factory == nil {
+	if s.accountStore == nil || s.options.Providers == nil || s.factory == nil {
 		s.mu.Unlock()
 		return domains.E("SERVICE_CONFIGURATION", "store and provider factory are required", 500)
 	}
 	s.mu.Unlock()
-	devices, err := s.store.ListDevices(ctx)
+	devices, err := s.accountStore.ListDevices(ctx)
 	if err != nil {
 		return err
 	}
@@ -154,7 +169,7 @@ func (s *Service) Start(ctx context.Context) error {
 			return err
 		}
 		entry.mu.Lock()
-		session, loadErr := s.store.LoadSession(ctx, device.ConnectionID)
+		session, loadErr := s.accountStore.LoadSession(ctx, device.ConnectionID)
 		if loadErr == nil {
 			entry.desired = session != nil
 			entry.setPersistenceActive(session != nil)
@@ -182,7 +197,7 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) Close(ctx context.Context) error {
+func (s *serviceRuntime) Close(ctx context.Context) error {
 	s.lifecycleMu.Lock()
 	s.mu.Lock()
 	if !s.closed {
@@ -226,7 +241,7 @@ func (s *Service) Close(ctx context.Context) error {
 	}
 }
 
-func (s *Service) entry(device domains.Device) (*clientEntry, error) {
+func (s *serviceRuntime) entry(device domains.Device) (*clientEntry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
@@ -241,7 +256,7 @@ func (s *Service) entry(device domains.Device) (*clientEntry, error) {
 			return nil, err
 		}
 		entry = &clientEntry{provider: device.Provider, client: s.factory(device), persistSession: func(ctx context.Context, next *domains.Session) error {
-			return s.store.UpdateSession(ctx, device.ConnectionID, next)
+			return s.accountStore.UpdateSession(ctx, device.ConnectionID, next)
 		}}
 		if entry.client == nil {
 			return nil, domains.E("SERVICE_CONFIGURATION", "provider factory returned no client", 500)
@@ -251,17 +266,17 @@ func (s *Service) entry(device domains.Device) (*clientEntry, error) {
 	}
 	return entry, nil
 }
-func (s *Service) ResolveDevice(ctx context.Context, id string) (domains.Device, error) {
+func (s *serviceRuntime) ResolveDevice(ctx context.Context, id string) (domains.Device, error) {
 	if selected, ok := ctx.Value(deviceScopeKey{}).(deviceScope); ok {
 		if id != "" && id != selected.alias {
 			return domains.Device{}, domains.E("DEVICE_SCOPE_MISMATCH", "request is bound to another device", 409)
 		}
-		return s.store.DeviceByConnection(ctx, selected.connection)
+		return s.accountStore.DeviceByConnection(ctx, selected.connection)
 	}
 	if id != "" {
-		return s.store.GetDevice(ctx, id)
+		return s.accountStore.GetDevice(ctx, id)
 	}
-	devices, err := s.store.ListDevices(ctx)
+	devices, err := s.accountStore.ListDevices(ctx)
 	if err != nil {
 		return domains.Device{}, err
 	}
@@ -270,336 +285,7 @@ func (s *Service) ResolveDevice(ctx context.Context, id string) (domains.Device,
 	}
 	return devices[0], nil
 }
-func (s *Service) CreateDevice(ctx context.Context, id string, provider domains.Provider) (domains.Device, error) {
-	if strings.TrimSpace(id) == "" {
-		return domains.Device{}, domains.E("INVALID_DEVICE_ID", "device id is required", 400)
-	}
-	if len(id) > 128 || strings.TrimSpace(id) != id || strings.ContainsAny(id, "/\\\x00\r\n") {
-		return domains.Device{}, domains.E("INVALID_DEVICE_ID", "device id must be 1–128 characters without path separators or surrounding whitespace", 400)
-	}
-	if _, err := s.provider(provider); err != nil {
-		return domains.Device{}, err
-	}
-	return s.store.CreateDevice(ctx, id, provider)
-}
-func (s *Service) ListDevices(ctx context.Context) ([]domains.Device, error) {
-	return s.store.ListDevices(ctx)
-}
-func (s *Service) GetDevice(ctx context.Context, id string) (domains.Device, error) {
-	return s.ResolveDevice(ctx, id)
-}
-func (s *Service) DeleteDevice(ctx context.Context, id string) error {
-	device, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	if !s.providerEnabled(device.Provider) {
-		return s.store.DeleteDevice(ctx, device.ConnectionID)
-	}
-	e, err := s.entry(device)
-	if err != nil {
-		return err
-	}
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	e.desired = false
-	e.closed = true
-	e.setPersistenceActive(false)
-	e.clearAuthMetadata()
-	if err := s.store.DeleteDevice(ctx, device.ConnectionID); err != nil {
-		e.closed = false
-		return err
-	}
-	// Deleting a local connection does not claim that the remote session was revoked.
-	_ = e.client.Disconnect(ctx)
-	s.mu.Lock()
-	delete(s.clients, device.ConnectionID)
-	s.mu.Unlock()
-	return nil
-}
-func (s *Service) StartAuth(ctx context.Context, id, phone string) (domains.Challenge, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.Challenge{}, err
-	}
-	if strings.TrimSpace(phone) == "" {
-		return domains.Challenge{}, domains.E("INVALID_PHONE", "phone is required", 400)
-	}
-	e, err := s.entry(d)
-	if err != nil {
-		return domains.Challenge{}, err
-	}
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.closed {
-		return domains.Challenge{}, domains.E("DEVICE_NOT_FOUND", "device no longer exists", 404)
-	}
-	session, err := s.store.LoadSession(ctx, d.ConnectionID)
-	if err != nil {
-		return domains.Challenge{}, err
-	}
-	if session != nil {
-		return domains.Challenge{}, domains.E("ALREADY_AUTHENTICATED", "log out before starting a new authentication challenge", 409)
-	}
-	e.authMetaMu.Lock()
-	now := time.Now().UTC()
-	if now.Before(e.resendAvailableAt) {
-		wait := int64((time.Until(e.resendAvailableAt) + time.Second - 1) / time.Second)
-		e.authMetaMu.Unlock()
-		return domains.Challenge{}, &domains.Error{Code: "AUTH_RESEND_TOO_SOON", Message: "wait before requesting another authentication code", HTTP: 429, RetryAfterSeconds: wait}
-	}
-	// Clear the previous public challenge before the replacement RPC. A failed
-	// replacement cannot resurrect a challenge whose provider cookies were reset.
-	e.challenge = nil
-	e.authMetaMu.Unlock()
-	e.desired = false
-	challenge, err := e.client.StartAuth(ctx, phone)
-	if err != nil {
-		return domains.Challenge{}, safeError(err)
-	}
-	now = time.Now().UTC()
-	if challenge.ID == "" {
-		return domains.Challenge{}, domains.E("INVALID_PROVIDER_CHALLENGE", "provider did not return an authentication challenge", 502)
-	}
-	if challenge.ExpiresAt.IsZero() || challenge.ExpiresAt.After(now.Add(10*time.Minute)) {
-		challenge.ExpiresAt = now.Add(10 * time.Minute)
-	}
-	resendAt := now
-	if challenge.ResendAfterSeconds != nil {
-		seconds := *challenge.ResendAfterSeconds
-		if seconds < 0 || seconds > 86400 {
-			return domains.Challenge{}, domains.E("INVALID_PROVIDER_CHALLENGE", "provider returned an invalid resend cooldown", 502)
-		}
-		resendAt = now.Add(time.Duration(seconds) * time.Second)
-	}
-	e.authMetaMu.Lock()
-	e.resendAvailableAt = resendAt
-	e.challenge = &domains.PublicChallenge{ID: challenge.ID, ExpiresAt: challenge.ExpiresAt, ResendAvailableAt: resendAt, SentCodeType: challenge.SentCodeType, NextSendCodeType: challenge.NextSendCodeType, AvailableSendCodeTypes: append([]int32{}, challenge.AvailableSendCodeTypes...), Delivery: challenge.Delivery, NextDelivery: challenge.NextDelivery, AvailableDeliveries: append([]string{}, challenge.AvailableDeliveries...), MaskedPhone: maskedPhone(phone)}
-	e.authMetaMu.Unlock()
-	return challenge, nil
-}
-func (s *Service) SubmitCode(ctx context.Context, id, challenge, code string) (domains.ConnectionStatus, error) {
-	return s.submitAuth(ctx, id, challenge, code, false)
-}
-func (s *Service) SubmitPassword(ctx context.Context, id, challenge, password string) (domains.ConnectionStatus, error) {
-	return s.submitAuth(ctx, id, challenge, password, true)
-}
-func (s *Service) submitAuth(ctx context.Context, id, challenge, value string, password bool) (domains.ConnectionStatus, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.ConnectionStatus{}, err
-	}
-	if challenge == "" || value == "" {
-		return domains.ConnectionStatus{}, domains.E("INVALID_AUTH", "challenge and authentication value are required", 400)
-	}
-	e, err := s.entry(d)
-	if err != nil {
-		return domains.ConnectionStatus{}, err
-	}
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.closed {
-		return domains.ConnectionStatus{}, domains.E("DEVICE_NOT_FOUND", "device no longer exists", 404)
-	}
-	public := e.publicChallenge(time.Now())
-	if public == nil || public.ID != challenge {
-		return e.adminStatus(time.Now()), domains.E("CHALLENGE_EXPIRED", "authentication challenge is absent or expired", 400)
-	}
-	var session *domains.Session
-	if password {
-		session, err = e.client.SubmitPassword(ctx, challenge, value)
-	} else {
-		session, err = e.client.SubmitCode(ctx, challenge, value)
-	}
-	if err != nil {
-		var authErr *domains.Error
-		if errors.As(err, &authErr) && authErr.Code == "CHALLENGE_EXPIRED" {
-			e.authMetaMu.Lock()
-			e.challenge = nil
-			e.authMetaMu.Unlock()
-		}
-		return e.adminStatus(time.Now()), safeError(err)
-	}
-	if session == nil {
-		if source, ok := e.client.(domains.AuthChallengeSource); ok {
-			e.refreshChallenge(source.CurrentChallenge())
-		}
-		return cleanStatus(e.client.Status()), nil
-	}
-	e.clearAuthMetadata()
-	contract, contractErr := s.provider(d.Provider)
-	if contractErr != nil {
-		return cleanStatus(e.client.Status()), contractErr
-	}
-	if err = contract.ValidateSession(session); err != nil {
-		return cleanStatus(e.client.Status()), err
-	}
-	if err = s.store.SaveSession(ctx, d.ConnectionID, session); err != nil {
-		_ = e.client.Disconnect(ctx)
-		e.desired = false
-		e.setClient(s.factory(d))
-		return cleanStatus(e.client.Status()), err
-	}
-	e.desired = true
-	e.failures = 0
-	e.nextConnect = time.Time{}
-	e.setPersistenceActive(true)
-	err = s.connect(ctx, d, e.client, session)
-	if err != nil {
-		e.failures++
-		e.nextConnect = time.Now().Add(reconnectDelay(e.failures))
-	}
-	return cleanStatus(e.client.Status()), safeError(err)
-}
-func (s *Service) Reconnect(ctx context.Context, id string) error {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	e, err := s.entry(d)
-	if err != nil {
-		return err
-	}
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.closed {
-		return domains.E("DEVICE_NOT_FOUND", "device no longer exists", 404)
-	}
-	session, err := s.stopForReconnect(ctx, d.ConnectionID, e)
-	if err != nil {
-		return err
-	}
-	if session == nil {
-		return domains.E("AUTH_REQUIRED", "connect the account first", 409)
-	}
-	e.desired = true
-	e.setPersistenceActive(true)
-	err = s.connect(ctx, d, e.client, session)
-	if err != nil {
-		e.failures++
-		e.nextConnect = time.Now().Add(reconnectDelay(e.failures))
-	} else {
-		e.failures = 0
-		e.nextConnect = time.Time{}
-	}
-	return safeError(err)
-}
-func (s *Service) Logout(ctx context.Context, id string) error {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	if !s.providerEnabled(d.Provider) {
-		if err := s.store.LogoutConnection(ctx, d.ConnectionID); err != nil {
-			return err
-		}
-		return domains.E("REMOTE_LOGOUT_UNCONFIRMED", "local session cleared; remote logout could not be confirmed", 502)
-	}
-	e, err := s.entry(d)
-	if err != nil {
-		return err
-	}
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	e.desired = false
-	e.setPersistenceActive(false)
-	e.clearAuthMetadata()
-	remoteErr := e.client.Logout(ctx)
-	_ = e.client.Disconnect(ctx)
-	clearCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-	defer cancel()
-	if err = s.store.LogoutConnection(clearCtx, d.ConnectionID); err != nil {
-		return err
-	}
-	e.setClient(s.factory(d)) // discard tokens and pending challenges retained after a failed remote revoke
-	if remoteErr != nil {
-		return domains.E("REMOTE_LOGOUT_UNCONFIRMED", "local session cleared; remote logout could not be confirmed", 502)
-	}
-	return nil
-}
 
-func (s *Service) Call(ctx context.Context, id, operation string, payload json.RawMessage) (json.RawMessage, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	e, err := s.entry(d)
-	if err != nil {
-		return nil, err
-	}
-	contract, err := s.provider(d.Provider)
-	if err != nil {
-		return nil, err
-	}
-	definition, ok := operationDefinition(contract, operation)
-	if !ok {
-		return nil, domains.Unsupported(operation)
-	}
-	if definition.Mode == "mutation" {
-		return nil, domains.E("DURABLE_OPERATION_REQUIRED", "use the durable mutation endpoint with an Idempotency-Key", 409)
-	}
-	payload, _, err = contract.NormalizeOperation(operation, payload)
-	if err != nil {
-		return nil, err
-	}
-
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.closed {
-		return nil, domains.E("DEVICE_NOT_FOUND", "device no longer exists", 404)
-	}
-	result, err := e.client.Call(ctx, operation, payload)
-	return result, safeError(err)
-}
-
-func (s *Service) GetWebhook(ctx context.Context, id string) (domains.WebhookConfig, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	return d.Webhook, err
-}
-func (s *Service) PatchWebhook(ctx context.Context, id string, patch domains.WebhookPatch) (domains.WebhookConfig, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.WebhookConfig{}, err
-	}
-	if patch.URL != nil && *patch.URL != "" {
-		if err = validateWebhookURL(*patch.URL); err != nil {
-			return domains.WebhookConfig{}, err
-		}
-	}
-	effectiveURL, effectiveSecret := d.Webhook.URL, d.Webhook.Secret
-	if patch.URL != nil {
-		effectiveURL = *patch.URL
-	}
-	if patch.Secret != nil {
-		effectiveSecret = *patch.Secret
-	}
-	if effectiveURL != "" && strings.TrimSpace(effectiveSecret) == "" {
-		return domains.WebhookConfig{}, domains.E("WEBHOOK_SECRET_REQUIRED", "configure a non-empty secret before enabling a device webhook", 400)
-	}
-	if patch.Secret != nil && len(*patch.Secret) > 4096 {
-		return domains.WebhookConfig{}, domains.E("INVALID_WEBHOOK", "webhook secret exceeds 4096 bytes", 400)
-	}
-	if patch.Events != nil {
-		if len(*patch.Events) > 100 {
-			return domains.WebhookConfig{}, domains.E("INVALID_WEBHOOK", "too many event filters", 400)
-		}
-		for _, name := range *patch.Events {
-			if strings.TrimSpace(name) == "" || len(name) > 128 {
-				return domains.WebhookConfig{}, domains.E("INVALID_WEBHOOK", "invalid event filter", 400)
-			}
-		}
-	}
-	if patch.Filter != nil {
-		contract, err := s.provider(d.Provider)
-		if err != nil {
-			return domains.WebhookConfig{}, err
-		}
-		if err = validateFilter(contract, *patch.Filter); err != nil {
-			return domains.WebhookConfig{}, err
-		}
-	}
-	return s.store.PatchWebhook(ctx, d.ConnectionID, patch)
-}
 func validateWebhookURL(value string) error {
 	u, err := url.Parse(value)
 	if err != nil || u.Hostname() == "" || u.User != nil || u.Fragment != "" || (u.Scheme != "http" && u.Scheme != "https") {
@@ -609,16 +295,16 @@ func validateWebhookURL(value string) error {
 }
 
 // Routing plans are resolved against current device configuration inside storage.
-func (s *Service) targets(_ domains.Device, event string) []storage.WebhookTarget {
-	result := []storage.WebhookTarget{{Device: true, CurrentDevice: true, MergeGlobal: s.options.MergeGlobal}}
+func (s *serviceRuntime) targets(_ domains.Device, event string) []domains.WebhookTarget {
+	result := []domains.WebhookTarget{{Device: true, CurrentDevice: true, MergeGlobal: s.options.MergeGlobal}}
 	if domains.EventAllowed(event, s.options.GlobalWebhookEvents) {
 		result = append(result, s.options.GlobalWebhooks...)
 	}
 	return result
 }
-func (s *Service) sink(connection string) domains.Sink {
+func (s *serviceRuntime) sink(connection string) domains.Sink {
 	return func(ctx context.Context, event domains.Event) error {
-		d, err := s.store.DeviceByConnection(ctx, connection)
+		d, err := s.accountStore.DeviceByConnection(ctx, connection)
 		if err != nil {
 			return err
 		}
@@ -646,26 +332,11 @@ func (s *Service) sink(connection string) domains.Sink {
 		if !json.Valid(event.Payload) {
 			return domains.E("INVALID_EVENT", "provider event payload is not valid JSON", 502)
 		}
-		_, err = s.store.AppendEvent(ctx, connection, event, s.targets(d, event.Type))
+		_, err = s.eventStore.AppendEvent(ctx, connection, event, s.targets(d, event.Type))
 		return err
 	}
 }
-func (s *Service) Chats(ctx context.Context, id string, limit, offset int) ([]storage.Chat, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	limit, offset = page(limit, offset)
-	return s.store.ListChats(ctx, d.ConnectionID, limit, offset)
-}
-func (s *Service) Messages(ctx context.Context, id, peer string, limit, offset int) ([]domains.Event, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	limit, offset = page(limit, offset)
-	return s.store.ListEvents(ctx, d.ConnectionID, peer, limit, offset)
-}
+
 func page(limit, offset int) (int, int) {
 	if limit <= 0 {
 		limit = 25
@@ -758,7 +429,7 @@ func reconnectDelay(failures int) time.Duration {
 	_, _ = rand.Read(b[:])
 	return base + time.Duration(binary.LittleEndian.Uint64(b[:])%uint64(base/4+1))
 }
-func (s *Service) wait() bool {
+func (s *serviceRuntime) wait() bool {
 	timer := time.NewTimer(s.options.PollInterval)
 	defer timer.Stop()
 	select {

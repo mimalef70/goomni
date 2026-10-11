@@ -5,13 +5,14 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"github.com/mimalef70/goomni/src/domains"
 	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -79,7 +80,7 @@ func TestCloseRetainsOwnershipThroughCancelledRollbackAndDriverClose(t *testing.
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "close.db")
 	key := bytes.Repeat([]byte{17}, 32)
-	s, err := Open(path, key)
+	s, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	device, err := s.CreateDevice(ctx, "retained", domains.ProviderBale)
 	require.NoError(t, err)
@@ -116,7 +117,7 @@ func TestCloseRetainsOwnershipThroughCancelledRollbackAndDriverClose(t *testing.
 	require.Eventually(t, func() bool { return s.db.Stats().WaitCount > 0 }, time.Second, time.Millisecond)
 	assertOwned := func() {
 		t.Helper()
-		next, openErr := Open(path, key)
+		next, openErr := Open(path, key, providers.Contracts())
 		if next != nil {
 			_ = next.Close()
 		}
@@ -144,7 +145,7 @@ func TestCloseRetainsOwnershipThroughCancelledRollbackAndDriverClose(t *testing.
 	}
 	require.Zero(t, s.db.Stats().OpenConnections)
 	require.NoError(t, s.Close(), "successful Close is idempotent")
-	next, err := Open(path, key)
+	next, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	defer next.Close()
 	stored, err := next.GetDevice(ctx, device.ID)
@@ -156,7 +157,7 @@ func TestCloseRetainsOwnershipThroughCancelledRollbackAndDriverClose(t *testing.
 func TestCloseTimeoutRetainsOwnershipAndCanBeRetried(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "drain.db")
 	key := bytes.Repeat([]byte{19}, 32)
-	s, err := Open(path, key)
+	s, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	defer s.Close()
 	held, err := s.db.Conn(context.Background())
@@ -165,7 +166,7 @@ func TestCloseTimeoutRetainsOwnershipAndCanBeRetried(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
 	defer cancel()
 	require.ErrorIs(t, s.closeWithContext(ctx), context.DeadlineExceeded)
-	other, err := Open(path, key)
+	other, err := Open(path, key, providers.Contracts())
 	if other != nil {
 		_ = other.Close()
 	}
@@ -173,7 +174,7 @@ func TestCloseTimeoutRetainsOwnershipAndCanBeRetried(t *testing.T) {
 	require.NoError(t, held.Close())
 	require.NoError(t, s.Ping(context.Background()), "failed drain must leave the store usable")
 	require.NoError(t, s.Close())
-	reopened, err := Open(path, key)
+	reopened, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	require.NoError(t, reopened.Close())
 	require.NoError(t, s.Close())
@@ -182,7 +183,7 @@ func TestCloseTimeoutRetainsOwnershipAndCanBeRetried(t *testing.T) {
 func TestFailedOpenCleanupWaitsForExistingConnection(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "startup.db")
 	key := bytes.Repeat([]byte{23}, 32)
-	s, err := Open(path, key)
+	s, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	held, err := s.db.Conn(context.Background())
 	require.NoError(t, err)
@@ -195,7 +196,7 @@ func TestFailedOpenCleanupWaitsForExistingConnection(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
 	defer cancel()
 	require.ErrorIs(t, s.closeFailedOpen(ctx), context.DeadlineExceeded)
-	other, err := Open(path, key)
+	other, err := Open(path, key, providers.Contracts())
 	if other != nil {
 		_ = other.Close()
 	}
@@ -203,7 +204,7 @@ func TestFailedOpenCleanupWaitsForExistingConnection(t *testing.T) {
 	require.Equal(t, 1, s.db.Stats().OpenConnections)
 	require.NoError(t, held.Close())
 	require.NoError(t, s.closeFailedOpen(context.Background()))
-	reopened, err := Open(path, key)
+	reopened, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	require.NoError(t, reopened.Close())
 }
@@ -211,14 +212,14 @@ func TestFailedOpenCleanupWaitsForExistingConnection(t *testing.T) {
 func TestFailedOpenReleasesOwnershipAfterWrongKeyAndCorruptDatabase(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "rejected.db")
 	key := bytes.Repeat([]byte{29}, 32)
-	s, err := Open(path, key)
+	s, err := Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	device, err := s.CreateDevice(context.Background(), "preserved", domains.ProviderBale)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	_, err = Open(path, bytes.Repeat([]byte{31}, 32))
+	_, err = Open(path, bytes.Repeat([]byte{31}, 32), providers.Contracts())
 	require.Error(t, err)
-	s, err = Open(path, key)
+	s, err = Open(path, key, providers.Contracts())
 	require.NoError(t, err)
 	stored, err := s.GetDevice(context.Background(), device.ID)
 	require.NoError(t, err)
@@ -227,11 +228,11 @@ func TestFailedOpenReleasesOwnershipAfterWrongKeyAndCorruptDatabase(t *testing.T
 
 	corruptPath := filepath.Join(t.TempDir(), "corrupt.db")
 	require.NoError(t, os.WriteFile(corruptPath, []byte("not a sqlite database"), 0600))
-	_, err = Open(corruptPath, key)
+	_, err = Open(corruptPath, key, providers.Contracts())
 	require.Error(t, err)
 	require.NotContains(t, err.Error(), "ownership retained")
 	require.NoError(t, os.Remove(corruptPath))
-	s, err = Open(corruptPath, key)
+	s, err = Open(corruptPath, key, providers.Contracts())
 	require.NoError(t, err, "failed startup must release ownership after all driver connections retire")
 	require.NoError(t, s.Close())
 }

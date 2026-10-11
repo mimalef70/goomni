@@ -413,7 +413,7 @@ func projectExtendedMessage(message object, msg *domains.Message) (object, bool,
 		}
 		if value, present := contact["user_guid"]; present {
 			guid, ok := value.(string)
-			if !ok || (guid != "" && !(Contract{}).ValidateUserID(guid)) {
+			if !ok || (guid != "" && !(protocolRules{}).ValidateUserID(guid)) {
 				return nil, true, protocolError()
 			}
 			if guid != "" {

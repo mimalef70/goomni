@@ -24,6 +24,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/mimalef70/goomni/src/config"
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/ui/web"
 	"github.com/mimalef70/goomni/src/usecase"
@@ -70,14 +71,14 @@ func (c *browserIntegrationClient) Logout(ctx context.Context) error {
 func integrationBrowserServer(t *testing.T, base string, enabled bool, factory domains.ClientFactory) (*Server, *usecase.Service, *storage.Store) {
 	t.Helper()
 	dir := t.TempDir()
-	st, err := storage.Open(filepath.Join(dir, "browser.db"), bytes.Repeat([]byte{8}, 32))
+	st, err := storage.Open(filepath.Join(dir, "browser.db"), bytes.Repeat([]byte{8}, 32), providers.Contracts())
 	require.NoError(t, err)
 	if factory == nil {
 		factory = func(domains.Device) domains.Client {
 			return &browserIntegrationClient{testClient: &testClient{}, cooldown: 60}
 		}
 	}
-	svc := usecase.New(st, usecase.Options{}, factory)
+	svc := newTestService(st, usecase.Options{}, factory)
 	srv, err := New(svc, st, Options{UIEnabled: enabled, UIAssets: integrationUIAssets(t), BasicAuth: "admin:synthetic-ui-password", Version: config.AppVersion, BasePath: base, MediaRoot: filepath.Join(dir, "media")})
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -252,7 +253,7 @@ func TestBrowserIntegrationLoginRefreshCooldownAndWebhookPreview(t *testing.T) {
 	d, err = svc.GetDevice(ctx, d.ID)
 	require.NoError(t, err)
 	require.Equal(t, "never-expose-webhook-secret", d.Webhook.Secret)
-	_, err = st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "test-message", Type: "message", Payload: json.RawMessage(`{"text":"<script>synthetic payload</script>"}`)}, []storage.WebhookTarget{{URL: d.Webhook.URL, Secret: d.Webhook.Secret, Device: true, Revision: d.Webhook.Revision}})
+	_, err = st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "test-message", Type: "message", Payload: json.RawMessage(`{"text":"<script>synthetic payload</script>"}`)}, []domains.WebhookTarget{{URL: d.Webhook.URL, Secret: d.Webhook.Secret, Device: true, Revision: d.Webhook.Revision}})
 	require.NoError(t, err)
 	res, out = browserIntegrationRequest(t, srv, session, "GET", "/ui/api/deliveries?state=queued&include_payload=false&limit=25", nil, headers, false)
 	require.Equal(t, 200, res.StatusCode, out)

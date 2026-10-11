@@ -25,6 +25,7 @@ import (
 
 type Store struct {
 	db              *sql.DB
+	providers       *domains.ProviderRegistry
 	aead            cipher.AEAD
 	lock            *os.File
 	dbPath          string
@@ -37,7 +38,7 @@ type Store struct {
 }
 type scanner interface{ Scan(...any) error }
 
-const schemaVersion = 8
+const schemaVersion = 9
 
 // An unsuccessful startup has no caller-owned Store to retry closing. If its
 // bounded cleanup cannot drain, retain the owner until process exit rather than
@@ -72,7 +73,10 @@ func page(limit, offset int) (int, int) {
 
 // Open exclusively owns path until Close. A key is mandatory and is never saved
 // alongside the database. Existing unrelated or newer databases are refused.
-func Open(path string, key []byte) (s *Store, err error) {
+func Open(path string, key []byte, providers *domains.ProviderRegistry) (s *Store, err error) {
+	if providers == nil {
+		return nil, fmt.Errorf("provider policies are required")
+	}
 	if len(key) != 32 {
 		return nil, fmt.Errorf("storage encryption key must contain exactly 32 bytes")
 	}
@@ -140,7 +144,7 @@ func Open(path string, key []byte) (s *Store, err error) {
 	}
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)
-	s = &Store{db: db, aead: aead, lock: lock, dbPath: abs, provisioningKey: deriveProvisioningKey(key)}
+	s = &Store{providers: providers, db: db, aead: aead, lock: lock, dbPath: abs, provisioningKey: deriveProvisioningKey(key)}
 	owned := s
 	lockTransferred = true
 	defer func() {
@@ -342,6 +346,13 @@ func (s *Store) migrate(ctx context.Context) error {
 				return fmt.Errorf("migrate provider storage: %w", e)
 			}
 		}
+		if version <= 8 {
+			for _, ddl := range []string{`DROP INDEX IF EXISTS events_chat`, eventPeerOrderIndex, chatSummarySchema, chatSummaryIndex, rebuildChatSummaries} {
+				if _, e = tx.ExecContext(ctx, ddl); e != nil {
+					return fmt.Errorf("migrate chat read projection: %w", e)
+				}
+			}
+		}
 		if _, e = tx.ExecContext(ctx, `UPDATE gobale_meta SET version=? WHERE id=1`, schemaVersion); e != nil {
 			return e
 		}
@@ -374,7 +385,7 @@ var schema = []string{
 	`CREATE INDEX operations_queue ON operations(state,created_at)`,
 	`CREATE INDEX operations_connection ON operations(connection_id,created_at)`,
 	`CREATE TABLE events(id TEXT NOT NULL,connection_id TEXT NOT NULL REFERENCES devices(connection_id),peer_key TEXT NOT NULL,type TEXT NOT NULL,message_id TEXT NOT NULL,event_time INTEGER NOT NULL,body TEXT NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(connection_id,id))`,
-	`CREATE INDEX events_chat ON events(connection_id,peer_key,event_time DESC)`,
+	eventPeerOrderIndex,
 	`CREATE TABLE deliveries(id TEXT PRIMARY KEY,connection_id TEXT NOT NULL REFERENCES devices(connection_id),event_id TEXT NOT NULL,url TEXT NOT NULL,secret BLOB NOT NULL,device_config INTEGER NOT NULL,revision INTEGER NOT NULL,body TEXT NOT NULL,state TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,next_at INTEGER NOT NULL,last_error TEXT NOT NULL DEFAULT '',created_at INTEGER NOT NULL,queue_order INTEGER NOT NULL DEFAULT 0,FOREIGN KEY(connection_id,event_id) REFERENCES events(connection_id,id))`,
 	`CREATE INDEX deliveries_queue ON deliveries(state,next_at)`,
 	`CREATE INDEX deliveries_connection ON deliveries(connection_id,created_at)`,
@@ -398,6 +409,8 @@ var schema = []string{
 	mediaPathIndex,
 	provisioningSchema,
 	operationStageSchema,
+	chatSummarySchema,
+	chatSummaryIndex,
 }
 
 func (s *Store) active(ctx context.Context, conn string) error {

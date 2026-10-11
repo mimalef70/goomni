@@ -2,6 +2,7 @@ package bale
 
 import (
 	"encoding/json"
+
 	"github.com/mimalef70/goomni/src/domains"
 )
 

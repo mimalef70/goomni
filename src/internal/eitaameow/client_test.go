@@ -151,7 +151,7 @@ func TestNativeOTPProducesPrivateVersionedSession(t *testing.T) {
 	if s.UserID != "42" || len(s.Data) == 0 {
 		t.Fatal("missing private session")
 	}
-	if err = (Contract{}).ValidateSession(s); err != nil {
+	if err = (protocolRules{}).ValidateSession(s); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -229,7 +229,7 @@ func TestUnknownOperationRejectedBeforeProvider(t *testing.T) {
 	if _, err := c.Call(context.Background(), "auth.resetAuthorizations", json.RawMessage(`{}`)); err == nil {
 		t.Fatal("arbitrary RPC accepted")
 	}
-	if _, _, err := (Contract{}).NormalizeOperation("message.read", json.RawMessage(`{"peer":{"type":"user","id":"42"},"message_id":"1","message_id":"2"}`)); err == nil {
+	if _, _, err := (protocolRules{}).NormalizeOperation("message.read", json.RawMessage(`{"peer":{"type":"user","id":"42"},"message_id":"1","message_id":"2"}`)); err == nil {
 		t.Fatal("duplicate JSON accepted")
 	}
 }

@@ -14,7 +14,7 @@ import (
 
 func readOperations() []domains.OperationContract {
 	add := func(name string, props map[string]domains.FieldSchema, required ...string) domains.OperationContract {
-		return domains.OperationContract{Operation: name, Mode: "read", Path: "/operations/" + name, Method: "POST", Description: "Eitaa " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}}
+		return domains.OperationContract{Operation: name, Mode: "read", Description: "Eitaa " + name, Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}}
 	}
 	return []domains.OperationContract{
 		add("messages.search", map[string]domains.FieldSchema{"query": {Type: "string", MinLength: 1, MaxLength: 512}, "cursor": textField(2048), "limit": boundedInt(1, 100)}, "query"),

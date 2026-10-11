@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,15 +31,15 @@ func TestManualRetryKeepsPendingOrderAcrossRestartsAndReplay(t *testing.T) {
 	ctx := context.Background()
 	s, path := testStore(t)
 	d := device(t, s, "ordered")
-	firstTarget := WebhookTarget{URL: "https://one.test/hook", Secret: "synthetic"}
-	otherTarget := WebhookTarget{URL: "https://two.test/hook", Secret: "synthetic-other"}
-	_, err := s.AppendEvent(ctx, d.ConnectionID, event("A", ""), []WebhookTarget{firstTarget})
+	firstTarget := domains.WebhookTarget{URL: "https://one.test/hook", Secret: "synthetic"}
+	otherTarget := domains.WebhookTarget{URL: "https://two.test/hook", Secret: "synthetic-other"}
+	_, err := s.AppendEvent(ctx, d.ConnectionID, event("A", ""), []domains.WebhookTarget{firstTarget})
 	require.NoError(t, err)
 	a, err := s.ClaimDeliveries(ctx, 1, time.Now().Add(time.Second))
 	require.NoError(t, err)
 	require.Len(t, a, 1)
 	require.NoError(t, s.UpdateDelivery(ctx, d.ConnectionID, a[0].ID, "retry", time.Now().Add(time.Hour), "temporary"))
-	_, err = s.AppendEvent(ctx, d.ConnectionID, event("B", ""), []WebhookTarget{firstTarget, otherTarget})
+	_, err = s.AppendEvent(ctx, d.ConnectionID, event("B", ""), []domains.WebhookTarget{firstTarget, otherTarget})
 	require.NoError(t, err)
 	// Explicit equal timestamps prevent a timestamp-only fix hiding the bug.
 	_, err = s.db.Exec(`UPDATE deliveries SET created_at=1234 WHERE connection_id=?`, d.ConnectionID)
@@ -54,7 +56,7 @@ func TestManualRetryKeepsPendingOrderAcrossRestartsAndReplay(t *testing.T) {
 		require.Equal(t, "cancelled", old.State)
 		require.Equal(t, current.Attempts, old.Attempts)
 		require.NoError(t, s.Close())
-		s, err = Open(path, testKey)
+		s, err = Open(path, testKey, providers.Contracts())
 		require.NoError(t, err)
 		reopened := s
 		t.Cleanup(func() { reopened.Close() })
@@ -83,7 +85,7 @@ func TestManualRetryKeepsPendingOrderAcrossRestartsAndReplay(t *testing.T) {
 	}
 	require.NoError(t, s.UpdateDelivery(ctx, d.ConnectionID, current.ID, "delivered", time.Now(), ""))
 	// An explicit replay is newly queued work; it must not inherit A's old position.
-	replayed, err := s.ReplayDelivery(ctx, d.ConnectionID, current.ID, []WebhookTarget{firstTarget})
+	replayed, err := s.ReplayDelivery(ctx, d.ConnectionID, current.ID, []domains.WebhookTarget{firstTarget})
 	require.NoError(t, err)
 	require.Len(t, replayed, 1)
 	require.Equal(t, current.EventID, replayed[0].EventID)
@@ -104,7 +106,7 @@ func TestStableDeliveryOrderMigrationPreservesTimestampAndTieOrder(t *testing.T)
 	d := device(t, s, "legacy")
 	var ids []string
 	for _, name := range []string{"later", "first", "second"} {
-		_, err := s.AppendEvent(ctx, d.ConnectionID, event(name, ""), []WebhookTarget{{URL: "https://example.test/hook", Secret: "synthetic"}})
+		_, err := s.AppendEvent(ctx, d.ConnectionID, event(name, ""), []domains.WebhookTarget{{URL: "https://example.test/hook", Secret: "synthetic"}})
 		require.NoError(t, err)
 		var id string
 		require.NoError(t, s.db.QueryRow(`SELECT id FROM deliveries WHERE event_id=?`, scopedEventID(d.ConnectionID, event(name, ""))).Scan(&id))
@@ -118,7 +120,7 @@ func TestStableDeliveryOrderMigrationPreservesTimestampAndTieOrder(t *testing.T)
 	_, err = s.db.Exec(`UPDATE gobale_meta SET version=4`)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	upgraded, err := Open(path, testKey)
+	upgraded, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer upgraded.Close()
 	var version int
@@ -138,7 +140,7 @@ func TestManualRetryOrderingRollbackPreservesOriginalAttempt(t *testing.T) {
 	ctx := context.Background()
 	s, _ := testStore(t)
 	d := device(t, s, "rollback")
-	targets := []WebhookTarget{{URL: "https://example.test/hook"}}
+	targets := []domains.WebhookTarget{{URL: "https://example.test/hook"}}
 	_, err := s.AppendEvent(ctx, d.ConnectionID, event("A", ""), targets)
 	require.NoError(t, err)
 	jobs, err := s.ClaimDeliveries(ctx, 1, time.Now().Add(time.Second))

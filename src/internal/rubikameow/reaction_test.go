@@ -14,7 +14,7 @@ func TestReactionRemovalOmitsIDAndAddPreservesString(t *testing.T) {
 			name += ".remove"
 			raw = json.RawMessage(`{"peer":{"type":"user","id":"u0peer"},"message_id":"42"}`)
 		}
-		normalized, _, err := (Contract{}).NormalizeOperation(name, raw)
+		normalized, _, err := (protocolRules{}).NormalizeOperation(name, raw)
 		if err != nil {
 			t.Fatal(err)
 		}

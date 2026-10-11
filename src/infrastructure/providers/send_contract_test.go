@@ -6,10 +6,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mimalef70/goomni/src/infrastructure/providers/eitaa"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/rubika"
+
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-	"github.com/mimalef70/goomni/src/internal/eitaameow"
-	"github.com/mimalef70/goomni/src/internal/rubikameow"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,8 +25,8 @@ func TestProviderSendDiscoveryMatchesAdmission(t *testing.T) {
 		mentions bool
 	}{
 		{bale.Contract{}, domains.Peer{Type: "user", ID: "7"}, 65536, 0, true},
-		{eitaameow.Contract{}, domains.Peer{Type: "user", ID: "7"}, 0, 4096, false},
-		{rubikameow.Contract{}, domains.Peer{Type: "user", ID: "u0synthetic"}, 0, 4200, false},
+		{eitaa.Contract{}, domains.Peer{Type: "user", ID: "7"}, 0, 4096, false},
+		{rubika.Contract{}, domains.Peer{Type: "user", ID: "u0synthetic"}, 0, 4200, false},
 	} {
 		t.Run(string(tc.contract.Descriptor().ID), func(t *testing.T) {
 			d := tc.contract.Descriptor().Send

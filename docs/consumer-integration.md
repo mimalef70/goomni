@@ -84,6 +84,13 @@ immutable instance guard. Mutation mode requires its own persisted idempotency
 key; ephemeral mode follows the advertised contract. Missing presets mean skip
 that optional feature; do not issue a guessed cancel/online request. Capability
 availability describes implemented semantics, not completed live acceptance.
+Discovery also supplies structured `evidence` for each provider, ordinary send
+kind (`send.evidence`) and operation. Use its `level`, date, scope, references and
+limitations when assessing support. `live_response` establishes a response only;
+`live_scoped` applies only to the recorded controlled trial. `live_failed` preserves
+a failed attempt, while `offline_only` leaves live semantic acceptance pending.
+Provider enablement and operation availability do not change these levels. See
+[architecture and evidence semantics](architecture.md#capability-availability-and-evidence).
 The reviewed Eitaa `chat.activity` operation remains in the source catalogue, but
 controlled typing/cancel requests were rejected with `FEATURE_NOT_SUPPORTED`;
 no active Eitaa typing preset is advertised. Consumers should skip it.

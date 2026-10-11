@@ -6,6 +6,7 @@ const send = {
   mentions_supported: true,
   max_mentions: 100,
   reply_supported: true,
+  evidence: {},
   media_format_notes: { voice: 'Complete Ogg Opus; synthetic catalogue fixture.' },
 }
 const scope = { id: 'support-demo', instance_id: 'synthetic-instance-A' }
@@ -108,6 +109,12 @@ async function mock(
           name: 'Bale',
           enabled: true,
           verification: 'synthetic',
+          evidence: {
+            level: 'offline_only',
+            scope: 'Synthetic test fixture',
+            references: [],
+            limitations: [],
+          },
           delivery_methods: ['sms'],
           send,
         },
@@ -116,6 +123,12 @@ async function mock(
           name: 'Eitaa',
           enabled: false,
           verification: 'offline-tested-live-pending',
+          evidence: {
+            level: 'offline_only',
+            scope: 'Synthetic test fixture',
+            references: [],
+            limitations: [],
+          },
           delivery_methods: [],
           send: {
             ...send,
@@ -130,6 +143,12 @@ async function mock(
           name: 'Rubika',
           enabled: false,
           verification: 'offline-tested-live-pending',
+          evidence: {
+            level: 'offline_only',
+            scope: 'Synthetic test fixture',
+            references: [],
+            limitations: [],
+          },
           delivery_methods: [],
           send: {
             ...send,

@@ -100,6 +100,16 @@ export function ServicePage({ serverTime }: { serverTime: string }) {
                 <dd>
                   {provider.enabled ? t('available') : t('providerUnavailable')}
                   <small className="cell-hint">{provider.verification}</small>
+                  <details>
+                    <summary>{t('verificationEvidence')}</summary>
+                    {provider.evidence.date && <small>{provider.evidence.date}</small>}
+                    <p>{provider.evidence.scope}</p>
+                    <ul>
+                      {provider.evidence.limitations.map((limit) => (
+                        <li key={limit}>{limit}</li>
+                      ))}
+                    </ul>
+                  </details>
                 </dd>
               </div>
             ))}

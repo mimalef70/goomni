@@ -6,18 +6,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/mimalef70/goomni/src/config"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"golang.org/x/term"
 	"io"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/mimalef70/goomni/src/config"
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"golang.org/x/term"
 )
 
 func loginCommand(v *viper.Viper) *cobra.Command {

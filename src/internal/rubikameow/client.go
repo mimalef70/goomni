@@ -411,7 +411,7 @@ func (c *Client) SubmitCode(ctx context.Context, id, code string) (*domains.Sess
 		return nil, protocolError()
 	}
 	user := asObject(o["user"]).str("user_guid")
-	if !(Contract{}).ValidateUserID(user) {
+	if !(protocolRules{}).ValidateUserID(user) {
 		return nil, protocolError()
 	}
 	session := privateSession{Auth: auth, PrivateKey: private, UserID: user}

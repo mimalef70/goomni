@@ -91,7 +91,7 @@ func TestContentSendDurableNonceWireAndPublicResult(t *testing.T) {
 				t.Fatalf("private send content in result: %s", out)
 			}
 			found := false
-			for _, op := range (Contract{}).Operations() {
+			for _, op := range (protocolRules{}).Operations() {
 				if op.Operation == name {
 					found = op.Schedulable
 				}

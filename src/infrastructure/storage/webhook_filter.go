@@ -4,8 +4,8 @@ import "github.com/mimalef70/goomni/src/domains"
 
 // Configuration is read under the same transaction as event/delivery acceptance.
 // A device URL overrides global routes even when its filter rejects the event.
-func resolveWebhookTargets(cfg domains.WebhookConfig, event domains.Event, targets []WebhookTarget) []WebhookTarget {
-	result := []WebhookTarget{}
+func resolveWebhookTargets(cfg domains.WebhookConfig, event domains.Event, targets []domains.WebhookTarget) []domains.WebhookTarget {
+	result := []domains.WebhookTarget{}
 	globalAllowed := true
 	for _, t := range targets {
 		if t.CurrentDevice {
@@ -15,7 +15,7 @@ func resolveWebhookTargets(cfg domains.WebhookConfig, event domains.Event, targe
 	}
 	for _, t := range targets {
 		if t.CurrentDevice {
-			t = WebhookTarget{URL: cfg.URL, Secret: cfg.Secret, Revision: cfg.Revision, Device: true}
+			t = domains.WebhookTarget{URL: cfg.URL, Secret: cfg.Secret, Revision: cfg.Revision, Device: true}
 		}
 		if t.Device {
 			if t.URL == "" || !domains.EventAllowed(event.Type, cfg.Events) || !cfg.Filter.Matches(event) {

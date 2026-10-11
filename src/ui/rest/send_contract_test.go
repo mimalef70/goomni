@@ -35,7 +35,7 @@ func TestMediaJSONContractUsesCaptionAndRejectsUnsupportedOptions(t *testing.T) 
 	s.opts.SendWait = 10 * time.Millisecond
 	d, err := svc.CreateDevice(context.Background(), "one", domains.ProviderBale)
 	require.NoError(t, err)
-	require.NoError(t, s.store.SaveMedia(context.Background(), domains.Media{ID: "media-one", ConnectionID: d.ConnectionID, Name: "one.ogg", Path: "synthetic", ContentType: "audio/ogg", Size: 12}))
+	require.NoError(t, s.testStore().SaveMedia(context.Background(), domains.Media{ID: "media-one", ConnectionID: d.ConnectionID, Name: "one.ogg", Path: "synthetic", ContentType: "audio/ogg", Size: 12}))
 	status, body := apiRequest(t, s, "POST", "/send/audio", "one", map[string]any{"phone": "+10000000000", "media_id": "media-one", "caption": "متن 🙂", "ptt": true})
 	require.Equal(t, 202, status, body)
 	op := body["results"].(map[string]any)
@@ -71,7 +71,7 @@ func TestAccountNameHTTPContractPreservesStoredArguments(t *testing.T) {
 		status, _ := apiRequest(t, s, "POST", path, "one", map[string]any{"name": "old field"})
 		require.Equal(t, 400, status)
 	}
-	ops, err := s.store.ListOperations(context.Background(), d.ConnectionID, 10, 0)
+	ops, err := s.testStore().ListOperations(context.Background(), d.ConnectionID, 10, 0)
 	require.NoError(t, err)
 	require.Len(t, ops, 2)
 	for _, op := range ops {
@@ -118,11 +118,11 @@ func TestMultipartScheduleRetainsOriginalFileOnRetryAndConflict(t *testing.T) {
 		}
 		id = response.Results.ScheduleID
 	}
-	jobs, err := s.store.ListSchedules(context.Background(), d.ConnectionID, 10, 0)
+	jobs, err := s.testStore().ListSchedules(context.Background(), d.ConnectionID, 10, 0)
 	require.NoError(t, err)
 	require.Len(t, jobs, 1)
 	require.Equal(t, "voice", jobs[0].Request.Kind)
-	ops, err := s.store.ListOperations(context.Background(), d.ConnectionID, 10, 0)
+	ops, err := s.testStore().ListOperations(context.Background(), d.ConnectionID, 10, 0)
 	require.NoError(t, err)
 	require.Empty(t, ops, "the upload cannot send before its occurrence")
 	assertUploadFiles(t, s, 1)

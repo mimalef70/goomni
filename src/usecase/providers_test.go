@@ -3,22 +3,23 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
-	domainSend "github.com/mimalef70/goomni/src/domains/send"
-	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-	"github.com/mimalef70/goomni/src/internal/eitaameow"
-	"github.com/mimalef70/goomni/src/internal/rubikameow"
-	"github.com/stretchr/testify/require"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
+	domainSend "github.com/mimalef70/goomni/src/domains/send"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/eitaa"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/rubika"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOperationFiltersUseSelectedProviderCatalogEvenWhenDisabled(t *testing.T) {
 	registry, err := domains.NewProviderRegistry(
 		domains.ProviderRegistration{Contract: bale.Contract{}},
-		domains.ProviderRegistration{Contract: eitaameow.Contract{}},
-		domains.ProviderRegistration{Contract: rubikameow.Contract{}},
+		domains.ProviderRegistration{Contract: eitaa.Contract{}},
+		domains.ProviderRegistration{Contract: rubika.Contract{}},
 	)
 	require.NoError(t, err)
 	s, st := testService(t, Options{Providers: registry}, nil)
@@ -200,9 +201,9 @@ func TestDisabledProviderKeepsLocalHistoryAndRetirementAvailable(t *testing.T) {
 func TestRubikaConversationFiltersPreserveActorsAndAccountIsolation(t *testing.T) {
 	ctx := context.Background()
 	registry, err := domains.NewProviderRegistry(
-		domains.ProviderRegistration{Contract: rubikameow.Contract{Enabled: true}},
+		domains.ProviderRegistration{Contract: rubika.Contract{Enabled: true}},
 		domains.ProviderRegistration{Contract: bale.Contract{}},
-		domains.ProviderRegistration{Contract: eitaameow.Contract{Enabled: true}},
+		domains.ProviderRegistration{Contract: eitaa.Contract{Enabled: true}},
 	)
 	require.NoError(t, err)
 	s, st := testService(t, Options{Providers: registry}, nil)
@@ -227,7 +228,7 @@ func TestRubikaConversationFiltersPreserveActorsAndAccountIsolation(t *testing.T
 		require.NoError(t, err)
 		require.Equal(t, "accepted", cursor)
 		if i > 0 {
-			require.False(t, (rubikameow.Contract{}).ValidateUserID(peer.ID))
+			require.False(t, (rubika.Contract{}).ValidateUserID(peer.ID))
 		}
 	}
 	deliveries, err := st.ListDeliveries(ctx, a.ConnectionID, 100, 0)
@@ -240,7 +241,7 @@ func TestRubikaConversationFiltersPreserveActorsAndAccountIsolation(t *testing.T
 	require.NoError(t, json.Unmarshal(deliveries[0].Body, &body))
 	require.Equal(t, "service", body.Peer.Type)
 	require.Equal(t, "s0fixture", body.Sender)
-	for _, c := range []domains.ProviderContract{bale.Contract{}, eitaameow.Contract{}} {
+	for _, c := range []domains.ProviderContract{bale.Contract{}, eitaa.Contract{}} {
 		require.Error(t, validateFilter(c, filter))
 		require.Error(t, c.ValidatePeer(domains.Peer{Type: "service", ID: "s0fixture"}))
 	}

@@ -6,30 +6,11 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
 )
-
-// WebhookTarget is a routing snapshot. Device targets fetch the latest secret
-// when claimed; global targets retain an encrypted secret snapshot.
-type WebhookTarget struct {
-	URL      string
-	Secret   string
-	Revision int64
-	Device   bool
-	Events   []string
-	// CurrentDevice is a routing plan resolved under the event transaction.
-	CurrentDevice bool
-	MergeGlobal   bool
-}
-type Chat struct {
-	Peer      domains.Peer  `json:"peer"`
-	LastEvent domains.Event `json:"last_event"`
-	Count     int           `json:"count"`
-}
 
 func scopedEventID(conn string, e domains.Event) string {
 	source := e.ID
@@ -64,7 +45,7 @@ func scopedEventID(conn string, e domains.Event) string {
 
 // queueOrder is zero for new work/replay; retries inherit their original queue
 // position while keeping a separate attempt record and creation timestamp.
-func (s *Store) insertDelivery(ctx context.Context, tx *sql.Tx, conn, eventID, body string, t WebhookTarget, config domains.WebhookConfig, queueOrder int64) (domains.Delivery, error) {
+func (s *Store) insertDelivery(ctx context.Context, tx *sql.Tx, conn, eventID, body string, t domains.WebhookTarget, config domains.WebhookConfig, queueOrder int64) (domains.Delivery, error) {
 	if e := ValidateWebhookURL(t.URL); e != nil {
 		return domains.Delivery{}, e
 	}
@@ -93,7 +74,7 @@ func (s *Store) insertDelivery(ctx context.Context, tx *sql.Tx, conn, eventID, b
 // AppendEvent atomically writes the event and delivery ledger before advancing
 // its checkpoint. Duplicate events neither enqueue duplicate deliveries nor
 // rewind a checkpoint. Caller ordering defines opaque provider cursor ordering.
-func (s *Store) appendEvent(ctx context.Context, conn string, event domains.Event, targets []WebhookTarget) (bool, error) {
+func (s *Store) appendEvent(ctx context.Context, conn string, event domains.Event, targets []domains.WebhookTarget) (bool, error) {
 	tx, e := s.beginTx(ctx)
 	if e != nil {
 		return false, e
@@ -113,7 +94,7 @@ func (s *Store) appendEvent(ctx context.Context, conn string, event domains.Even
 	return created, nil
 }
 
-func (s *Store) appendEventTx(ctx context.Context, tx *sql.Tx, d domains.Device, event domains.Event, targets []WebhookTarget, legacy bool) (bool, error) {
+func (s *Store) appendEventTx(ctx context.Context, tx *sql.Tx, d domains.Device, event domains.Event, targets []domains.WebhookTarget, legacy bool) (bool, error) {
 	conn := d.ConnectionID
 	if event.Provider != "" && event.Provider != d.Provider {
 		return false, providerMismatch()
@@ -121,7 +102,7 @@ func (s *Store) appendEventTx(ctx context.Context, tx *sql.Tx, d domains.Device,
 	if event.AccountID != "" && d.AccountID != "" && event.AccountID != d.AccountID {
 		return false, domains.E("EVENT_ACCOUNT_MISMATCH", "event account does not match connection", 409)
 	}
-	if e := validateMediaRevision(d.Provider, event.Peer, event.Type, event.MediaRevision); e != nil {
+	if e := s.validateMediaRevision(d.Provider, event.Peer, event.Type, event.MediaRevision); e != nil {
 		return false, e
 	}
 	event.ID = scopedEventID(conn, event)
@@ -156,13 +137,18 @@ func (s *Store) appendEventTx(ctx context.Context, tx *sql.Tx, d domains.Device,
 		if err != nil {
 			return false, err
 		}
-		if legacy && d.Provider == domains.ProviderBale {
+		if legacy {
 			_, e = s.reconcileOwnMessageTx(ctx, tx, conn, d.AccountID, storedEvent)
 		}
 		if e != nil {
 			return false, e
 		}
 		return false, nil
+	}
+	if event.Peer.Key() != ":" {
+		if _, e = tx.ExecContext(ctx, updateChatSummary, conn, event.Peer.Key(), event.ID, event.Time.UnixMilli()); e != nil {
+			return false, e
+		}
 	}
 	mediaAvailable := false
 	switch event.Type {
@@ -172,7 +158,7 @@ func (s *Store) appendEventTx(ctx context.Context, tx *sql.Tx, d domains.Device,
 				return false, e
 			}
 		}
-		if e = setEventMediaAvailability(&event, mediaAvailable); e != nil {
+		if e = s.setEventMediaAvailability(&event, mediaAvailable); e != nil {
 			return false, e
 		}
 		updatedBody, err := marshal(event)
@@ -190,7 +176,7 @@ func (s *Store) appendEventTx(ctx context.Context, tx *sql.Tx, d domains.Device,
 			return false, e
 		}
 	}
-	if legacy && d.Provider == domains.ProviderBale {
+	if legacy {
 		if _, e = s.reconcileOwnMessageTx(ctx, tx, conn, d.AccountID, event); e != nil {
 			return false, e
 		}
@@ -221,11 +207,11 @@ func (s *Store) reconcileOwnMessageTx(ctx context.Context, tx *sql.Tx, conn, acc
 	if err != nil {
 		return false, err
 	}
-	policy := acceptancePolicy(provider, domains.BaleMessageEchoProof)
-	if policy == nil || event.MessageID == "" {
+	policy := s.acceptancePolicy(provider, "")
+	if policy == nil || policy.RequestID(event) == "" {
 		return false, nil
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT id,request FROM operations WHERE connection_id=? AND state IN ('sending','unknown') AND json_extract(request,'$.request_id')=? AND json_extract(request,'$.peer.type')=? AND json_extract(request,'$.peer.id')=?`, conn, event.MessageID, event.Peer.Type, event.Peer.ID)
+	rows, err := tx.QueryContext(ctx, `SELECT id,request FROM operations WHERE connection_id=? AND state IN ('sending','unknown') AND json_extract(request,'$.request_id')=? AND json_extract(request,'$.peer.type')=? AND json_extract(request,'$.peer.id')=?`, conn, policy.RequestID(event), event.Peer.Type, event.Peer.ID)
 	if err != nil {
 		return false, err
 	}
@@ -241,7 +227,7 @@ func (s *Store) reconcileOwnMessageTx(ctx context.Context, tx *sql.Tx, conn, acc
 			rows.Close()
 			return false, domains.E("INVALID_STORED_REQUEST", "stored operation could not be decoded", 500)
 		}
-		if policy(account, event, request) {
+		if policy.Verify(account, event, request) {
 			ids = append(ids, id)
 		}
 	}
@@ -262,7 +248,9 @@ func (s *Store) reconcileOwnMessageTx(ctx context.Context, tx *sql.Tx, conn, acc
 	return len(ids) > 0, nil
 }
 
-func (s *Store) ListEvents(ctx context.Context, conn, peerKey string, limit, offset int) ([]domains.Event, error) {
+func (s *Store) ListEvents(ctx context.Context, conn, peerKey string, limit, offset int) (events []domains.Event, err error) {
+	start := time.Now()
+	defer func() { s.observePersistence("list_events", start, err) }()
 	provider, e := s.connectionProvider(ctx, conn)
 	if e != nil {
 		return nil, e
@@ -298,21 +286,23 @@ func (s *Store) ListEvents(ctx context.Context, conn, peerKey string, limit, off
 	}
 	return result, rows.Err()
 }
-func (s *Store) ListChats(ctx context.Context, conn string, limit, offset int) ([]Chat, error) {
+func (s *Store) ListChats(ctx context.Context, conn string, limit, offset int) (chats []domains.Chat, err error) {
+	start := time.Now()
+	defer func() { s.observePersistence("list_chats", start, err) }()
 	provider, e := s.connectionProvider(ctx, conn)
 	if e != nil {
 		return nil, e
 	}
 	limit, offset = page(limit, offset)
-	rows, e := s.db.QueryContext(ctx, `SELECT body,total FROM (SELECT body,COUNT(*) OVER(PARTITION BY peer_key) AS total,ROW_NUMBER() OVER(PARTITION BY peer_key ORDER BY event_time DESC,id) AS rn,event_time FROM events WHERE connection_id=? AND peer_key<>':') WHERE rn=1 ORDER BY event_time DESC LIMIT ? OFFSET ?`, conn, limit, offset)
+	rows, e := s.db.QueryContext(ctx, listChatsQuery, conn, limit, offset)
 	if e != nil {
 		return nil, e
 	}
 	defer rows.Close()
-	result := []Chat{}
+	result := []domains.Chat{}
 	for rows.Next() {
 		var body string
-		var chat Chat
+		var chat domains.Chat
 		if e = rows.Scan(&body, &chat.Count); e != nil {
 			return nil, e
 		}
@@ -500,7 +490,7 @@ func (s *Store) ListDeliveriesFiltered(ctx context.Context, conn string, limit, 
 	}
 	return result, rows.Err()
 }
-func (s *Store) ReplayDelivery(ctx context.Context, conn, id string, targets []WebhookTarget) ([]domains.Delivery, error) {
+func (s *Store) ReplayDelivery(ctx context.Context, conn, id string, targets []domains.WebhookTarget) ([]domains.Delivery, error) {
 	if len(targets) == 0 {
 		return nil, domains.E("WEBHOOK_NOT_CONFIGURED", "no webhook targets configured", 409)
 	}
@@ -550,11 +540,6 @@ func (s *Store) EventCount(ctx context.Context, conn string) (int, error) {
 	return count, e
 }
 
-// Marshal targets never emits secret values; useful only for diagnostics.
-func (t WebhookTarget) String() string {
-	return fmt.Sprintf("WebhookTarget{device:%t,revision:%d}", t.Device, t.Revision)
-}
-
 // RetryDelivery retries only this destination, retaining the original queue
 // position and attempt ledger while cancelling the old attempt atomically.
 // Explicit ReplayDelivery moves payloads to changed destinations or replays
@@ -583,7 +568,7 @@ func (s *Store) RetryDelivery(ctx context.Context, conn, id string) (domains.Del
 	if e = tx.QueryRowContext(ctx, `SELECT queue_order FROM deliveries WHERE connection_id=? AND id=?`, conn, id).Scan(&queueOrder); e != nil {
 		return domains.Delivery{}, e
 	}
-	replacement, e := s.insertDelivery(ctx, tx, conn, old.EventID, string(old.Body), WebhookTarget{URL: old.URL, Secret: old.Secret, Revision: old.Revision, Device: old.Device}, d.Webhook, queueOrder)
+	replacement, e := s.insertDelivery(ctx, tx, conn, old.EventID, string(old.Body), domains.WebhookTarget{URL: old.URL, Secret: old.Secret, Revision: old.Revision, Device: old.Device}, d.Webhook, queueOrder)
 	if e != nil {
 		return domains.Delivery{}, e
 	}

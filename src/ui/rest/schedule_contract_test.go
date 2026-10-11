@@ -2,9 +2,10 @@ package rest
 
 import (
 	"context"
-	"github.com/mimalef70/goomni/src/domains"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
 
 	"github.com/stretchr/testify/require"
 )

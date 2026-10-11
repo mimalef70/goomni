@@ -28,3 +28,7 @@ func OwnMessageProof(account string, event domains.Event, request domains.SendRe
 	}
 	return false
 }
+
+func (Contract) AcceptancePolicy() domains.AcceptancePolicy {
+	return domains.AcceptancePolicy{Kind: domains.BaleMessageEchoProof, RequestID: func(e domains.Event) string { return e.MessageID }, Verify: OwnMessageProof}
+}

@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
 
 	"github.com/stretchr/testify/require"
 )

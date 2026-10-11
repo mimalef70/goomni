@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/mimalef70/goomni/src/config"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/config"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInitPublicWebIdentityRequiresOptIn(t *testing.T) {

@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/mimalef70/goomni/src/domains"
 	"image"
 	"image/color"
 	"image/png"
@@ -18,6 +17,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 type ownedReader struct{ *bytes.Reader }

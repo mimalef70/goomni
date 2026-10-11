@@ -27,7 +27,7 @@ func TestProviderBatchesAcceptDuplicateAndEmptyPagesWithIndependentCursors(t *te
 	ev.Peer.ID = "opaque-guid"
 	ev.SenderID, ev.Direction = "sender-guid", "incoming"
 	ev.Payload = json.RawMessage(`{"kind":"text","message":"synthetic unicode پیام"}`)
-	targets := []WebhookTarget{{URL: "https://synthetic.invalid/message", Secret: "secret", Events: []string{"message"}}, {URL: "https://synthetic.invalid/edit", Secret: "secret", Events: []string{"message.edited"}}}
+	targets := []domains.WebhookTarget{{URL: "https://synthetic.invalid/message", Secret: "secret", Events: []string{"message"}}, {URL: "https://synthetic.invalid/edit", Secret: "secret", Events: []string{"message.edited"}}}
 	batch := domains.EventBatch{Events: []domains.Event{ev}, Checkpoints: []domains.CheckpointTransition{{Scope: "account", Next: "pts-1"}, {Scope: "channel:alpha", Next: "pts-5"}}}
 	created, err := s.AppendBatch(ctx, d.ConnectionID, batch, targets)
 	require.NoError(t, err)
@@ -79,7 +79,7 @@ func TestProviderBatchRollbackIncludesEventsMediaProofAndCheckpoints(t *testing.
 	s, _ := testStore(t)
 	d := device(t, s, "bale")
 	require.NoError(t, s.BindAccount(ctx, d.ConnectionID, "456"))
-	op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("ambiguous"), "once", AdmissionLimits{Global: 20})
+	op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("ambiguous"), "once", domains.AdmissionLimits{Global: 20})
 	require.NoError(t, err)
 	_, err = s.ClaimOperations(ctx, 1)
 	require.NoError(t, err)
@@ -91,7 +91,7 @@ func TestProviderBatchRollbackIncludesEventsMediaProofAndCheckpoints(t *testing.
 	batch := domains.EventBatch{Events: []domains.Event{echo}, Proofs: []domains.AcceptanceProof{{Provider: domains.ProviderBale, Kind: domains.BaleMessageEchoProof, EventID: echo.ID, RequestID: op.Request.RequestID}}, Checkpoints: []domains.CheckpointTransition{{Scope: "account", Next: "accepted"}}}
 	_, err = s.db.Exec(`CREATE TRIGGER synthetic_checkpoint_failure BEFORE INSERT ON provider_checkpoints BEGIN SELECT RAISE(ABORT,'synthetic storage failure'); END`)
 	require.NoError(t, err)
-	created, err := s.AppendBatch(ctx, d.ConnectionID, batch, []WebhookTarget{{URL: "https://synthetic.invalid/hook", Secret: "synthetic"}})
+	created, err := s.AppendBatch(ctx, d.ConnectionID, batch, []domains.WebhookTarget{{URL: "https://synthetic.invalid/hook", Secret: "synthetic"}})
 	require.Error(t, err)
 	require.Zero(t, created)
 	for _, table := range []string{"events", "deliveries", "provider_media", "provider_checkpoints"} {
@@ -119,7 +119,7 @@ func TestProviderProofCannotResolveAnotherProtocolOrChangedDuplicate(t *testing.
 			s, _ := testStore(t)
 			d := providerDevice(t, s, "account", provider)
 			require.NoError(t, s.BindAccount(ctx, d.ConnectionID, "456"))
-			op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("ambiguous"), "once", AdmissionLimits{Global: 20})
+			op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("ambiguous"), "once", domains.AdmissionLimits{Global: 20})
 			require.NoError(t, err)
 			_, err = s.ClaimOperations(ctx, 1)
 			require.NoError(t, err)
@@ -194,7 +194,7 @@ func TestProviderSendSharesPreventHungProviderStarvation(t *testing.T) {
 		for i := 0; i < 3; i++ {
 			d := providerDevice(t, s, fmt.Sprintf("%s-%d", provider, i), provider)
 			devices[provider] = append(devices[provider], d)
-			_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("synthetic"), "once", AdmissionLimits{Global: 20})
+			_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("synthetic"), "once", domains.AdmissionLimits{Global: 20})
 			require.NoError(t, err)
 		}
 	}

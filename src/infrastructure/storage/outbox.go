@@ -63,7 +63,7 @@ func requestID() (string, error) {
 	}
 	return strconv.FormatUint(v, 10), nil
 }
-func (s *Store) enqueueTx(ctx context.Context, tx *sql.Tx, conn string, req domains.SendRequest, key string, limits AdmissionLimits) (domains.Operation, bool, error) {
+func (s *Store) enqueueTx(ctx context.Context, tx *sql.Tx, conn string, req domains.SendRequest, key string, limits domains.AdmissionLimits) (domains.Operation, bool, error) {
 	hash, err := requestHash(req)
 	if err != nil {
 		return domains.Operation{}, false, err
@@ -71,7 +71,7 @@ func (s *Store) enqueueTx(ctx context.Context, tx *sql.Tx, conn string, req doma
 	return s.enqueueHashedTx(ctx, tx, conn, req, key, limits, hash)
 }
 
-func (s *Store) enqueueHashedTx(ctx context.Context, tx *sql.Tx, conn string, req domains.SendRequest, key string, limits AdmissionLimits, hash string) (domains.Operation, bool, error) {
+func (s *Store) enqueueHashedTx(ctx context.Context, tx *sql.Tx, conn string, req domains.SendRequest, key string, limits domains.AdmissionLimits, hash string) (domains.Operation, bool, error) {
 	var empty domains.Operation
 	if e := activeTx(ctx, tx, conn); e != nil {
 		return empty, false, e
@@ -104,7 +104,7 @@ func (s *Store) enqueueHashedTx(ctx context.Context, tx *sql.Tx, conn string, re
 	if e = validateMediaReferencesTx(ctx, tx, conn, req); e != nil {
 		return empty, false, e
 	}
-	limits = limits.normalized()
+	limits = normalizedLimits(limits)
 	var count, connectionCount int
 	// Filter by indexed outstanding states, rather than a connection's retained
 	// terminal history. Check both counts atomically with insertion, after idempotency.
@@ -139,7 +139,7 @@ func (s *Store) enqueueHashedTx(ctx context.Context, tx *sql.Tx, conn string, re
 	op, e := scanOperation(tx.QueryRowContext(ctx, `SELECT `+operationColumns+` FROM operations o JOIN devices d ON d.connection_id=o.connection_id WHERE o.id=?`, id))
 	return op, true, e
 }
-func (s *Store) enqueue(ctx context.Context, conn string, req domains.SendRequest, key string, limits AdmissionLimits) (domains.Operation, bool, error) {
+func (s *Store) enqueue(ctx context.Context, conn string, req domains.SendRequest, key string, limits domains.AdmissionLimits) (domains.Operation, bool, error) {
 	tx, e := s.beginTx(ctx)
 	if e != nil {
 		return domains.Operation{}, false, e

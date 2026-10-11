@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/coder/websocket"
-	"github.com/mimalef70/goomni/src/domains"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -16,6 +14,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/coder/websocket"
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 func TestRunConcurrent100NativeClients(t *testing.T) {

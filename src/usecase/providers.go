@@ -3,19 +3,19 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
-func (s *Service) Providers() []domains.ProviderDescriptor {
+func (s *serviceRuntime) Providers() []domains.ProviderDescriptor {
 	return s.options.Providers.List()
 }
-func (s *Service) providerEnabled(p domains.Provider) bool {
+func (s *serviceRuntime) providerEnabled(p domains.Provider) bool {
 	r, err := s.options.Providers.Get(p)
 	return err == nil && r.Contract.Descriptor().Enabled
 }
-func (s *Service) provider(p domains.Provider) (domains.ProviderContract, error) {
+func (s *serviceRuntime) provider(p domains.Provider) (domains.ProviderContract, error) {
 	r, err := s.options.Providers.Get(p)
 	if err != nil {
 		return nil, err
@@ -25,14 +25,14 @@ func (s *Service) provider(p domains.Provider) (domains.ProviderContract, error)
 	}
 	return r.Contract, nil
 }
-func (s *Service) Capabilities(p domains.Provider) ([]domains.OperationContract, error) {
+func (s *serviceRuntime) Capabilities(p domains.Provider) ([]domains.OperationContract, error) {
 	r, err := s.options.Providers.Get(p)
 	if err != nil {
 		return nil, err
 	}
 	return r.Contract.Operations(), nil
 }
-func (s *Service) DeviceCapabilities(ctx context.Context, id string) ([]domains.OperationContract, error) {
+func (s *serviceRuntime) DeviceCapabilities(ctx context.Context, id string) ([]domains.OperationContract, error) {
 	d, err := s.ResolveDevice(ctx, id)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func operationDefinition(c domains.ProviderContract, name string) (domains.Opera
 	}
 	return domains.OperationContract{}, false
 }
-func (s *Service) normalizeMutation(d domains.Device, operation string, payload json.RawMessage) (json.RawMessage, domains.Peer, error) {
+func (s *serviceRuntime) normalizeMutation(d domains.Device, operation string, payload json.RawMessage) (json.RawMessage, domains.Peer, error) {
 	c, err := s.provider(d.Provider)
 	if err != nil {
 		return nil, domains.Peer{}, err
@@ -58,7 +58,7 @@ func (s *Service) normalizeMutation(d domains.Device, operation string, payload 
 	}
 	return c.NormalizeOperation(operation, payload)
 }
-func (s *Service) validateSend(d domains.Device, r domains.SendRequest) error {
+func (s *serviceRuntime) validateSend(d domains.Device, r domains.SendRequest) error {
 	c, err := s.provider(d.Provider)
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func validateFilter(c domains.ProviderContract, f domains.WebhookFilter) error {
 	}
 	return nil
 }
-func (s *Service) connect(ctx context.Context, d domains.Device, c domains.Client, session *domains.Session) error {
+func (s *serviceRuntime) connect(ctx context.Context, d domains.Device, c domains.Client, session *domains.Session) error {
 	contract, err := s.provider(d.Provider)
 	if err != nil {
 		return err
@@ -107,12 +107,12 @@ func (s *Service) connect(ctx context.Context, d domains.Device, c domains.Clien
 // The entry lock must be held. Retire rotation callbacks and join the old
 // connection before reading its final durable session. A callback from that
 // connection must never overwrite a token installed by the next generation.
-func (s *Service) stopForReconnect(ctx context.Context, connection string, e *clientEntry) (*domains.Session, error) {
+func (s *serviceRuntime) stopForReconnect(ctx context.Context, connection string, e *clientEntry) (*domains.Session, error) {
 	e.setPersistenceActive(false)
 	if err := e.client.Disconnect(ctx); err != nil {
 		return nil, safeError(err)
 	}
-	session, err := s.store.LoadSession(ctx, connection)
+	session, err := s.accountStore.LoadSession(ctx, connection)
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +120,12 @@ func (s *Service) stopForReconnect(ctx context.Context, connection string, e *cl
 	return session, nil
 }
 
-func (s *Service) batchSink(connection string) domains.BatchSink {
+func (s *serviceRuntime) batchSink(connection string) domains.BatchSink {
 	return func(ctx context.Context, batch domains.EventBatch) error {
 		if len(batch.Events) > 4097 || len(batch.Checkpoints) > 4097 {
 			return domains.E("INVALID_EVENT_BATCH", "provider batch exceeds bounds", 502)
 		}
-		d, err := s.store.DeviceByConnection(ctx, connection)
+		d, err := s.accountStore.DeviceByConnection(ctx, connection)
 		if err != nil {
 			return err
 		}
@@ -150,25 +150,17 @@ func (s *Service) batchSink(connection string) domains.BatchSink {
 			}
 		}
 		// Event filtering happens inside the storage acceptance transaction.
-		targets := []storage.WebhookTarget{{Device: true, CurrentDevice: true, MergeGlobal: s.options.MergeGlobal}}
+		targets := []domains.WebhookTarget{{Device: true, CurrentDevice: true, MergeGlobal: s.options.MergeGlobal}}
 		for _, target := range s.options.GlobalWebhooks {
 			target.Events = s.options.GlobalWebhookEvents
 			targets = append(targets, target)
 		}
-		_, err = s.store.AppendBatch(ctx, connection, batch, targets)
+		_, err = s.eventStore.AppendBatch(ctx, connection, batch, targets)
 		return err
 	}
 }
 
-func (s *Service) ValidateSend(ctx context.Context, id string, r domains.SendRequest) error {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	return s.validateSend(d, r)
-}
-
-func (s *Service) validateQueryIdentity(d domains.Device, peer, sender string) error {
+func (s *serviceRuntime) validateQueryIdentity(d domains.Device, peer, sender string) error {
 	registration, err := s.options.Providers.Get(d.Provider)
 	c := registration.Contract
 	if err != nil {
@@ -179,7 +171,7 @@ func (s *Service) validateQueryIdentity(d domains.Device, peer, sender string) e
 		if err != nil {
 			return err
 		}
-		if c.ValidatePeer(p) != nil || (d.Provider == domains.ProviderBale && !c.ValidateUserID(p.ID)) {
+		if c.ValidatePeer(p) != nil {
 			return domains.E("INVALID_FILTER", "peer is invalid for this provider", 400)
 		}
 	}
@@ -214,8 +206,8 @@ func (e *clientEntry) attachSessionPersistence(client domains.Client) {
 	}
 }
 
-func (s *Service) ActiveProviders(ctx context.Context) ([]domains.Provider, error) {
-	devices, err := s.store.ListDevices(ctx)
+func (s *serviceRuntime) ActiveProviders(ctx context.Context) ([]domains.Provider, error) {
+	devices, err := s.accountStore.ListDevices(ctx)
 	if err != nil {
 		return nil, err
 	}

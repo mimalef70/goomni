@@ -1,5 +1,44 @@
 # Changelog
 
+## 2.4.0 — 2026-10-11
+
+Make the shared gateway easier to extend and operate: feature services and
+provider adapters now have explicit boundaries, capability responses expose
+recorded evidence, and local conversation lists use an indexed projection.
+SQLite remains the only database, with WAL/FULL and one process owner.
+
+**Upgrade:** stop the gateway and take the existing manual cold snapshot before
+starting this version. Schema 8 upgrades transactionally to schema 9. Keep the
+original database, media, master key and volume. Rollback requires the matching
+pre-upgrade snapshot; see the
+[upgrade guide](https://github.com/mimalef70/goomni/blob/v2.4.0/docs/upgrade-goomni.md).
+
+- Separate account, send, schedule, query, webhook and media application services
+  behind feature ports; keep one shared client/worker lifecycle and SQLite owner.
+- Unify the three gateway adapters and inject reviewed private-media/acceptance
+  policies into storage. Keep native protocol schemas out of the shared domain.
+- Publish structured, dated capability evidence through the API and panel,
+  distinguishing response observations, scoped live trials, failed attempts and
+  operations not tested live. These changes do not claim new live acceptance.
+- Migrate schema 8 to 9 transactionally, backfilling a conversation read summary
+  without rewriting events, sessions or pending webhook bodies. Keep event
+  counts/audit semantics, stable pagination and atomic checkpoint acceptance.
+- Index peer reads by time and event ID and measure bounded read latency. SQLite
+  remains WAL/FULL with a single connection/process owner.
+
+### Verification and remaining limits
+
+- Regression tests cover migration/backfill rollback, account isolation, stable
+  read ordering, duplicate acceptance, private-media policies and native layer
+  boundaries. The dated architecture report includes synthetic read benchmarks
+  and a ten-minute mixed-provider Linux smoke; these are not live capacity claims.
+- Capability evidence retains the exact dates, builds and limits of prior
+  controlled trials. This refactor does not claim new live-provider acceptance.
+  Eitaa and Rubika remain opt-in; their existing protocol limitations remain.
+- Exhaustive historical import, arbitrary multi-day recovery and 300-account live
+  capacity remain acceptance gates. Unknown sends are never automatically retried.
+  History and registered media have no automatic expiry.
+
 ## 2.3.0 — 2026-10-10
 
 **GoBale is now GoOmni.** One native Go binary serves independent Bale, Eitaa

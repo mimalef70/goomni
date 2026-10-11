@@ -28,7 +28,7 @@ type communicationRequest struct {
 func communicationOperations() []domains.OperationContract {
 	var out []domains.OperationContract
 	add := func(name, mode, description string, fields map[string]domains.FieldSchema, required ...string) {
-		out = append(out, domains.OperationContract{Operation: name, Method: "POST", Path: "/operations/" + name, Mode: mode, Description: description, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: fields, Required: required}})
+		out = append(out, domains.OperationContract{Operation: name, Mode: mode, Description: description, Request: domains.FieldSchema{Type: "object", Properties: fields, Required: required}})
 	}
 	peer := func() map[string]domains.FieldSchema { return map[string]domains.FieldSchema{"peer": peerField()} }
 	add("contacts.online", "read", "Read selected contacts' provider presence metadata", map[string]domains.FieldSchema{"users": arrayField(1, 50, idField())}, "users")
@@ -68,13 +68,13 @@ func normalizeCommunication(name string, raw json.RawMessage) error {
 	}
 	seen := map[string]bool{}
 	for _, id := range p.Users {
-		if !(Contract{}).ValidateUserID(id) || seen[id] {
+		if !(protocolRules{}).ValidateUserID(id) || seen[id] {
 			return domains.E("INVALID_USER_ID", "users must be unique Rubika user GUIDs", 400)
 		}
 		seen[id] = true
 	}
 	for _, peer := range p.Peers {
-		if (Contract{}).ValidatePeer(peer) != nil || seen[peer.ID] {
+		if (protocolRules{}).ValidatePeer(peer) != nil || seen[peer.ID] {
 			return domains.E("INVALID_PEER", "peers must be valid and unique", 400)
 		}
 		seen[peer.ID] = true
@@ -248,7 +248,7 @@ func (c *Client) projectCommunication(ctx context.Context, name string, p commun
 			if id == "" && name == "group.common" {
 				id = row.str("object_guid")
 			}
-			if (Contract{}).ValidatePeer(peerFromGUID(id)) != nil || seen[id] {
+			if (protocolRules{}).ValidatePeer(peerFromGUID(id)) != nil || seen[id] {
 				return nil, protocolError()
 			}
 			seen[id] = true
@@ -296,7 +296,7 @@ func (c *Client) projectCommunication(ctx context.Context, name string, p commun
 			guid := row.str("object_guid")
 			message := asObject(row["message"])
 			id := message.str("message_id")
-			if (Contract{}).ValidatePeer(peerFromGUID(guid)) != nil || !validMessageID(id) || seen[guid+":"+id] {
+			if (protocolRules{}).ValidatePeer(peerFromGUID(guid)) != nil || !validMessageID(id) || seen[guid+":"+id] {
 				return nil, protocolError()
 			}
 			seen[guid+":"+id] = true

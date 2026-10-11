@@ -31,7 +31,7 @@ func TestProvisioningRESTRejectsUnhashedFieldsAndNull(t *testing.T) {
 			response := consumerFlowRaw(t, srv, "POST", "/devices", nil, []byte(body), "application/json", "unconsumed-key")
 			defer response.Body.Close()
 			require.Equal(t, 400, response.StatusCode)
-			devices, err := srv.store.ListDevices(context.Background())
+			devices, err := srv.testStore().ListDevices(context.Background())
 			require.NoError(t, err)
 			require.Empty(t, devices, "invalid bodies must not create a device or reserve their key")
 		})

@@ -13,8 +13,8 @@ func contentSendOperations() []domains.OperationContract {
 	location := map[string]domains.FieldSchema{"peer": peerField(), "latitude": {Type: "number"}, "longitude": {Type: "number"}}
 	contact := map[string]domains.FieldSchema{"peer": peerField(), "phone": {Type: "string", MinLength: 6, MaxLength: 16, Pattern: "^\\+?[1-9][0-9]{5,14}$"}, "first_name": {Type: "string", MinLength: 1, MaxLength: 256}, "last_name": textField(256)}
 	return []domains.OperationContract{
-		{Operation: "send.location", Mode: "mutation", Method: "POST", Path: "/operations/send.location", Schedulable: true, Description: "Send a static Eitaa location; no live tracking", Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: location, Required: []string{"peer", "latitude", "longitude"}}},
-		{Operation: "send.contact", Mode: "mutation", Method: "POST", Path: "/operations/send.contact", Schedulable: true, Description: "Send an Eitaa contact with phone and name; no arbitrary vCard", Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: contact, Required: []string{"peer", "phone", "first_name"}}},
+		{Operation: "send.location", Mode: "mutation", Schedulable: true, Description: "Send a static Eitaa location; no live tracking", Request: domains.FieldSchema{Type: "object", Properties: location, Required: []string{"peer", "latitude", "longitude"}}},
+		{Operation: "send.contact", Mode: "mutation", Schedulable: true, Description: "Send an Eitaa contact with phone and name; no arbitrary vCard", Request: domains.FieldSchema{Type: "object", Properties: contact, Required: []string{"peer", "phone", "first_name"}}},
 	}
 }
 

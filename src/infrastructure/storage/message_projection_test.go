@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,12 +17,12 @@ func TestMessageProjectionSnapshotSurvivesDuplicateRestartAndReplay(t *testing.T
 			ctx := context.Background()
 			s, path := testStore(t)
 			d := device(t, s, "message-snapshot")
-			target := WebhookTarget{URL: "https://synthetic.test/webhook", Secret: "synthetic"}
+			target := domains.WebhookTarget{URL: "https://synthetic.test/webhook", Secret: "synthetic"}
 			ev := event("message-snapshot", "checkpoint-one")
 			ev.MessageID = "-9007199254740993"
 			ev.SenderID = "42"
 			ev.Message = &domains.Message{ID: ev.MessageID, ChatID: ev.Peer.ID, From: "42", SenderDisplayName: original.name, SenderNameStatus: original.status, IsFromMe: ptr(false), Timestamp: ev.Time, Kind: "text", Supported: true, Body: "synthetic"}
-			inserted, err := s.AppendEvent(ctx, d.ConnectionID, ev, []WebhookTarget{target})
+			inserted, err := s.AppendEvent(ctx, d.ConnectionID, ev, []domains.WebhookTarget{target})
 			require.NoError(t, err)
 			require.True(t, inserted)
 			jobs, err := s.ClaimDeliveries(ctx, 1, time.Now().Add(time.Second))
@@ -38,15 +39,15 @@ func TestMessageProjectionSnapshotSurvivesDuplicateRestartAndReplay(t *testing.T
 			ev.Message.SenderDisplayName = "Changed cached name"
 			ev.Message.SenderNameStatus = "available"
 			ev.Checkpoint = "checkpoint-two"
-			inserted, err = s.AppendEvent(ctx, d.ConnectionID, ev, []WebhookTarget{target})
+			inserted, err = s.AppendEvent(ctx, d.ConnectionID, ev, []domains.WebhookTarget{target})
 			require.NoError(t, err)
 			require.False(t, inserted)
 			require.NoError(t, s.UpdateDelivery(ctx, d.ConnectionID, first.ID, "delivered", time.Now(), ""))
 			require.NoError(t, s.Close())
-			reopened, err := Open(path, testKey)
+			reopened, err := Open(path, testKey, providers.Contracts())
 			require.NoError(t, err)
 			t.Cleanup(func() { reopened.Close() })
-			replayed, err := reopened.ReplayDelivery(ctx, d.ConnectionID, first.ID, []WebhookTarget{target})
+			replayed, err := reopened.ReplayDelivery(ctx, d.ConnectionID, first.ID, []domains.WebhookTarget{target})
 			require.NoError(t, err)
 			require.Len(t, replayed, 1)
 			require.Equal(t, first.Body, replayed[0].Body, "replay must not recompute display names or projections")
@@ -63,11 +64,11 @@ func TestHistoricalMessageEnvelopePreservesReplayAndSearch(t *testing.T) {
 	ctx := context.Background()
 	s, path := testStore(t)
 	d := device(t, s, "historical-message")
-	target := WebhookTarget{URL: "https://synthetic.test/webhook", Secret: "synthetic"}
+	target := domains.WebhookTarget{URL: "https://synthetic.test/webhook", Secret: "synthetic"}
 	ev := event("source-event", "checkpoint-before")
 	ev.Payload = json.RawMessage(`{"kind":"text","message":"original 🙂","quoted_message":{"content":{"message":"quoted secret"}}}`)
 	ev.Message = &domains.Message{ID: "123", Body: "original 🙂", Kind: "text", Supported: true, SenderNameStatus: "unavailable"}
-	inserted, err := s.AppendEvent(ctx, d.ConnectionID, ev, []WebhookTarget{target})
+	inserted, err := s.AppendEvent(ctx, d.ConnectionID, ev, []domains.WebhookTarget{target})
 	require.NoError(t, err)
 	require.True(t, inserted)
 	// Recreate the actual pre-upgrade storage/wire representation, bypassing
@@ -83,11 +84,11 @@ func TestHistoricalMessageEnvelopePreservesReplayAndSearch(t *testing.T) {
 	_, err = s.db.Exec(`UPDATE deliveries SET body=? WHERE connection_id=?`, string(oldBody), d.ConnectionID)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	s, err = Open(path, testKey)
+	s, err = Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	t.Cleanup(func() { s.Close() })
 	ev.Message.SenderDisplayName = "newly resolved name"
-	inserted, err = s.AppendEvent(ctx, d.ConnectionID, ev, []WebhookTarget{target})
+	inserted, err = s.AppendEvent(ctx, d.ConnectionID, ev, []domains.WebhookTarget{target})
 	require.NoError(t, err)
 	require.False(t, inserted)
 	jobs, err := s.ClaimDeliveries(ctx, 1, time.Now().Add(time.Second))
@@ -95,7 +96,7 @@ func TestHistoricalMessageEnvelopePreservesReplayAndSearch(t *testing.T) {
 	require.Len(t, jobs, 1)
 	require.Equal(t, string(oldBody), string(jobs[0].Body))
 	require.NoError(t, s.UpdateDelivery(ctx, d.ConnectionID, jobs[0].ID, "delivered", time.Now(), ""))
-	replayed, err := s.ReplayDelivery(ctx, d.ConnectionID, jobs[0].ID, []WebhookTarget{target})
+	replayed, err := s.ReplayDelivery(ctx, d.ConnectionID, jobs[0].ID, []domains.WebhookTarget{target})
 	require.NoError(t, err)
 	require.Equal(t, string(oldBody), string(replayed[0].Body))
 	ev.ID = "new-source-event"

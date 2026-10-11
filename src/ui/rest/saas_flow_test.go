@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/usecase"
 	"github.com/stretchr/testify/require"
@@ -156,9 +157,9 @@ func TestConsumerConnectionFlow(t *testing.T) {
 	var st *storage.Store
 	start := func() {
 		var err error
-		st, err = storage.Open(dbPath, bytes.Repeat([]byte{19}, 32))
+		st, err = storage.Open(dbPath, bytes.Repeat([]byte{19}, 32), providers.Contracts())
 		require.NoError(t, err)
-		svc = usecase.New(st, usecase.Options{PollInterval: 5 * time.Millisecond}, factory)
+		svc = newTestService(st, usecase.Options{PollInterval: 5 * time.Millisecond}, factory)
 		require.NoError(t, svc.Start(ctx))
 		srv, err = New(svc, st, Options{BasicAuth: "test:password", MediaRoot: mediaRoot, MaxMediaBytes: 1024, SendWait: 500 * time.Millisecond})
 		require.NoError(t, err)

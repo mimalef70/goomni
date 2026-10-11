@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSQLiteFullAndReadOnlyNeverAcceptOrAdvanceCheckpoint(t *testing.T) {
@@ -29,7 +30,7 @@ func TestSQLiteFullAndReadOnlyNeverAcceptOrAdvanceCheckpoint(t *testing.T) {
 				require.NoError(t, err)
 			}
 			payload, _ := json.Marshal(map[string]string{"kind": "text", "message": strings.Repeat("x", 1<<20)})
-			accepted, err := st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "failed-event", Type: "message", Peer: domains.Peer{Type: "user", ID: "77"}, Time: time.Now(), Payload: payload, Checkpoint: "after"}, []WebhookTarget{{URL: "https://synthetic.invalid", Secret: "synthetic"}})
+			accepted, err := st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "failed-event", Type: "message", Peer: domains.Peer{Type: "user", ID: "77"}, Time: time.Now(), Payload: payload, Checkpoint: "after"}, []domains.WebhookTarget{{URL: "https://synthetic.invalid", Secret: "synthetic"}})
 			require.Error(t, err)
 			require.False(t, accepted)
 			cp, err := st.Checkpoint(ctx, d.ConnectionID)
@@ -40,7 +41,7 @@ func TestSQLiteFullAndReadOnlyNeverAcceptOrAdvanceCheckpoint(t *testing.T) {
 			require.NoError(t, st.db.QueryRow(`SELECT COUNT(*) FROM deliveries`).Scan(&deliveries))
 			require.Zero(t, events)
 			require.Zero(t, deliveries)
-			_, _, err = st.Enqueue(ctx, d.ConnectionID, domains.SendRequest{Kind: "text", Peer: domains.Peer{Type: "user", ID: "77"}, Text: strings.Repeat("x", 1<<20)}, "failed", AdmissionLimits{Global: 1000})
+			_, _, err = st.Enqueue(ctx, d.ConnectionID, domains.SendRequest{Kind: "text", Peer: domains.Peer{Type: "user", ID: "77"}, Text: strings.Repeat("x", 1<<20)}, "failed", domains.AdmissionLimits{Global: 1000})
 			require.Error(t, err)
 			var operations int
 			require.NoError(t, st.db.QueryRow(`SELECT COUNT(*) FROM operations`).Scan(&operations))

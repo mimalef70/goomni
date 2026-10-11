@@ -107,13 +107,13 @@ func TestMultipartSendJournalsFileRIDAndRetainsConnectionIdempotency(t *testing.
 				return domains.SendResult{}, err
 			}
 			defer release()
-			ops, err := srv.store.ListOperations(ctx, d.ConnectionID, 10, 0)
+			ops, err := srv.testStore().ListOperations(ctx, d.ConnectionID, 10, 0)
 			require.NoError(t, err)
 			require.Len(t, ops, 1)
 			require.Equal(t, r.RequestID, ops[0].Request.RequestID)
 			require.NotEmpty(t, r.RequestID)
 			require.Equal(t, "voice", r.Kind)
-			m, err := srv.store.GetMedia(ctx, d.ConnectionID, r.MediaID)
+			m, err := srv.testStore().GetMedia(ctx, d.ConnectionID, r.MediaID)
 			require.NoError(t, err)
 			body, err := os.ReadFile(filepath.Join(srv.opts.MediaRoot, m.Path))
 			require.NoError(t, err)
@@ -229,7 +229,7 @@ func TestMultipartRejectsInvalidInputsWithoutRetainingUploads(t *testing.T) {
 		require.GreaterOrEqual(t, res.StatusCode, 400)
 		res.Body.Close()
 	}
-	ops, err := srv.store.ListOperations(context.Background(), d.ConnectionID, 10, 0)
+	ops, err := srv.testStore().ListOperations(context.Background(), d.ConnectionID, 10, 0)
 	require.NoError(t, err)
 	require.Empty(t, ops)
 	assertUploadFiles(t, srv, 0)

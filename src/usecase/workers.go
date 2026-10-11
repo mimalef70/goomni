@@ -18,51 +18,10 @@ import (
 	"github.com/mimalef70/goomni/src/domains"
 )
 
-func (s *Service) Send(ctx context.Context, id string, request domains.SendRequest, key string) (domains.Operation, error) {
-	if request.Operation != "" || len(request.Payload) > 0 || request.Kind == "operation" {
-		return domains.Operation{}, domains.E("INVALID_REQUEST", "use the durable mutation endpoint for provider operations", 400)
-	}
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.Operation{}, err
-	}
-	if err = s.validateSend(d, request); err != nil {
-		return domains.Operation{}, err
-	}
-	if request.IsScheduled() {
-		return domains.Operation{}, domains.E("USE_SCHEDULE_ENDPOINT", "use the schedule endpoint for delayed sends", 400)
-	}
-	if request.RequestID != "" {
-		return domains.Operation{}, domains.E("INVALID_REQUEST", "request_id is assigned by the gateway", 400)
-	}
-	if len(key) > 256 {
-		return domains.Operation{}, domains.E("INVALID_IDEMPOTENCY_KEY", "idempotency key exceeds 256 bytes", 400)
-	}
-	if request.Kind == "" {
-		request.Kind = "text"
-	}
-	// Storage resolves idempotency before checking media, so a completed send
-	// can still be inspected through its key after an old asset is retired.
-	operation, _, err := s.store.Enqueue(ctx, d.ConnectionID, request, key, s.admissionLimits())
-	return operation, err
-}
-func (s *Service) GetOperation(ctx context.Context, id, operationID string) (domains.Operation, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.Operation{}, err
-	}
-	op, err := s.store.GetOperation(ctx, d.ConnectionID, operationID)
-	if err != nil {
-		return op, err
-	}
-	op.Stages, err = s.store.OperationStages(ctx, d.ConnectionID, operationID)
-	return op, err
-}
-
-func (s *Service) sendLoop() {
+func (s *serviceRuntime) sendLoop() {
 	defer s.wg.Done()
 	for s.ctx.Err() == nil {
-		jobs, err := s.store.ClaimOperations(s.ctx, 1)
+		jobs, err := s.sendStore.ClaimOperations(s.ctx, 1)
 		s.workerError(err)
 		if err == nil && len(jobs) > 0 {
 			s.processOperation(jobs[0])
@@ -73,19 +32,19 @@ func (s *Service) sendLoop() {
 		}
 	}
 }
-func (s *Service) processOperation(op domains.Operation) {
+func (s *serviceRuntime) processOperation(op domains.Operation) {
 	defer s.busyWorker("send")()
 	// Every exit is persisted with a detached short context: shutdown must not
 	// leave an accepted provider send eligible for blind automatic retry.
 	finish := func(state string, result *domains.SendResult, code, message string) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err := s.store.FinishOperation(ctx, op.ConnectionID, op.ID, state, result, code, message)
+		err := s.sendStore.FinishOperation(ctx, op.ConnectionID, op.ID, state, result, code, message)
 		var conflict *domains.Error
 		if errors.As(err, &conflict) && conflict.Code == "OPERATION_CONFLICT" {
 			// A persisted native own-message echo can prove success before the
 			// send RPC finishes. Never downgrade it or count the race as failure.
-			current, lookupErr := s.store.GetOperation(ctx, op.ConnectionID, op.ID)
+			current, lookupErr := s.sendStore.GetOperation(ctx, op.ConnectionID, op.ID)
 			if lookupErr == nil && current.State == "succeeded" {
 				return
 			}
@@ -96,7 +55,7 @@ func (s *Service) processOperation(op domains.Operation) {
 		finish("queued", nil, "", "")
 		return
 	}
-	d, err := s.store.DeviceByConnection(s.ctx, op.ConnectionID)
+	d, err := s.accountStore.DeviceByConnection(s.ctx, op.ConnectionID)
 	if err != nil {
 		var missing *domains.Error
 		if errors.As(err, &missing) && (missing.Code == "DEVICE_NOT_FOUND" || missing.Code == "NOT_FOUND") {
@@ -130,7 +89,7 @@ func (s *Service) processOperation(op domains.Operation) {
 	}
 	// A logout or deletion can invalidate a claim while this worker waits for
 	// the account lock. Recheck the durable state before any provider call.
-	current, lookupErr := s.store.GetOperation(s.ctx, op.ConnectionID, op.ID)
+	current, lookupErr := s.sendStore.GetOperation(s.ctx, op.ConnectionID, op.ID)
 	if lookupErr != nil {
 		s.workerError(lookupErr)
 		finish("queued", nil, "", "") // this worker has not invoked the provider
@@ -151,7 +110,7 @@ func (s *Service) processOperation(op domains.Operation) {
 	}
 	ctx, cancel := context.WithTimeout(s.ctx, s.options.SendTimeout)
 	ctx = domains.WithOperationStageRecorder(ctx, func(stageCtx context.Context, stage domains.OperationStage) error {
-		return s.store.RecordOperationStage(stageCtx, op.ConnectionID, op.ID, op.Request.RequestID, stage)
+		return s.sendStore.RecordOperationStage(stageCtx, op.ConnectionID, op.ID, op.Request.RequestID, stage)
 	})
 	started := time.Now()
 	var result domains.SendResult
@@ -195,7 +154,7 @@ func (s *Service) processOperation(op domains.Operation) {
 	finish("unknown", nil, "SEND_UNKNOWN", publicErrorMessage("SEND_UNKNOWN"))
 }
 
-func (s *Service) reconnectLoop() {
+func (s *serviceRuntime) reconnectLoop() {
 	defer s.wg.Done()
 	cursor := reconnectCursor{connections: make(map[domains.Provider]string)}
 	for s.ctx.Err() == nil {
@@ -213,7 +172,7 @@ type reconnectCursor struct {
 	connections map[domains.Provider]string
 }
 
-func (s *Service) reconnectPass(cursor *reconnectCursor) {
+func (s *serviceRuntime) reconnectPass(cursor *reconnectCursor) {
 	providers, err := s.ActiveProviders(s.ctx)
 	if err != nil {
 		s.workerError(err)
@@ -269,7 +228,7 @@ func (s *Service) reconnectPass(cursor *reconnectCursor) {
 				if status.Auth == "auth_required" {
 					e.desired = false
 					e.setPersistenceActive(false)
-					s.workerError(s.store.ClearSession(s.ctx, conn))
+					s.workerError(s.accountStore.ClearSession(s.ctx, conn))
 					e.mu.Unlock()
 					continue
 				}
@@ -305,7 +264,7 @@ func (s *Service) reconnectPass(cursor *reconnectCursor) {
 		}
 	}
 }
-func (s *Service) connectEntry(conn string, e *clientEntry, release func()) {
+func (s *serviceRuntime) connectEntry(conn string, e *clientEntry, release func()) {
 	defer s.wg.Done()
 	defer s.busyWorker("reconnect")()
 	defer release()
@@ -320,7 +279,7 @@ func (s *Service) connectEntry(conn string, e *clientEntry, release func()) {
 	if err == nil {
 		started := time.Now()
 		var d domains.Device
-		d, err = s.store.DeviceByConnection(ctx, conn)
+		d, err = s.accountStore.DeviceByConnection(ctx, conn)
 		if err == nil {
 			e.setPersistenceActive(true)
 			err = s.connect(ctx, d, e.client, session)
@@ -336,50 +295,10 @@ func (s *Service) connectEntry(conn string, e *clientEntry, release func()) {
 	}
 }
 
-func (s *Service) ListDeliveries(ctx context.Context, id string, limit, offset int) ([]domains.Delivery, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	limit, offset = page(limit, offset)
-	return s.store.ListDeliveries(ctx, d.ConnectionID, limit, offset)
-}
-func (s *Service) GetDelivery(ctx context.Context, id, deliveryID string) (domains.Delivery, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.Delivery{}, err
-	}
-	return s.store.GetDelivery(ctx, d.ConnectionID, deliveryID)
-}
-func (s *Service) ReplayDelivery(ctx context.Context, id, deliveryID string) ([]domains.Delivery, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	delivery, err := s.store.GetDelivery(ctx, d.ConnectionID, deliveryID)
-	if err != nil {
-		return nil, err
-	}
-	eventType := eventTypeFromBody(delivery.Body)
-	targets := s.targets(d, eventType)
-	if len(targets) == 0 {
-		return nil, domains.E("NO_WEBHOOK_TARGETS", "no active webhook target accepts this event", 409)
-	}
-	return s.store.ReplayDelivery(ctx, d.ConnectionID, deliveryID, targets)
-}
-func (s *Service) RetryDelivery(ctx context.Context, id, deliveryID string) error {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	_, err = s.store.RetryDelivery(ctx, d.ConnectionID, deliveryID)
-	return err
-}
-
-func (s *Service) webhookLoop() {
+func (s *serviceRuntime) webhookLoop() {
 	defer s.wg.Done()
 	for s.ctx.Err() == nil {
-		jobs, err := s.store.ClaimDeliveries(s.ctx, 1, time.Now().UTC())
+		jobs, err := s.webhookStore.ClaimDeliveries(s.ctx, 1, time.Now().UTC())
 		s.workerError(err)
 		if err == nil && len(jobs) > 0 {
 			s.deliver(jobs[0])
@@ -390,18 +309,18 @@ func (s *Service) webhookLoop() {
 		}
 	}
 }
-func (s *Service) deliver(d domains.Delivery) {
+func (s *serviceRuntime) deliver(d domains.Delivery) {
 	defer s.busyWorker("webhook")()
 	update := func(state string, next time.Time, message string) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		s.workerError(s.store.UpdateDelivery(ctx, d.ConnectionID, d.ID, state, next, message))
+		s.workerError(s.webhookStore.UpdateDelivery(ctx, d.ConnectionID, d.ID, state, next, message))
 	}
 	if err := validateWebhookURL(d.URL); err != nil {
 		update("failed", time.Time{}, "invalid webhook URL")
 		return
 	}
-	device, err := s.store.DeviceByConnection(s.ctx, d.ConnectionID)
+	device, err := s.accountStore.DeviceByConnection(s.ctx, d.ConnectionID)
 	if err != nil {
 		var missing *domains.Error
 		if errors.As(err, &missing) && missing.Code == "NOT_FOUND" {
@@ -415,7 +334,7 @@ func (s *Service) deliver(d domains.Delivery) {
 		// Cancellation or a transient DB failure does not revoke the target.
 		// Keep the claim recoverable instead of silently pausing a valid event.
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		s.workerError(s.store.ReleaseDeliveryClaim(ctx, d.ConnectionID, d.ID))
+		s.workerError(s.webhookStore.ReleaseDeliveryClaim(ctx, d.ConnectionID, d.ID))
 		cancel()
 		s.wait()
 		return

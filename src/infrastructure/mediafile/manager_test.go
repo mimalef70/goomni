@@ -1,5 +1,7 @@
 package mediafile
 
+import "github.com/mimalef70/goomni/src/infrastructure/providers"
+
 import (
 	"bytes"
 	"context"
@@ -255,7 +257,7 @@ func TestMediaProcessCrashRecovery(t *testing.T) {
 			var exit *exec.ExitError
 			require.ErrorAs(t, err, &exit, string(output))
 			require.Equal(t, 91, exit.ExitCode(), string(output))
-			store, err := storage.Open(filepath.Join(base, "fixture.db"), bytes.Repeat([]byte{7}, 32))
+			store, err := storage.Open(filepath.Join(base, "fixture.db"), bytes.Repeat([]byte{7}, 32), providers.Contracts())
 			require.NoError(t, err)
 			defer store.Close()
 			m, err := Open(filepath.Join(base, "media"), store.MediaFileRegistered)
@@ -284,7 +286,7 @@ func TestMediaProcessCrashRecovery(t *testing.T) {
 
 func mediaCrashChild(t *testing.T, phase, base string) {
 	ctx := context.Background()
-	store, err := storage.Open(filepath.Join(base, "fixture.db"), bytes.Repeat([]byte{7}, 32))
+	store, err := storage.Open(filepath.Join(base, "fixture.db"), bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, err)
 	d, err := store.CreateDevice(ctx, "synthetic", domains.ProviderBale)
 	require.NoError(t, err)

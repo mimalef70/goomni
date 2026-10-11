@@ -16,7 +16,7 @@ func TestConnectionAdmissionIncludesQueuedSendingAndUnknown(t *testing.T) {
 	s, _ := testStore(t)
 	ctx := context.Background()
 	a, b := device(t, s, "limited"), device(t, s, "independent")
-	limits := AdmissionLimits{Global: 10, Connection: 3}
+	limits := domains.AdmissionLimits{Global: 10, Connection: 3}
 	var first domains.Operation
 	for i := range 3 {
 		op, _, err := s.Enqueue(ctx, a.ConnectionID, textRequest(fmt.Sprint(i)), fmt.Sprint(i), limits)
@@ -65,7 +65,7 @@ func TestConnectionAdmissionIsAtomicUnderConcurrentWriters(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, _, err := s.Enqueue(context.Background(), d.ConnectionID, textRequest("synthetic"), fmt.Sprint(i), AdmissionLimits{Global: 50, Connection: 5})
+			_, _, err := s.Enqueue(context.Background(), d.ConnectionID, textRequest("synthetic"), fmt.Sprint(i), domains.AdmissionLimits{Global: 50, Connection: 5})
 			results <- err
 		}()
 	}
@@ -91,10 +91,10 @@ func TestConnectionAdmissionDefaultsAndAliasReuse(t *testing.T) {
 	ctx := context.Background()
 	d := device(t, s, "reused")
 	for i := range 100 {
-		_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("synthetic"), fmt.Sprint(i), AdmissionLimits{})
+		_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("synthetic"), fmt.Sprint(i), domains.AdmissionLimits{})
 		require.NoError(t, err)
 	}
-	_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("over limit"), "overflow", AdmissionLimits{})
+	_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("over limit"), "overflow", domains.AdmissionLimits{})
 	errorCode(t, err, "CONNECTION_QUEUE_FULL")
 	claimed, err := s.ClaimOperations(ctx, 1)
 	require.NoError(t, err)
@@ -102,9 +102,9 @@ func TestConnectionAdmissionDefaultsAndAliasReuse(t *testing.T) {
 	require.NoError(t, s.FinishOperation(ctx, d.ConnectionID, claimed[0].ID, "unknown", nil, "SEND_UNKNOWN", "synthetic"))
 	require.NoError(t, s.DeleteDevice(ctx, d.ConnectionID))
 	replacement := device(t, s, "reused")
-	_, _, err = s.Enqueue(ctx, replacement.ConnectionID, textRequest("new owner"), "0", AdmissionLimits{Global: 1000, Connection: 1})
+	_, _, err = s.Enqueue(ctx, replacement.ConnectionID, textRequest("new owner"), "0", domains.AdmissionLimits{Global: 1000, Connection: 1})
 	require.NoError(t, err)
-	_, _, err = s.Enqueue(ctx, replacement.ConnectionID, textRequest("over limit"), "1", AdmissionLimits{Global: 1000, Connection: 1})
+	_, _, err = s.Enqueue(ctx, replacement.ConnectionID, textRequest("over limit"), "1", domains.AdmissionLimits{Global: 1000, Connection: 1})
 	errorCode(t, err, "CONNECTION_QUEUE_FULL")
 }
 
@@ -112,7 +112,7 @@ func TestConnectionAdmissionDoesNotConsumeScheduledOccurrence(t *testing.T) {
 	s, _ := testStore(t)
 	ctx := context.Background()
 	d := device(t, s, "scheduled")
-	limits := AdmissionLimits{Global: 10, Connection: 1}
+	limits := domains.AdmissionLimits{Global: 10, Connection: 1}
 	_, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("prior"), "prior", limits)
 	require.NoError(t, err)
 	due := time.Now().UTC().Truncate(time.Millisecond)

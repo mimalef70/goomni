@@ -3,9 +3,10 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/domains"
 
 	"github.com/stretchr/testify/require"
 )

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 )
 
 // A child owns the actual SQLite connection and dies without Close/rollback.
@@ -68,7 +69,7 @@ func TestProcessCrashDurableBoundaries(t *testing.T) {
 			}
 			<-done
 			waited = true
-			st, err := Open(filepath.Join(root, "gateway.db"), []byte(strings.Repeat("x", 32)))
+			st, err := Open(filepath.Join(root, "gateway.db"), []byte(strings.Repeat("x", 32)), providers.Contracts())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -172,7 +173,7 @@ func TestProcessCrashChild(t *testing.T) {
 	}
 	root := os.Getenv("GOOMNI_CRASH_ROOT")
 	ctx := context.Background()
-	st, err := Open(filepath.Join(root, "gateway.db"), []byte(strings.Repeat("x", 32)))
+	st, err := Open(filepath.Join(root, "gateway.db"), []byte(strings.Repeat("x", 32)), providers.Contracts())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +210,7 @@ func TestProcessCrashChild(t *testing.T) {
 				expected = strconv.Itoa(i)
 			}
 			batch := domains.EventBatch{Events: []domains.Event{first, second}, Checkpoints: []domains.CheckpointTransition{{Scope: "account", Expected: expected, Next: strconv.Itoa(i + 1)}}}
-			targets := []WebhookTarget{{URL: "https://synthetic.invalid/hook", Secret: "synthetic"}}
+			targets := []domains.WebhookTarget{{URL: "https://synthetic.invalid/hook", Secret: "synthetic"}}
 			if phase == "batch_uncommitted" {
 				tx, e := st.beginTx(ctx)
 				if e != nil {
@@ -238,7 +239,7 @@ func TestProcessCrashChild(t *testing.T) {
 			}
 		}
 	case "enqueue", "claim", "provider_observed":
-		op, _, e := st.Enqueue(ctx, d.ConnectionID, request, "synthetic-key", AdmissionLimits{Global: 1000})
+		op, _, e := st.Enqueue(ctx, d.ConnectionID, request, "synthetic-key", domains.AdmissionLimits{Global: 1000})
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -252,7 +253,7 @@ func TestProcessCrashChild(t *testing.T) {
 			mark("provider-rid", []byte(op.Request.RequestID))
 		}
 	case "receiver_committed":
-		_, e := st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "synthetic-event", Type: "message", Peer: request.Peer, Time: time.Now().UTC(), Payload: json.RawMessage(`{"kind":"text","message":"synthetic"}`), Checkpoint: "synthetic-checkpoint"}, []WebhookTarget{{URL: "https://synthetic.invalid/webhook", Secret: "synthetic-secret"}})
+		_, e := st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "synthetic-event", Type: "message", Peer: request.Peer, Time: time.Now().UTC(), Payload: json.RawMessage(`{"kind":"text","message":"synthetic"}`), Checkpoint: "synthetic-checkpoint"}, []domains.WebhookTarget{{URL: "https://synthetic.invalid/webhook", Secret: "synthetic-secret"}})
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -269,7 +270,7 @@ func TestProcessCrashChild(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		if _, e = st.MaterializeSchedule(ctx, d.ConnectionID, s.ID, when, nil, AdmissionLimits{Global: 1000}); e != nil {
+		if _, e = st.MaterializeSchedule(ctx, d.ConnectionID, s.ID, when, nil, domains.AdmissionLimits{Global: 1000}); e != nil {
 			t.Fatal(e)
 		}
 	case "schedule_transactions":
@@ -279,7 +280,7 @@ func TestProcessCrashChild(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			if _, e = st.MaterializeSchedule(ctx, d.ConnectionID, s.ID, when, nil, AdmissionLimits{Global: 100000, Connection: 100000}); e != nil {
+			if _, e = st.MaterializeSchedule(ctx, d.ConnectionID, s.ID, when, nil, domains.AdmissionLimits{Global: 100000, Connection: 100000}); e != nil {
 				t.Fatal(e)
 			}
 			if i == 0 {

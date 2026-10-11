@@ -148,7 +148,7 @@ func TestExtendedContractsRejectUnsafeBeforeWire(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, _, err := (Contract{}).NormalizeOperation(tt.name, json.RawMessage(tt.body)); err == nil {
+			if _, _, err := (protocolRules{}).NormalizeOperation(tt.name, json.RawMessage(tt.body)); err == nil {
 				t.Fatal("unsafe or unsupported request admitted")
 			}
 		})

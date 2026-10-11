@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/infrastructure/workpool"
 	"github.com/mimalef70/goomni/src/usecase"
@@ -30,10 +31,10 @@ func (m *mediaClient) Download(ctx context.Context, ref domains.ProviderMedia) (
 
 func TestRemoteDownloadUsesScopedReferenceAndReleasesSlot(t *testing.T) {
 	dir := t.TempDir()
-	st, err := storage.Open(filepath.Join(dir, "test.db"), bytes.Repeat([]byte{1}, 32))
+	st, err := storage.Open(filepath.Join(dir, "test.db"), bytes.Repeat([]byte{1}, 32), providers.Contracts())
 	require.NoError(t, err)
 	client := &mediaClient{}
-	svc := usecase.New(st, usecase.Options{}, func(domains.Device) domains.Client { return client })
+	svc := newTestService(st, usecase.Options{}, func(domains.Device) domains.Client { return client })
 	require.NoError(t, svc.Start(context.Background()))
 	t.Cleanup(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)

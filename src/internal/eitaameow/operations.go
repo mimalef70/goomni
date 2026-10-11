@@ -107,7 +107,7 @@ func (c *Client) rememberEntities(ctx context.Context, response object) error {
 	return nil
 }
 func (c *Client) inputPeer(ctx context.Context, p domains.Peer) (object, error) {
-	if err := (Contract{}).ValidatePeer(p); err != nil {
+	if err := (protocolRules{}).ValidatePeer(p); err != nil {
 		return nil, err
 	}
 	c.mu.RLock()
@@ -165,7 +165,7 @@ func publicUser(o object) object {
 	return out
 }
 func (c *Client) Send(ctx context.Context, r domains.SendRequest) (domains.SendResult, error) {
-	if err := (Contract{}).ValidateSend(r); err != nil {
+	if err := (protocolRules{}).ValidateSend(r); err != nil {
 		return domains.SendResult{}, err
 	}
 	rid, err := strconv.ParseInt(r.RequestID, 10, 64)
@@ -221,7 +221,7 @@ func (c *Client) Call(ctx context.Context, name string, raw json.RawMessage) (js
 	ridRaw := fields["request_id"]
 	delete(fields, "request_id")
 	publicRaw, _ := json.Marshal(fields)
-	normalized, _, err := (Contract{}).NormalizeOperation(name, publicRaw)
+	normalized, _, err := (protocolRules{}).NormalizeOperation(name, publicRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func (c *Client) Call(ctx context.Context, name string, raw json.RawMessage) (js
 	}
 	_ = json.Unmarshal(ridRaw, &p.RequestID)
 	mutating := false
-	for _, op := range (Contract{}).Operations() {
+	for _, op := range (protocolRules{}).Operations() {
 		if op.Operation == name {
 			mutating = op.Mode == "mutation"
 		}

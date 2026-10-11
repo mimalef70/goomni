@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/usecase"
 	"github.com/stretchr/testify/require"
@@ -134,9 +135,9 @@ func setupAPI(t *testing.T, base string) (*Server, *usecase.Service) {
 func setupAPIWithFactory(t *testing.T, base string, factory domains.ClientFactory) (*Server, *usecase.Service) {
 	t.Helper()
 	dir := t.TempDir()
-	st, e := storage.Open(filepath.Join(dir, "test.db"), bytes.Repeat([]byte{7}, 32))
+	st, e := storage.Open(filepath.Join(dir, "test.db"), bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, e)
-	svc := usecase.New(st, usecase.Options{PollInterval: 5 * time.Millisecond}, factory)
+	svc := newTestService(st, usecase.Options{PollInterval: 5 * time.Millisecond}, factory)
 	require.NoError(t, svc.Start(context.Background()))
 	srv, e := New(svc, st, Options{BasicAuth: "test:password", BasePath: base, MediaRoot: filepath.Join(dir, "media"), MaxMediaBytes: 1024, SendWait: time.Second})
 	require.NoError(t, e)

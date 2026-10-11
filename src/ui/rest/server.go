@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	pkgError "github.com/mimalef70/goomni/src/pkg/error"
 	"io"
 	"net/http"
 	"strconv"
@@ -18,11 +17,12 @@ import (
 	"sync"
 	"time"
 
+	pkgError "github.com/mimalef70/goomni/src/pkg/error"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/mimalef70/goomni/src/config"
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/mediafile"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/infrastructure/workpool"
 	"github.com/mimalef70/goomni/src/pkg/utils"
 	"github.com/mimalef70/goomni/src/ui/web"
@@ -42,8 +42,8 @@ type Options struct {
 }
 type Server struct {
 	App         *fiber.App
-	service     *usecase.Service
-	store       *storage.Store
+	service     usecase.Gateway
+	store       OperationalStore
 	opts        Options
 	mediaPool   *workpool.Pool
 	mediaOnce   sync.Once
@@ -51,7 +51,7 @@ type Server struct {
 	operational serverMetrics
 }
 
-func New(service *usecase.Service, store *storage.Store, opts Options) (*Server, error) {
+func New(service usecase.Gateway, store OperationalStore, opts Options) (*Server, error) {
 	if !strings.Contains(opts.BasicAuth, ":") || strings.HasSuffix(opts.BasicAuth, ":") || strings.HasPrefix(opts.BasicAuth, ":") {
 		return nil, fmt.Errorf("APP_BASIC_AUTH must contain a nonempty username:password")
 	}
@@ -124,18 +124,31 @@ func New(service *usecase.Service, store *storage.Store, opts Options) (*Server,
 	r.Get("/user/avatar", s.avatar)
 	r.Get("/metrics", s.metrics)
 	allProviderRoutes := append([]ProviderRoute(nil), providerRoutes...)
-	for _, contract := range domains.OperationDefinitions() {
-		found := false
-		for _, route := range allProviderRoutes {
-			if route.Method == contract.Method && route.Path == contract.Path {
-				found = true
-				break
+	for _, provider := range service.Providers() {
+		contracts, err := service.Capabilities(provider.ID)
+		if err != nil {
+			if !provider.Enabled {
+				continue
+			}
+			return nil, err
+		}
+		for _, contract := range contracts {
+			if strings.HasPrefix(contract.Path, "/operations/") {
+				continue
+			}
+			found := false
+			for _, route := range allProviderRoutes {
+				if route.Method == contract.Method && route.Path == contract.Path {
+					found = true
+					break
+				}
+			}
+			if !found {
+				allProviderRoutes = append(allProviderRoutes, ProviderRoute{contract.Method, contract.Path, contract.Operation})
 			}
 		}
-		if !found {
-			allProviderRoutes = append(allProviderRoutes, ProviderRoute{contract.Method, contract.Path, contract.Operation})
-		}
 	}
+
 	for _, route := range allProviderRoutes {
 		switch route.Method {
 		case "GET":
@@ -167,7 +180,7 @@ func (s *Server) registerAdminRoutes(r fiber.Router) {
 	r.Get("/app/providers", func(c fiber.Ctx) error { return success(c, s.service.Providers()) })
 	r.Get("/devices/:device_id/capabilities", s.withPathDevice(func(c fiber.Ctx) error {
 		v, err := s.service.DeviceCapabilities(c.Context(), c.Params("device_id"))
-		return result(c, publicCapabilities(v), err)
+		return result(c, v, err)
 	}))
 	r.Get("/devices", s.devices)
 	r.Get("/app/devices", s.devices)
@@ -615,7 +628,7 @@ func (s *Server) provider(operation string) fiber.Handler {
 		}
 		var definition domains.OperationContract
 		found := false
-		for _, v := range publicCapabilities(definitions) {
+		for _, v := range definitions {
 			if v.Operation == operation {
 				definition = v
 				found = true
@@ -686,11 +699,6 @@ func (s *Server) provider(operation string) fiber.Handler {
 				return domains.E("INVALID_PEER", "chat identifier must be type:id", 400)
 			}
 			payload["peer"] = domains.Peer{Type: parts[0], ID: parts[1]}
-		}
-		if d.Provider == domains.ProviderBale {
-			if err := nativeOperationArguments(operation, payload); err != nil {
-				return err
-			}
 		}
 		raw, _ := json.Marshal(payload)
 		if definition.Mode == "mutation" {

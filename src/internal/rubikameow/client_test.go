@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"github.com/mimalef70/goomni/src/domains"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -20,6 +19,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 const fixtureAuth = "abcdefghijklmnopqrstuvwxyzabcdef"
@@ -167,7 +168,7 @@ func TestPasswordBeforeOTPAndPrivateSession(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if e = (Contract{}).ValidateSession(session); e != nil {
+	if e = (protocolRules{}).ValidateSession(session); e != nil {
 		t.Fatal(e)
 	}
 	if calls.Load() != 3 {

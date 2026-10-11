@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/ui/rest"
 	"github.com/mimalef70/goomni/src/usecase"
@@ -97,10 +98,10 @@ type loginRESTFixture struct {
 func newLoginRESTFixture(t *testing.T, password bool, after func(*loginRESTFixture, loginFixtureRequest) bool) *loginRESTFixture {
 	t.Helper()
 	dir := t.TempDir()
-	st, err := storage.Open(filepath.Join(dir, "fixture.db"), bytes.Repeat([]byte{7}, 32))
+	st, err := storage.Open(filepath.Join(dir, "fixture.db"), bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, err)
 	f := &loginRESTFixture{store: st, clients: make(map[string]*loginFixtureClient)}
-	f.service = usecase.New(st, usecase.Options{}, func(d domains.Device) domains.Client {
+	f.service = newTestService(st, usecase.Options{}, func(d domains.Device) domains.Client {
 		client := &loginFixtureClient{password: password, inputs: make(map[string]string)}
 		f.mu.Lock()
 		f.clients[d.ConnectionID] = client

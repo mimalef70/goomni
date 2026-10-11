@@ -26,7 +26,7 @@ func extendedOperations() []domains.OperationContract {
 		if name == "account.avatar" || name == "group.photo" {
 			description += "; bounded JPEG/PNG source (at most 8 MiB), center-cropped and resized to a 512x512 JPEG"
 		}
-		ops = append(ops, domains.OperationContract{Operation: name, Mode: mode, Method: "POST", Path: "/operations/" + name, Description: description, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}})
+		ops = append(ops, domains.OperationContract{Operation: name, Mode: mode, Description: description, Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}})
 	}
 	p := func() map[string]domains.FieldSchema { return map[string]domains.FieldSchema{"peer": peerField()} }
 	user := func() map[string]domains.FieldSchema {
@@ -151,7 +151,7 @@ func normalizeExtended(name string, raw json.RawMessage) error {
 	if json.Unmarshal(raw, &p) != nil {
 		return protocolError()
 	}
-	c := Contract{}
+	c := protocolRules{}
 	if p.User != "" && !c.ValidateUserID(p.User) {
 		return domains.E("INVALID_REQUEST", "invalid Eitaa user ID", 400)
 	}

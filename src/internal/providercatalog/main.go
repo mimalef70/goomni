@@ -4,17 +4,18 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-	"github.com/mimalef70/goomni/src/internal/eitaameow"
-	"github.com/mimalef70/goomni/src/internal/rubikameow"
 	"os"
 	"sort"
+
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/eitaa"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/rubika"
 )
 
 func main() {
 	catalogs := map[domains.Provider][]domains.OperationContract{}
-	for _, contract := range []domains.ProviderContract{bale.Contract{}, eitaameow.Contract{}, rubikameow.Contract{}} {
+	for _, contract := range []domains.ProviderContract{bale.Contract{}, eitaa.Contract{}, rubika.Contract{}} {
 		list := contract.Operations()
 		sort.Slice(list, func(i, j int) bool { return list[i].Operation < list[j].Operation })
 		catalogs[contract.Descriptor().ID] = list

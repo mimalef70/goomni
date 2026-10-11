@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,7 +64,7 @@ func TestMediaRevisionSameSecondEditDeleteSurvivesRestart(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, available)
 	require.NoError(t, s.Close())
-	s, err = Open(path, testKey)
+	s, err = Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer s.Close()
 	acceptMediaEvent(t, s, d.ConnectionID, orderedMediaEvent(d.Provider, "late-after-restart", "message.edited", 9999, &c, 12))

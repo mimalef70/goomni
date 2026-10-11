@@ -11,7 +11,7 @@ import (
 
 func profileOperations() []domains.OperationContract {
 	add := func(name string, props map[string]domains.FieldSchema, required ...string) domains.OperationContract {
-		return domains.OperationContract{Operation: name, Mode: "read", Path: "/operations/" + name, Method: "POST", Description: "Eitaa " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}}
+		return domains.OperationContract{Operation: name, Mode: "read", Description: "Eitaa " + name, Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}}
 	}
 	return []domains.OperationContract{
 		add("users.get", map[string]domains.FieldSchema{"user": idField()}, "user"),

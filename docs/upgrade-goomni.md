@@ -1,4 +1,4 @@
-# Upgrade from GoBale to GoOmni 2.3
+# Upgrade to GoOmni 2.4.0
 
 GoOmni continues the same gateway and Git history. It adds native Eitaa and
 Rubika adapters beside Bale, with one binary, API and administrative panel.
@@ -7,12 +7,12 @@ This is a coordinated gateway/client upgrade, not a second API or a legacy alias
 
 ## Names and contracts
 
-| Item | GoOmni 2.3.0 |
+| Item | GoOmni 2.4.0 |
 | --- | --- |
 | Repository and Go module | `mimalef70/goomni`, `github.com/mimalef70/goomni/src` |
 | Binary and CLI | `goomni` |
-| Docker Hub | `docker.io/mimalef70/goomni:v2.3.0` |
-| GHCR | `ghcr.io/mimalef70/goomni:v2.3.0` |
+| Docker Hub | `docker.io/mimalef70/goomni:v2.4.0` |
+| GHCR | `ghcr.io/mimalef70/goomni:v2.4.0` |
 | Webhook identity headers | `X-GoOmni-Event-Id`, `X-GoOmni-Delivery-Id` |
 | Webhook signature | `X-Hub-Signature-256`; the existing HMAC-SHA256 algorithm |
 | Prometheus metric prefix | `goomni_` |
@@ -26,9 +26,14 @@ sessions, provisioning keys, operation IDs/order, schedules and media remain val
 Internal cryptographic labels, metadata tables, media locks and staging ownership
 names intentionally retain their original values; they are part of stored data.
 
-Application version 2.3.0 and storage schema 8 identify different things. Startup
+GoOmni 2.4.0 uses storage schema 9; GoOmni 2.3.0 uses schema 8. Application
+and storage versions identify different things. Startup
 transactionally upgrades a schema-7 GoBale database and assigns `provider: bale`
-to all its connections, including deleted ones. A schema version prevents an
+to all its connections, including deleted ones. The schema-9 step builds a
+small conversation read summary and a stable peer/time/ID index from existing
+events, in the migration transaction. It does not rewrite event or webhook bodies,
+sessions, request IDs or operation states. Allow temporary disk space and startup
+time for this one-time backfill on a large journal. A schema version prevents an
 incompatible binary from opening the data; it does not imply parallel APIs.
 Restoring an older binary requires its matching pre-upgrade snapshot.
 
@@ -102,7 +107,7 @@ Set these deployment values to your actual installation; database/media paths
 are **inside the container**, not host paths:
 
 ```sh
-export APP_IMAGE='docker.io/mimalef70/goomni:v2.3.0'
+export APP_IMAGE='docker.io/mimalef70/goomni:v2.4.0'
 export APP_DATA_VOLUME='ACTUAL_EXISTING_VOLUME_NAME'
 export APP_DATABASE='/app/storages/gobale.db'
 export APP_MEDIA_ROOT='/app/storages/media'
@@ -137,6 +142,6 @@ synchronized inbox merely because new messages arrive.
 
 For rollback, stop GoOmni, restore the **complete pre-upgrade snapshot** and its
 matching master key/configuration, then start exactly one owner using the old
-binary/image. An older binary must not open the schema-8 database. Retain the
+binary/image. An older binary must not open the upgraded schema-9 database. Retain the
 post-upgrade data separately if new work was accepted; restoring an older snapshot
 alone cannot include that later work.

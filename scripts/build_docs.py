@@ -19,7 +19,7 @@ out.mkdir(parents=True, exist_ok=True)
 expected = {"index.html", "style.css", "app.js", "icon.svg", "openapi.yaml", "openapi.json", ".nojekyll"}
 guide_files = {"providers/sources.md", "providers/acceptance.md", "providers/eitaa-inventory.json",
                "providers/rubika-inventory.json", "providers/live-20261010.json",
-               "upgrade-goomni.md", "consumer-integration.md", "operations.md", "webhook-payload.md"}
+               "upgrade-goomni.md", "consumer-integration.md", "architecture.md", "operations.md", "webhook-payload.md"}
 expected |= guide_files | {"THIRD_PARTY_NOTICES.md"}
 if any(path.is_symlink() or (path.is_dir() and path.relative_to(out).as_posix() != "providers") or (path.is_file() and path.relative_to(out).as_posix() not in expected) for path in out.rglob("*")):
     raise SystemExit("Staging directory contains unrelated files; choose an empty output directory")

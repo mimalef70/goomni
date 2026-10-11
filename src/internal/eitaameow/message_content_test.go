@@ -3,10 +3,11 @@ package eitaameow
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
 	"math"
 	"strings"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 func TestStructuredContentProjectionAndPrivacy(t *testing.T) {

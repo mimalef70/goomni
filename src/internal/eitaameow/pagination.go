@@ -87,7 +87,7 @@ func (c *Client) decodeCursor(raw, kind, peer string) (pageCursor, error) {
 		}
 	}
 	if kind != "history" {
-		if (Contract{}).ValidatePeer(cur.OffsetPeer) != nil {
+		if (protocolRules{}).ValidatePeer(cur.OffsetPeer) != nil {
 			return pageCursor{}, cursorInvalid()
 		}
 	}

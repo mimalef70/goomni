@@ -34,7 +34,7 @@ type moderationRequest struct {
 func moderationOperations() []domains.OperationContract {
 	var out []domains.OperationContract
 	add := func(name, mode, description string, fields map[string]domains.FieldSchema, required ...string) {
-		out = append(out, domains.OperationContract{Operation: name, Mode: mode, Description: description, Verification: "offline; live-unverified", Method: "POST", Path: "/operations/" + name, Request: domains.FieldSchema{Type: "object", Properties: fields, Required: required}})
+		out = append(out, domains.OperationContract{Operation: name, Mode: mode, Description: description, Request: domains.FieldSchema{Type: "object", Properties: fields, Required: required}})
 	}
 	peer := func() map[string]domains.FieldSchema { return map[string]domains.FieldSchema{"peer": peerField()} }
 	p := peer()
@@ -129,10 +129,10 @@ func normalizeModeration(name string, raw json.RawMessage) error {
 	if strings.HasPrefix(name, "group.") && name != "group.discussion.candidates" && p.Peer.Type != "group" && p.Peer.Type != "channel" {
 		return domains.E("INVALID_PEER", "operation requires a group or channel", 400)
 	}
-	if p.Participant.ID != "" && (Contract{}).ValidatePeer(p.Participant) != nil {
+	if p.Participant.ID != "" && (protocolRules{}).ValidatePeer(p.Participant) != nil {
 		return domains.E("INVALID_PEER", "invalid participant peer", 400)
 	}
-	if p.Group.ID != "" && ((Contract{}).ValidatePeer(p.Group) != nil || p.Group.Type != "group") {
+	if p.Group.ID != "" && ((protocolRules{}).ValidatePeer(p.Group) != nil || p.Group.Type != "group") {
 		return domains.E("INVALID_PEER", "discussion destination must be a group", 400)
 	}
 	if name == "group.discussion.set" || name == "group.discussion.unlink" {
@@ -143,7 +143,7 @@ func normalizeModeration(name string, raw json.RawMessage) error {
 	if (name == "group.slowmode" || name == "group.history_visibility" || name == "group.upgrade") && p.Peer.Type != "group" {
 		return domains.E("INVALID_PEER", "operation requires a group", 400)
 	}
-	if p.User != "" && !(Contract{}).ValidateUserID(p.User) {
+	if p.User != "" && !(protocolRules{}).ValidateUserID(p.User) {
 		return domains.E("INVALID_USER_ID", "administrator must be a positive decimal ID", 400)
 	}
 	if p.Link != "" && !validInviteLink(p.Link) {
@@ -495,7 +495,7 @@ func (c *Client) inviteOperation(ctx context.Context, name string, p moderationR
 		params["offset_date"] = int64(0)
 		params["offset_user"] = object{"_": "inputUserEmpty"}
 		if cursor != "" {
-			if !(Contract{}).ValidateUserID(offset.Value) {
+			if !(protocolRules{}).ValidateUserID(offset.Value) {
 				return nil, cursorInvalid()
 			}
 			user, e := c.inputUser(ctx, offset.Value)

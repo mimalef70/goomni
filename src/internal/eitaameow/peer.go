@@ -44,7 +44,7 @@ func entityPeer(entity object) (domains.Peer, error) {
 }
 func peerReferenceMatches(peer domains.Peer, ref object) bool {
 	id := peerWireID(peer)
-	if !(Contract{}).ValidateUserID(id) {
+	if !(protocolRules{}).ValidateUserID(id) {
 		return false
 	}
 	switch peer.Type {

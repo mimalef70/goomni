@@ -14,7 +14,7 @@ func adminOperations() []domains.OperationContract {
 		for k, v := range extra {
 			p[k] = v
 		}
-		result = append(result, domains.OperationContract{Operation: name, Mode: mode, Method: "POST", Path: "/operations/" + name, Description: "Eitaa " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: p, Required: append([]string{"peer"}, required...)}})
+		result = append(result, domains.OperationContract{Operation: name, Mode: mode, Description: "Eitaa " + name, Request: domains.FieldSchema{Type: "object", Properties: p, Required: append([]string{"peer"}, required...)}})
 	}
 	add("group.description", "mutation", map[string]domains.FieldSchema{"description": textField(1024)}, "description")
 	for _, name := range []string{"group.signatures", "group.protect_content"} {

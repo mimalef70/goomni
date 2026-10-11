@@ -92,7 +92,7 @@ func TestPeerNamespaceRejectsCorruptCacheWithoutRerouting(t *testing.T) {
 }
 func TestPeerNamespaceCanonicalValidationAndReferenceRefresh(t *testing.T) {
 	for _, p := range []domains.Peer{{Type: "group", ID: "channel_0"}, {Type: "group", ID: "channel_091"}, {Type: "group", ID: "channel_9223372036854775808"}, {Type: "user", ID: "channel_91"}, {Type: "channel", ID: "channel_91"}} {
-		if (Contract{}).ValidatePeer(p) == nil {
+		if (protocolRules{}).ValidatePeer(p) == nil {
 			t.Fatalf("invalid namespace accepted: %#v", p)
 		}
 	}

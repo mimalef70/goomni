@@ -18,6 +18,11 @@ your server. The administrative panel is included in the binary.
 Sponsored by **[MuChat](https://mu.chat)**. GoOmni is independent open-source
 software, available to everyone under the MIT license.
 
+GoOmni 2.4.0 adds structured capability `evidence` (date, scope, references and
+limitations) and indexed conversation summaries for faster local reads. Storage
+upgrades transactionally to schema 9; take a cold snapshot before upgrading. See
+[architecture](docs/architecture.md) and the [upgrade guide](docs/upgrade-goomni.md).
+
 [Download binaries](https://github.com/mimalef70/goomni/releases) ·
 [GHCR](https://github.com/users/mimalef70/packages/container/package/goomni) ·
 [Docker Hub](https://hub.docker.com/r/mimalef70/goomni) ·
@@ -71,10 +76,11 @@ not a customer login page or a chat inbox.
 
 ## Release status
 
-**GoOmni 2.3.0** continues GoBale with one native gateway for Bale, Eitaa and
-Rubika. It includes the administrative panel, release archives for Linux/macOS
-and container images for Linux amd64/arm64. This release changes the public
-contract: update API and webhook consumers using the [upgrade guide](docs/upgrade-goomni.md).
+**GoOmni 2.4.0** separates application services and provider adapters, reports
+capability evidence in the API and panel, and accelerates the local conversation
+list without adding another database. It includes Linux/macOS archives and
+Linux amd64/arm64 container images. Follow the [upgrade guide](docs/upgrade-goomni.md)
+for the schema-9 migration and any consumer changes when upgrading from GoBale.
 Existing accounts and accepted work are preserved when you reuse the original
 database, media and master key. Always use documentation from your installed tag.
 The [acceptance record](docs/providers/acceptance.md) separates controlled native
@@ -132,15 +138,15 @@ Old and pending durable data is preserved during schema upgrades.
 
 ### Binary
 
-Download the archive for your platform from [v2.3.0](https://github.com/mimalef70/goomni/releases/tag/v2.3.0).
+Download the archive for your platform from [v2.4.0](https://github.com/mimalef70/goomni/releases/tag/v2.4.0).
 For example, on Linux amd64:
 
 ```sh
 mkdir goomni && cd goomni
-curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.3.0/goomni_2.3.0_linux_amd64.tar.gz
-curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.3.0/SHA256SUMS
-grep '  goomni_2.3.0_linux_amd64.tar.gz$' SHA256SUMS | sha256sum --check -
-tar -xzf goomni_2.3.0_linux_amd64.tar.gz
+curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.4.0/goomni_2.4.0_linux_amd64.tar.gz
+curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.4.0/SHA256SUMS
+grep '  goomni_2.4.0_linux_amd64.tar.gz$' SHA256SUMS | sha256sum --check -
+tar -xzf goomni_2.4.0_linux_amd64.tar.gz
 ./goomni init --bale-web-client
 ./goomni rest
 ```
@@ -164,11 +170,11 @@ interactive helper in another terminal:
 ### Docker
 
 Download the release's `docker-compose.yml`, or use the copy in its archive.
-The default image is pinned to `docker.io/mimalef70/goomni:v2.3.0`;
-`ghcr.io/mimalef70/goomni:v2.3.0` contains the same build. For a **new** installation:
+The default image is pinned to `docker.io/mimalef70/goomni:v2.4.0`;
+`ghcr.io/mimalef70/goomni:v2.4.0` contains the same build. For a **new** installation:
 
 ```sh
-export APP_IMAGE='docker.io/mimalef70/goomni:v2.3.0'
+export APP_IMAGE='docker.io/mimalef70/goomni:v2.4.0'
 docker pull "$APP_IMAGE"
 docker run --rm --user "$(id -u):$(id -g)" \
   --volume "$PWD:/config" --workdir /config \
@@ -240,7 +246,7 @@ configuration changes require recreation, not merely `docker restart`.
 
 ## Connect your application
 
-These examples target **GoOmni 2.3.0** and use `curl` plus `jq`. First connect
+These examples target **GoOmni 2.4.0** and use `curl` plus `jq`. First connect
 an account named `support` through the panel or CLI. Run the following in the
 initialized directory; load only your own trusted `.env`:
 

@@ -1,7 +1,9 @@
 package usecase
 
-import "github.com/mimalef70/goomni/src/infrastructure/storage"
+import (
+	"github.com/mimalef70/goomni/src/domains"
+)
 
-func (s *Service) admissionLimits() storage.AdmissionLimits {
-	return storage.AdmissionLimits{Global: s.options.QueueLimit, Connection: s.options.ConnectionQueueLimit}
+func (s *serviceRuntime) admissionLimits() domains.AdmissionLimits {
+	return domains.AdmissionLimits{Global: s.options.QueueLimit, Connection: s.options.ConnectionQueueLimit}
 }

@@ -1,10 +1,11 @@
 package rest
 
 import (
-	"github.com/gofiber/fiber/v3"
-	"github.com/mimalef70/goomni/src/domains"
 	"strconv"
 	"time"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 func filterTime(c fiber.Ctx, key string) (*time.Time, error) {

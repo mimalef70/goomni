@@ -3,13 +3,15 @@ package rest
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
-	"github.com/stretchr/testify/require"
+
 	"net/url"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCoreQueryRESTContractsAndConnectionScope(t *testing.T) {
@@ -21,9 +23,9 @@ func TestCoreQueryRESTContractsAndConnectionScope(t *testing.T) {
 	_, err = svc.CreateDevice(ctx, "two", domains.ProviderBale)
 	require.NoError(t, err)
 	due := time.Now().Add(time.Hour).UTC().Truncate(time.Millisecond)
-	job, err := s.store.CreateSchedule(ctx, d.ConnectionID, domains.SendRequest{Peer: domains.Peer{Type: "user", ID: "42"}, Kind: "text", Text: "fixture"}, due)
+	job, err := s.testStore().CreateSchedule(ctx, d.ConnectionID, domains.SendRequest{Peer: domains.Peer{Type: "user", ID: "42"}, Kind: "text", Text: "fixture"}, due)
 	require.NoError(t, err)
-	op, err := s.store.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, storage.AdmissionLimits{Global: 20})
+	op, err := s.testStore().MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, domains.AdmissionLimits{Global: 20})
 	require.NoError(t, err)
 	status, body := apiRequest(t, s, "GET", "/send/operations?schedule_id="+job.ID+"&kind=text&peer=user:42", "one", nil)
 	require.Equal(t, 200, status)
@@ -41,7 +43,7 @@ func TestCoreQueryRESTContractsAndConnectionScope(t *testing.T) {
 	status, _ = apiRequest(t, s, "GET", "/send/schedules/"+job.ID+"/occurrences", "two", nil)
 	require.Equal(t, 404, status)
 	ev := domains.Event{ID: "synthetic", Type: "message", Peer: domains.Peer{Type: "user", ID: "42"}, SenderID: "7", Direction: "incoming", Time: time.Now().UTC(), Payload: json.RawMessage(`{"kind":"text","message":"سلام %_🙂"}`)}
-	_, err = s.store.AppendEvent(ctx, d.ConnectionID, ev, nil)
+	_, err = s.testStore().AppendEvent(ctx, d.ConnectionID, ev, nil)
 	require.NoError(t, err)
 	for _, path := range []string{"/events?peer=user:42&search=", "/chat/user:42/messages?search="} {
 		status, body = apiRequest(t, s, "GET", path+url.QueryEscape("سلام %_🙂"), "one", nil)

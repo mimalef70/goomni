@@ -27,6 +27,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/mediafile"
+	providercontracts "github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/pkg/sqlite"
@@ -164,7 +165,7 @@ func TestOptionalCapacity(t *testing.T) {
 		w.WriteHeader(204)
 	}))
 	defer sink.Close()
-	st, err := storage.Open(dbPath, bytes.Repeat([]byte{19}, 32))
+	st, err := storage.Open(dbPath, bytes.Repeat([]byte{19}, 32), providercontracts.Contracts())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,7 +238,7 @@ func TestOptionalCapacity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc := usecase.New(st, usecase.Options{Providers: registry, MergeGlobal: true, SendWorkers: 4, WebhookWorkers: 8, ReconnectWorkers: 4, QueueLimit: capacityQueueLimit, ConnectionQueueLimit: capacityConnectionQueueLimit, PollInterval: 500 * time.Millisecond, GlobalWebhooks: []storage.WebhookTarget{{URL: sink.URL + "/fast", Secret: "synthetic-capacity-secret"}}}, factory)
+	svc := newTestService(st, usecase.Options{Providers: registry, MergeGlobal: true, SendWorkers: 4, WebhookWorkers: 8, ReconnectWorkers: 4, QueueLimit: capacityQueueLimit, ConnectionQueueLimit: capacityConnectionQueueLimit, PollInterval: 500 * time.Millisecond, GlobalWebhooks: []domains.WebhookTarget{{URL: sink.URL + "/fast", Secret: "synthetic-capacity-secret"}}}, factory)
 	if err = svc.Start(ctx); err != nil {
 		t.Fatal(err)
 	}

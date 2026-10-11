@@ -20,6 +20,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/balemeow/catalog"
 	"github.com/mimalef70/goomni/src/internal/balemeow/wire"
 	"google.golang.org/protobuf/proto"
 )
@@ -640,7 +641,7 @@ func encodePeer(peer domains.Peer) (*wire.Peer, error) {
 // Call exposes only reviewed operation shapes. No arbitrary provider RPC proxy
 // is provided: broken schemas cannot silently turn into successful operations.
 func (c *Client) Call(ctx context.Context, operation string, raw json.RawMessage) (json.RawMessage, error) {
-	if _, ok := domains.OperationDefinition(operation); ok {
+	if _, ok := catalog.OperationDefinition(operation); ok {
 		var err error
 		raw, err = prepareExtendedCall(operation, raw)
 		if err != nil {
@@ -736,7 +737,7 @@ func (c *Client) Call(ctx context.Context, operation string, raw json.RawMessage
 		}
 		return json.RawMessage(`{"acknowledged":true}`), nil
 	default:
-		if _, known := domains.OperationDefinition(operation); known {
+		if _, known := catalog.OperationDefinition(operation); known {
 			switch {
 			case strings.HasPrefix(operation, "group."):
 				return c.groupExtended(ctx, operation, raw)

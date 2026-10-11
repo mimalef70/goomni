@@ -3,10 +3,12 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
+	"github.com/stretchr/testify/require"
 )
 
 // Downgrade only synthetic fixtures. Runtime migrations reject partial schemas.
@@ -24,7 +26,7 @@ func TestOperationOrderMigrationAndVacuum(t *testing.T) {
 	d := device(t, s, "order")
 	var ids []string
 	for _, name := range []string{"later", "first", "second"} {
-		op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest(name), name, AdmissionLimits{Global: 10})
+		op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest(name), name, domains.AdmissionLimits{Global: 10})
 		require.NoError(t, err)
 		ids = append(ids, op.ID)
 	}
@@ -36,7 +38,7 @@ func TestOperationOrderMigrationAndVacuum(t *testing.T) {
 	_, err = s.db.Exec(`UPDATE gobale_meta SET version=5`)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	upgraded, err := Open(path, testKey)
+	upgraded, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer upgraded.Close()
 	var version int
@@ -61,9 +63,9 @@ func TestScheduleOccurrenceAtomicMappingNoPublicKeyCollision(t *testing.T) {
 	due := time.UnixMilli(123456).UTC()
 	job, err := s.CreateSchedule(ctx, d.ConnectionID, req, due)
 	require.NoError(t, err)
-	fake, _, err := s.Enqueue(ctx, d.ConnectionID, req, "schedule:"+job.ID+":123456", AdmissionLimits{Global: 10})
+	fake, _, err := s.Enqueue(ctx, d.ConnectionID, req, "schedule:"+job.ID+":123456", domains.AdmissionLimits{Global: 10})
 	require.NoError(t, err)
-	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, AdmissionLimits{Global: 1})
+	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, domains.AdmissionLimits{Global: 1})
 	errorCode(t, err, "QUEUE_FULL")
 	unchanged, err := s.GetSchedule(ctx, d.ConnectionID, job.ID)
 	require.NoError(t, err)
@@ -73,18 +75,18 @@ func TestScheduleOccurrenceAtomicMappingNoPublicKeyCollision(t *testing.T) {
 	require.Empty(t, occ)
 	_, err = s.db.Exec(`CREATE TRIGGER occurrence_failure BEFORE INSERT ON schedule_occurrences BEGIN SELECT RAISE(ABORT,'synthetic failure'); END`)
 	require.NoError(t, err)
-	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, AdmissionLimits{Global: 10})
+	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, domains.AdmissionLimits{Global: 10})
 	require.Error(t, err)
 	ops, err := s.ListOperations(ctx, d.ConnectionID, 10, 0)
 	require.NoError(t, err)
 	require.Len(t, ops, 1)
 	_, err = s.db.Exec(`DROP TRIGGER occurrence_failure`)
 	require.NoError(t, err)
-	op, err := s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, AdmissionLimits{Global: 10})
+	op, err := s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, domains.AdmissionLimits{Global: 10})
 	require.NoError(t, err)
 	require.NotEqual(t, fake.ID, op.ID)
 	require.NotEqual(t, fake.Request.RequestID, op.Request.RequestID)
-	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, AdmissionLimits{Global: 10})
+	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, due, nil, domains.AdmissionLimits{Global: 10})
 	errorCode(t, err, "SCHEDULE_CONFLICT")
 	got, err := s.GetOperation(ctx, d.ConnectionID, op.ID)
 	require.NoError(t, err)
@@ -173,7 +175,7 @@ func TestWebhookFilterAtomicCurrentRoutingAndReplay(t *testing.T) {
 	secret := "synthetic"
 	_, err := s.PatchWebhook(ctx, d.ConnectionID, domains.WebhookPatch{URL: &url, Secret: &secret, Filter: &domains.WebhookFilter{Directions: []string{"outgoing"}}})
 	require.NoError(t, err)
-	plan := []WebhookTarget{{Device: true, CurrentDevice: true}, {URL: "https://global.test/hook"}}
+	plan := []domains.WebhookTarget{{Device: true, CurrentDevice: true}, {URL: "https://global.test/hook"}}
 	ev := event("denied", "cp-denied")
 	ev.SenderID = "7"
 	ev.Direction = "incoming"
@@ -237,7 +239,7 @@ func TestWorkFiltersTimeBoundariesAndOccurrenceScope(t *testing.T) {
 	d := device(t, s, "filter-work")
 	other := device(t, s, "other-work")
 	req := domains.SendRequest{Kind: "text", Peer: domains.Peer{Type: "user", ID: "42"}, Text: "synthetic"}
-	op, _, err := s.Enqueue(ctx, d.ConnectionID, req, "one", AdmissionLimits{Global: 10})
+	op, _, err := s.Enqueue(ctx, d.ConnectionID, req, "one", domains.AdmissionLimits{Global: 10})
 	require.NoError(t, err)
 	start := op.CreatedAt
 	end := start.Add(time.Millisecond)

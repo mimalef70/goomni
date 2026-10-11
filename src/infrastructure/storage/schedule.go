@@ -212,7 +212,7 @@ func (s *Store) DueSchedules(ctx context.Context, at time.Time, limit int, after
 // MaterializeSchedule atomically consumes the exact due occurrence, enqueues its
 // send and advances the schedule. Passing nil next completes a one-shot or final
 // recurrence. The runtime computes the next time with the shared calendar rules.
-func (s *Store) materializeSchedule(ctx context.Context, conn, id string, expected time.Time, next *time.Time, limits AdmissionLimits) (domains.Operation, error) {
+func (s *Store) materializeSchedule(ctx context.Context, conn, id string, expected time.Time, next *time.Time, limits domains.AdmissionLimits) (domains.Operation, error) {
 	tx, e := s.beginTx(ctx)
 	if e != nil {
 		return domains.Operation{}, e

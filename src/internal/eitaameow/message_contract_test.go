@@ -2,9 +2,10 @@ package eitaameow
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCommonMessageIdentityForEitaaEdit(t *testing.T) {

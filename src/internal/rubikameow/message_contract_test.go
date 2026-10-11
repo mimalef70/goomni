@@ -2,10 +2,11 @@ package rubikameow
 
 import (
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCommonMessageIdentityForRubikaEdit(t *testing.T) {

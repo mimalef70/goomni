@@ -3,8 +3,9 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
 
 	"github.com/mimalef70/goomni/src/domains"
 )

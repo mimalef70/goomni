@@ -3,8 +3,9 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 func workPredicates(alias, state, kind, operation, peer string, after, before *time.Time) (string, []any) {
@@ -158,7 +159,9 @@ const projectedMedia = `(` + projectedMessage + ` AND json_type(body,'$.payload.
 const eventDirection = `CASE WHEN type IN ('message','message.edited') AND (json_type(body,'$.sender_id') IS NOT 'text' OR CAST(json_extract(body,'$.sender_id') AS INTEGER) NOT BETWEEN 1 AND 4294967295 OR CAST(CAST(json_extract(body,'$.sender_id') AS INTEGER) AS TEXT)<>json_extract(body,'$.sender_id')) THEN 'unknown' WHEN json_extract(body,'$.direction') IN ('incoming','outgoing') THEN json_extract(body,'$.direction') ELSE 'unknown' END`
 const opaqueEventDirection = `CASE WHEN type IN ('message','message.edited') AND (json_type(body,'$.sender_id') IS NOT 'text' OR length(CAST(json_extract(body,'$.sender_id') AS BLOB)) NOT BETWEEN 1 AND 256 OR trim(json_extract(body,'$.sender_id'))<>json_extract(body,'$.sender_id')) THEN 'unknown' WHEN json_extract(body,'$.direction') IN ('incoming','outgoing') THEN json_extract(body,'$.direction') ELSE 'unknown' END`
 
-func (s *Store) ListEventsFiltered(ctx context.Context, conn string, f domains.EventFilter) ([]domains.Event, error) {
+func (s *Store) ListEventsFiltered(ctx context.Context, conn string, f domains.EventFilter) (events []domains.Event, err error) {
+	start := time.Now()
+	defer func() { s.observePersistence("search_events", start, err) }()
 	if err := f.Validate(); err != nil {
 		return nil, err
 	}

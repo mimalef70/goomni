@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +19,7 @@ func legacyUnknownVoice(t *testing.T, s *Store, d domains.Device, name string, m
 	t.Helper()
 	ctx := context.Background()
 	req := domains.SendRequest{Kind: "voice", Peer: domains.Peer{Type: "user", ID: "123"}}
-	op, _, err := s.Enqueue(ctx, d.ConnectionID, req, name, AdmissionLimits{Global: 1000, Connection: 1000})
+	op, _, err := s.Enqueue(ctx, d.ConnectionID, req, name, domains.AdmissionLimits{Global: 1000, Connection: 1000})
 	require.NoError(t, err)
 	echo := ownEcho(op)
 	echo.Payload = json.RawMessage(`{"kind":"document","media_type":"voice","mime_type":"audio/ogg","duration":1000}`)
@@ -29,7 +30,7 @@ func legacyUnknownVoice(t *testing.T, s *Store, d domains.Device, name string, m
 	if proofConnection == "" {
 		proofConnection = d.ConnectionID
 	}
-	_, err = s.AppendEvent(ctx, proofConnection, echo, []WebhookTarget{{URL: "https://example.test/hook"}})
+	_, err = s.AppendEvent(ctx, proofConnection, echo, []domains.WebhookTarget{{URL: "https://example.test/hook"}})
 	require.NoError(t, err)
 	claimed, err := s.ClaimOperations(ctx, 1)
 	require.NoError(t, err)
@@ -58,7 +59,7 @@ func TestStoredVoiceProofsReconcileOnUpgradeInBoundedBatches(t *testing.T) {
 	_, err = s.db.Exec(`UPDATE gobale_meta SET version=4`)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	upgraded, err := Open(path, testKey)
+	upgraded, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer upgraded.Close()
 	for _, op := range ops {
@@ -117,7 +118,7 @@ func TestStoredVoiceProofsRejectForeignIncompleteAndTerminalEvidence(t *testing.
 	terminal, _ := legacyUnknownVoice(t, s, d, "terminal", nil, "")
 	require.NoError(t, s.FinishOperation(ctx, d.ConnectionID, terminal.ID, "failed", nil, "AUTHORITATIVE_FAILURE", "synthetic terminal decision"))
 	require.NoError(t, s.Close())
-	reopened, err := Open(path, testKey)
+	reopened, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer reopened.Close()
 	for _, op := range ops {
@@ -149,7 +150,7 @@ func TestDuplicateVoiceEchoUsesStoredProofOnlyAndDoesNotAdvanceCheckpoint(t *tes
 			if originalValid {
 				duplicate.SenderID = "999"
 			}
-			inserted, err := s.AppendEvent(ctx, d.ConnectionID, duplicate, []WebhookTarget{{URL: "https://new-target.test/hook"}})
+			inserted, err := s.AppendEvent(ctx, d.ConnectionID, duplicate, []domains.WebhookTarget{{URL: "https://new-target.test/hook"}})
 			require.NoError(t, err)
 			require.False(t, inserted)
 			got, err := s.GetOperation(ctx, d.ConnectionID, op.ID)

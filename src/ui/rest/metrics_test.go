@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/mimalef70/goomni/src/domains"
 	"io"
 	"net/http/httptest"
 	"os"
@@ -13,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/usecase"
 	"github.com/stretchr/testify/require"
@@ -20,9 +21,9 @@ import (
 
 func TestMetricsKeepsCachedSnapshotWhenStorageFails(t *testing.T) {
 	databasePath := filepath.Join(t.TempDir(), "test.db")
-	st, err := storage.Open(databasePath, bytes.Repeat([]byte{7}, 32))
+	st, err := storage.Open(databasePath, bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, err)
-	svc := usecase.New(st, usecase.Options{}, nil)
+	svc := newTestService(st, usecase.Options{}, nil)
 	s, err := New(svc, st, Options{BasicAuth: "test:password", MediaRoot: t.TempDir()})
 	require.NoError(t, err)
 	closed := false
@@ -38,7 +39,7 @@ func TestMetricsKeepsCachedSnapshotWhenStorageFails(t *testing.T) {
 	s.sampleMetrics(context.Background(), scanner)
 	stamp := s.metricSnapshot().queueAt
 	require.False(t, stamp.IsZero())
-	require.NoError(t, s.store.Close())
+	require.NoError(t, s.testStore().Close())
 	closed = true
 	// Lose the DB path as well: the media filesystem sample must remain fresh.
 	require.NoError(t, os.Remove(databasePath))

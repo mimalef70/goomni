@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +26,7 @@ func TestProviderMediaIsScopedEncryptedAndPrivate(t *testing.T) {
 	b := device(t, s, "beta")
 	m := privateMedia()
 	event := documentEvent("first", 1720000000000, &m)
-	inserted, e := s.AppendEvent(ctx, a.ConnectionID, event, []WebhookTarget{{URL: "https://example.test"}})
+	inserted, e := s.AppendEvent(ctx, a.ConnectionID, event, []domains.WebhookTarget{{URL: "https://example.test"}})
 	require.NoError(t, e)
 	require.True(t, inserted)
 	got, e := s.GetProviderMedia(ctx, a.ConnectionID, event.Peer, event.MessageID)
@@ -52,7 +53,7 @@ func TestProviderMediaIsScopedEncryptedAndPrivate(t *testing.T) {
 	disk, e := os.ReadFile(p)
 	require.NoError(t, e)
 	require.NotContains(t, string(disk), m.AccessHash)
-	reopened, e := Open(p, testKey)
+	reopened, e := Open(p, testKey, providers.Contracts())
 	require.NoError(t, e)
 	defer reopened.Close()
 	got, e = reopened.GetProviderMedia(ctx, a.ConnectionID, event.Peer, event.MessageID)
@@ -129,7 +130,7 @@ func TestProviderMediaPersistenceIsAtomicWithEventAndCheckpoint(t *testing.T) {
 	require.NoError(t, e)
 	require.Empty(t, cp)
 	m = privateMedia()
-	_, e = s.AppendEvent(ctx, d.ConnectionID, documentEvent("delivery-failure", 1000, &m), []WebhookTarget{{URL: "invalid"}})
+	_, e = s.AppendEvent(ctx, d.ConnectionID, documentEvent("delivery-failure", 1000, &m), []domains.WebhookTarget{{URL: "invalid"}})
 	errorCode(t, e, "INVALID_WEBHOOK_URL")
 	_, e = s.GetProviderMedia(ctx, d.ConnectionID, domains.Peer{Type: "user", ID: "42"}, "123")
 	errorCode(t, e, "NOT_FOUND")
@@ -151,7 +152,7 @@ func TestProviderMediaMigrationAndBackupRestore(t *testing.T) {
 	_, e = s.db.Exec(`UPDATE gobale_meta SET version=1`)
 	require.NoError(t, e)
 	require.NoError(t, s.Close())
-	upgraded, e := Open(p, testKey)
+	upgraded, e := Open(p, testKey, providers.Contracts())
 	require.NoError(t, e)
 	defer upgraded.Close()
 	var version int
@@ -163,7 +164,7 @@ func TestProviderMediaMigrationAndBackupRestore(t *testing.T) {
 	require.True(t, available)
 	backup := filepath.Join(t.TempDir(), "backup.db")
 	require.NoError(t, upgraded.Backup(ctx, backup))
-	restored, e := Open(backup, testKey)
+	restored, e := Open(backup, testKey, providers.Contracts())
 	require.NoError(t, e)
 	defer restored.Close()
 	got, e := restored.GetProviderMedia(ctx, d.ConnectionID, domains.Peer{Type: "user", ID: "42"}, "123")

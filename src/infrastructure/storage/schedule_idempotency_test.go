@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +26,7 @@ func TestScheduleIdempotencyPersistenceAndTerminalReplay(t *testing.T) {
 	require.Equal(t, first, duplicate)
 	require.NoError(t, s.SetScheduleState(ctx, d.ConnectionID, first.ID, "completed"))
 	require.NoError(t, s.Close())
-	reopened, err := Open(path, testKey)
+	reopened, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer reopened.Close()
 	got, found, err := reopened.LookupScheduleIdempotent(ctx, d.ConnectionID, req, "create-once")
@@ -50,9 +52,9 @@ func TestScheduleIdempotencyCrossTypeAndConnectionIsolation(t *testing.T) {
 	next := time.Now().UTC().Add(time.Hour)
 	first, err := s.CreateScheduleIdempotent(ctx, a.ConnectionID, req, next, "shared")
 	require.NoError(t, err)
-	_, _, err = s.Enqueue(ctx, a.ConnectionID, req, "shared", AdmissionLimits{Global: 10})
+	_, _, err = s.Enqueue(ctx, a.ConnectionID, req, "shared", domains.AdmissionLimits{Global: 10})
 	errorCode(t, err, "IDEMPOTENCY_CONFLICT")
-	_, _, err = s.Enqueue(ctx, b.ConnectionID, req, "shared", AdmissionLimits{Global: 10})
+	_, _, err = s.Enqueue(ctx, b.ConnectionID, req, "shared", domains.AdmissionLimits{Global: 10})
 	require.NoError(t, err)
 	_, err = s.CreateScheduleIdempotent(ctx, b.ConnectionID, req, next, "shared")
 	errorCode(t, err, "IDEMPOTENCY_CONFLICT")
@@ -124,7 +126,7 @@ func TestScheduleIdempotencyMigrationFromV2PreservesExistingSchedule(t *testing.
 	_, err = s.db.Exec(`UPDATE gobale_meta SET version=2`)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	upgraded, err := Open(path, testKey)
+	upgraded, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer upgraded.Close()
 	got, err := upgraded.GetSchedule(ctx, d.ConnectionID, old.ID)

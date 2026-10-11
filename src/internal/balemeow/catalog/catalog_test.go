@@ -1,4 +1,4 @@
-package domains
+package catalog
 
 import (
 	"encoding/json"

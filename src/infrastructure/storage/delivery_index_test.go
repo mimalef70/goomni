@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,7 +36,7 @@ func TestDeliveryIndexesExcludeRetainedHistoryAndMigrate(t *testing.T) {
 	for i := range devices {
 		devices[i] = device(t, s, fmt.Sprintf("history-%d", i))
 		e := event(fmt.Sprintf("history-source-%d", i), "")
-		_, err := s.AppendEvent(ctx, devices[i].ConnectionID, e, []WebhookTarget{{URL: "https://example.test/receiver"}})
+		_, err := s.AppendEvent(ctx, devices[i].ConnectionID, e, []domains.WebhookTarget{{URL: "https://example.test/receiver"}})
 		require.NoError(t, err)
 		sources[i] = scopedEventID(devices[i].ConnectionID, e)
 	}
@@ -59,7 +60,7 @@ func TestDeliveryIndexesExcludeRetainedHistoryAndMigrate(t *testing.T) {
 	_, err = s.db.Exec(`UPDATE gobale_meta SET version=3`)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	upgraded, err := Open(path, testKey)
+	upgraded, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer upgraded.Close()
 	after := deliveryPlan(t, upgraded)
@@ -83,7 +84,7 @@ func TestReleaseDeliveryClaimRefundsPreHTTPAttemptOnly(t *testing.T) {
 	ctx := context.Background()
 	s, _ := testStore(t)
 	d := device(t, s, "a")
-	_, err := s.AppendEvent(ctx, d.ConnectionID, event("source", ""), []WebhookTarget{{URL: "https://example.test/receiver"}})
+	_, err := s.AppendEvent(ctx, d.ConnectionID, event("source", ""), []domains.WebhookTarget{{URL: "https://example.test/receiver"}})
 	require.NoError(t, err)
 	for range 10 {
 		jobs, err := s.ClaimDeliveries(ctx, 1, time.Now().UTC())
@@ -107,7 +108,7 @@ func TestDeliveryStatisticsExposePausedAndTerminalWork(t *testing.T) {
 	ctx := context.Background()
 	s, _ := testStore(t)
 	d := device(t, s, "a")
-	_, err := s.AppendEvent(ctx, d.ConnectionID, event("stats", ""), []WebhookTarget{{URL: "https://one.test"}, {URL: "https://two.test"}, {URL: "https://three.test"}})
+	_, err := s.AppendEvent(ctx, d.ConnectionID, event("stats", ""), []domains.WebhookTarget{{URL: "https://one.test"}, {URL: "https://two.test"}, {URL: "https://three.test"}})
 	require.NoError(t, err)
 	jobs, err := s.ClaimDeliveries(ctx, 3, time.Now().UTC())
 	require.NoError(t, err)

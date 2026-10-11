@@ -34,7 +34,7 @@ type workerMetrics struct {
 	values Metrics
 }
 
-func (s *Service) WorkerMetrics() Metrics {
+func (s *serviceRuntime) WorkerMetrics() Metrics {
 	s.metrics.mu.Lock()
 	defer s.metrics.mu.Unlock()
 	value := s.metrics.values
@@ -64,7 +64,7 @@ func observeBuckets(buckets *map[string]uint64, seconds float64) {
 	}
 	(*buckets)["+Inf"]++
 }
-func (s *Service) observeSend(start time.Time, unknown bool) {
+func (s *serviceRuntime) observeSend(start time.Time, unknown bool) {
 	s.metrics.mu.Lock()
 	defer s.metrics.mu.Unlock()
 	m := &s.metrics.values
@@ -76,7 +76,7 @@ func (s *Service) observeSend(start time.Time, unknown bool) {
 	m.SendDurationSeconds += seconds
 	observeBuckets(&m.SendDurationBuckets, seconds)
 }
-func (s *Service) observeWebhook(start time.Time, failed bool) {
+func (s *serviceRuntime) observeWebhook(start time.Time, failed bool) {
 	s.metrics.mu.Lock()
 	defer s.metrics.mu.Unlock()
 	m := &s.metrics.values
@@ -89,7 +89,7 @@ func (s *Service) observeWebhook(start time.Time, failed bool) {
 	observeBuckets(&m.WebhookDurationBuckets, seconds)
 }
 
-func (s *Service) busyWorker(kind string) func() {
+func (s *serviceRuntime) busyWorker(kind string) func() {
 	change := func(delta int) {
 		s.metrics.mu.Lock()
 		defer s.metrics.mu.Unlock()
@@ -106,7 +106,7 @@ func (s *Service) busyWorker(kind string) func() {
 	return func() { change(-1) }
 }
 
-func (s *Service) observeReconnect(start time.Time, failed bool) {
+func (s *serviceRuntime) observeReconnect(start time.Time, failed bool) {
 	s.metrics.mu.Lock()
 	defer s.metrics.mu.Unlock()
 	m := &s.metrics.values
@@ -118,7 +118,7 @@ func (s *Service) observeReconnect(start time.Time, failed bool) {
 	m.ReconnectDurationSeconds += seconds
 	observeBuckets(&m.ReconnectDurationBuckets, seconds)
 }
-func (s *Service) workerError(err error) {
+func (s *serviceRuntime) workerError(err error) {
 	if err == nil {
 		return
 	}

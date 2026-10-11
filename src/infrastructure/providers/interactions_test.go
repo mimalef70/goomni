@@ -2,12 +2,13 @@ package providers_test
 
 import (
 	"encoding/json"
+	"testing"
+
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-	"github.com/mimalef70/goomni/src/internal/eitaameow"
-	"github.com/mimalef70/goomni/src/internal/rubikameow"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/eitaa"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/rubika"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestInteractionPresetsPassTheAdvertisedPublicContract(t *testing.T) {
@@ -16,8 +17,8 @@ func TestInteractionPresetsPassTheAdvertisedPublicContract(t *testing.T) {
 		peer domains.Peer
 	}{
 		{bale.Contract{}, domains.Peer{Type: "user", ID: "7"}},
-		{eitaameow.Contract{}, domains.Peer{Type: "user", ID: "7"}},
-		{rubikameow.Contract{}, domains.Peer{Type: "user", ID: "u0synthetic"}},
+		{eitaa.Contract{}, domains.Peer{Type: "user", ID: "7"}},
+		{rubika.Contract{}, domains.Peer{Type: "user", ID: "u0synthetic"}},
 	} {
 		t.Run(string(tc.c.Descriptor().ID), func(t *testing.T) {
 			interactions := tc.c.Descriptor().Interactions
@@ -52,14 +53,14 @@ func TestInteractionPresetsPassTheAdvertisedPublicContract(t *testing.T) {
 		})
 	}
 	// No stop/online or receipt event is invented for Rubika's chat state.
-	r := (rubikameow.Contract{}).Descriptor().Interactions
+	r := (rubika.Contract{}).Descriptor().Interactions
 	require.Nil(t, r.TypingStop)
 	require.Nil(t, r.Online)
 	require.Nil(t, r.Offline)
 	require.False(t, r.ReadEvents)
 	require.False(t, r.DeliveredEvents)
 	require.True(t, r.PartialEdits)
-	e := (eitaameow.Contract{}).Descriptor().Interactions
+	e := (eitaa.Contract{}).Descriptor().Interactions
 	require.Nil(t, e.Typing)
 	require.Nil(t, e.TypingStop)
 	require.Nil(t, e.Online)

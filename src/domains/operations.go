@@ -2,24 +2,15 @@ package domains
 
 import (
 	"bytes"
-	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 )
-
-// Operation contracts are shared by admission, discovery and OpenAPI generation.
-// Adding a contract does not permit arbitrary RPC names or raw provider payloads.
-//
-//go:embed operation_catalog.json
-var operationCatalog []byte
 
 type FieldSchema struct {
 	Type                 string                 `json:"type"`
@@ -40,120 +31,15 @@ type FieldSchema struct {
 	AdditionalProperties bool                   `json:"additionalProperties"`
 }
 type OperationContract struct {
-	Operation    string      `json:"operation"`
-	Method       string      `json:"method"`
-	Path         string      `json:"path"`
-	Mode         string      `json:"mode"` // read, mutation or ephemeral
-	Description  string      `json:"description"`
-	Verification string      `json:"verification"`
-	Schedulable  bool        `json:"schedulable"`
-	Request      FieldSchema `json:"request"`
-}
-
-var operationContracts = func() map[string]OperationContract {
-	var list []OperationContract
-	if err := json.Unmarshal(operationCatalog, &list); err != nil {
-		panic(err)
-	}
-	m := make(map[string]OperationContract, len(list))
-	for _, c := range list {
-		if c.Operation == "" || c.Request.Type != "object" || (c.Mode != "read" && c.Mode != "mutation" && c.Mode != "ephemeral") {
-			panic("invalid operation catalog entry")
-		}
-		if _, ok := m[c.Operation]; ok {
-			panic("duplicate operation contract")
-		}
-		m[c.Operation] = c
-	}
-	return m
-}()
-
-func OperationDefinition(name string) (OperationContract, bool) {
-	c, ok := operationContracts[name]
-	return c, ok
-}
-func OperationDefinitions() []OperationContract {
-	list := make([]OperationContract, 0, len(operationContracts))
-	for _, c := range operationContracts {
-		list = append(list, c)
-	}
-	sort.Slice(list, func(i, j int) bool { return list[i].Operation < list[j].Operation })
-	return list
-}
-func IsExtendedMutation(name string) bool {
-	c, ok := operationContracts[name]
-	return ok && c.Mode == "mutation"
-}
-
-// NormalizeOperation rejects unknown/nested private fields before durable enqueue.
-// IDs remain strings, including integers above JavaScript's exact range.
-func NormalizeOperation(name string, raw json.RawMessage) (json.RawMessage, Peer, error) {
-	c, ok := operationContracts[name]
-	if !ok {
-		return nil, Peer{}, Unsupported(name)
-	}
-	if len(raw) == 0 {
-		raw = json.RawMessage(`{}`)
-	}
-	if len(raw) > 128<<10 || !utf8.Valid(raw) {
-		return nil, Peer{}, E("INVALID_REQUEST", "operation body must be UTF-8 JSON up to 128 KiB", 400)
-	}
-	d := json.NewDecoder(bytes.NewReader(raw))
-	d.UseNumber()
-	var value any
-	if err := decodeUniqueJSON(d, &value, 0); err != nil {
-		return nil, Peer{}, E("INVALID_REQUEST", "operation body must contain one JSON object without duplicate fields", 400)
-	}
-	if _, err := d.Token(); err != io.EOF {
-		return nil, Peer{}, E("INVALID_REQUEST", "operation body must contain one JSON object", 400)
-	}
-	if err := validateField(c.Request, value, "body", 0); err != nil {
-		return nil, Peer{}, E("INVALID_REQUEST", err.Error(), 400)
-	}
-	fields := value.(map[string]any)
-	if name == "account.settings.set" {
-		key, _ := fields["key"].(string)
-		for _, term := range []string{"password", "token", "secret", "credential", "cookie", "auth", "access_hash", "api_key"} {
-			if strings.Contains(strings.ToLower(key), term) {
-				return nil, Peer{}, E("INVALID_REQUEST", "sensitive authentication settings are not accepted by this endpoint", 400)
-			}
-		}
-	}
-	if name == "group.permissions.set" || name == "group.default_permissions.set" {
-		permissions := fields["permissions"].(map[string]any)
-		if len(permissions) == 0 {
-			return nil, Peer{}, E("INVALID_REQUEST", "permission patch must not be empty", 400)
-		}
-		if fields["mode"] == "replace" && len(permissions) != 20 {
-			return nil, Peer{}, E("INVALID_REQUEST", "permission replacement requires all 20 explicit booleans", 400)
-		}
-	}
-	if name == "story.add" {
-		_, text := fields["text"]
-		_, media := fields["media_id"]
-		if text == media {
-			return nil, Peer{}, E("INVALID_REQUEST", "provide exactly one of text or media_id", 400)
-		}
-	}
-	if name == "report.story" {
-		seen := map[string]bool{}
-		for _, value := range fields["story_ids"].([]any) {
-			id := value.(string)
-			if len(id) > 512 || strings.TrimSpace(id) == "" || strings.IndexFunc(id, unicode.IsControl) >= 0 || seen[id] {
-				return nil, Peer{}, E("INVALID_REQUEST", "story_ids requires distinct opaque IDs of at most 512 bytes without control characters", 400)
-			}
-			seen[id] = true
-		}
-	}
-	encoded, err := json.Marshal(value)
-	if err != nil {
-		return nil, Peer{}, err
-	}
-	var p struct {
-		Peer Peer `json:"peer"`
-	}
-	_ = json.Unmarshal(encoded, &p)
-	return encoded, p.Peer, nil
+	Operation    string             `json:"operation"`
+	Method       string             `json:"method"`
+	Path         string             `json:"path"`
+	Mode         string             `json:"mode"` // read, mutation or ephemeral
+	Description  string             `json:"description"`
+	Verification string             `json:"verification"`
+	Evidence     CapabilityEvidence `json:"evidence"`
+	Schedulable  bool               `json:"schedulable"`
+	Request      FieldSchema        `json:"request"`
 }
 
 func ValidateJSONObject(raw []byte) error {

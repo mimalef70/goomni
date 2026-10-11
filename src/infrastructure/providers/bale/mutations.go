@@ -3,11 +3,13 @@ package bale
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
 	"io"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/balemeow/catalog"
 )
 
 type mutationPayload struct {
@@ -28,8 +30,8 @@ type mutationPayload struct {
 }
 
 func NormalizeMutation(operation string, payload json.RawMessage) (json.RawMessage, domains.Peer, error) {
-	if domains.IsExtendedMutation(operation) {
-		return domains.NormalizeOperation(operation, payload)
+	if catalog.IsExtendedMutation(operation) {
+		return catalog.NormalizeOperation(operation, payload)
 	}
 	invalid := func(message string) (json.RawMessage, domains.Peer, error) {
 		return nil, domains.Peer{}, domains.E("INVALID_REQUEST", message, 400)

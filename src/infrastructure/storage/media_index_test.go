@@ -2,9 +2,10 @@ package storage
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Cleanup must find both current relative and legacy absolute registrations

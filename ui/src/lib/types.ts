@@ -1,3 +1,10 @@
+export type CapabilityEvidence = {
+  level: 'unavailable' | 'offline_only' | 'live_response' | 'live_scoped' | 'live_failed'
+  date?: string
+  scope: string
+  references: string[]
+  limitations: string[]
+}
 export type ProviderID = 'bale' | 'eitaa' | 'rubika'
 export type ProviderSend = {
   kinds: Array<'text' | 'file' | 'image' | 'audio' | 'voice' | 'video'>
@@ -6,6 +13,7 @@ export type ProviderSend = {
   mentions_supported: boolean
   max_mentions: number
   reply_supported: boolean
+  evidence: Record<string, CapabilityEvidence>
   media_format_notes: { voice?: string; audio?: string; video?: string }
 }
 export type OperationPreset = { operation: string; parameters: Record<string, unknown> }
@@ -28,6 +36,7 @@ export type Provider = {
   name: string
   enabled: boolean
   verification: string
+  evidence: CapabilityEvidence
   delivery_methods: string[]
   send: ProviderSend
   interactions: ProviderInteractions
@@ -49,8 +58,8 @@ export type ConnectionStatus = {
   transport: string
   recovery: string
   last_error?: string
- recovery_issue?: string
- unsupported_updates_observed?: boolean
+  recovery_issue?: string
+  unsupported_updates_observed?: boolean
 }
 export type RoutingRule = {
   source: 'device' | 'global'
@@ -98,8 +107,8 @@ export type Delivery = {
   attempts: number
   next_attempt_at: string
   last_error?: string
- recovery_issue?: string
- unsupported_updates_observed?: boolean
+  recovery_issue?: string
+  unsupported_updates_observed?: boolean
   created_at: string
   payload?: unknown
 }

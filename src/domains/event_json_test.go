@@ -2,9 +2,10 @@ package domains
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 // A consumer can apply every provider's reviewed edit using the same target and

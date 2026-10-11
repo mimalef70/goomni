@@ -57,7 +57,7 @@ func TestObservedGroupAdminMethodsUseScopedPeers(t *testing.T) {
 }
 func TestGroupAdminRejectsUserAndMissingToggle(t *testing.T) {
 	for _, raw := range []string{`{"peer":{"type":"user","id":"42"},"enabled":true}`, `{"peer":{"type":"channel","id":"91"}}`} {
-		if _, _, err := (Contract{}).NormalizeOperation("group.signatures", json.RawMessage(raw)); err == nil {
+		if _, _, err := (protocolRules{}).NormalizeOperation("group.signatures", json.RawMessage(raw)); err == nil {
 			t.Fatal("invalid group administration accepted")
 		}
 	}

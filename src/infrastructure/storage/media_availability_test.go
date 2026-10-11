@@ -73,8 +73,8 @@ func TestLateMediaEventPublishesTruthfulAvailabilityAtomically(t *testing.T) {
 			late := documentEvent("old-original", 1000, &original)
 			late.Payload = json.RawMessage(`{"kind":"template","content":{"kind":"document","file_id":"777","name":"sample.jpg","download_supported":false},"quoted_message":{"content":{"kind":"document","file_id":"other","download_supported":false}},"template_id":"9223372036854775807"}`)
 			late.Message = &domains.Message{ID: "123", Media: &domains.MessageMedia{FileID: "777", Name: "sample.jpg"}}
-			target := WebhookTarget{URL: "https://example.test/events", Secret: "synthetic"}
-			inserted, err := s.AppendEvent(ctx, d.ConnectionID, late, []WebhookTarget{target})
+			target := domains.WebhookTarget{URL: "https://example.test/events", Secret: "synthetic"}
+			inserted, err := s.AppendEvent(ctx, d.ConnectionID, late, []domains.WebhookTarget{target})
 			require.NoError(t, err)
 			require.True(t, inserted)
 			require.False(t, late.Message.Media.DownloadSupported, "normalization must not mutate caller-owned pointers")
@@ -106,7 +106,7 @@ func TestLateMediaEventPublishesTruthfulAvailabilityAtomically(t *testing.T) {
 			cp, err := s.Checkpoint(ctx, d.ConnectionID)
 			require.NoError(t, err)
 			require.Equal(t, late.Checkpoint, cp)
-			replays, err := s.ReplayDelivery(ctx, d.ConnectionID, deliveries[0].ID, []WebhookTarget{target})
+			replays, err := s.ReplayDelivery(ctx, d.ConnectionID, deliveries[0].ID, []domains.WebhookTarget{target})
 			require.NoError(t, err)
 			require.Equal(t, deliveries[0].Body, replays[0].Body)
 			// A duplicate never changes its durable availability or checkpoint.

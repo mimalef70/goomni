@@ -163,7 +163,7 @@ func TestModerationUnsafeRequestsRejectedBeforeProvider(t *testing.T) {
 		{"group.discussion.read", `{"peer":{"type":"channel","id":"91"},"message_id":"12","read_max_id":"2147483648"}`},
 	}
 	for _, tt := range cases {
-		if _, _, err := (Contract{}).NormalizeOperation(tt.name, json.RawMessage(tt.body)); err == nil {
+		if _, _, err := (protocolRules{}).NormalizeOperation(tt.name, json.RawMessage(tt.body)); err == nil {
 			t.Fatalf("unsafe request admitted %s %s", tt.name, tt.body)
 		}
 	}

@@ -4,18 +4,19 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mimalef70/goomni/src/infrastructure/providers/eitaa"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/rubika"
+
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-	"github.com/mimalef70/goomni/src/internal/eitaameow"
-	"github.com/mimalef70/goomni/src/internal/rubikameow"
 )
 
 func TestProviderCatalogsHaveFiniteCompleteContracts(t *testing.T) {
-	for _, c := range []domains.ProviderContract{bale.Contract{}, eitaameow.Contract{}, rubikameow.Contract{}} {
+	for _, c := range []domains.ProviderContract{bale.Contract{}, eitaa.Contract{}, rubika.Contract{}} {
 		t.Run(string(c.Descriptor().ID), func(t *testing.T) {
 			seen := map[string]bool{}
 			for _, op := range c.Operations() {
-				if seen[op.Operation] || op.Operation == "" || op.Request.Type != "object" || op.Description == "" || op.Verification == "" {
+				if seen[op.Operation] || op.Operation == "" || op.Request.Type != "object" || op.Description == "" || op.Verification == "" || op.Evidence.Level == "" || op.Evidence.Scope == "" || len(op.Evidence.References) == 0 {
 					t.Fatalf("incomplete or repeated operation %q", op.Operation)
 				}
 				seen[op.Operation] = true

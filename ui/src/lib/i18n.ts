@@ -7,6 +7,7 @@ const en = {
   chooseProvider: 'Choose a messenger',
   providerImmutable: 'The messenger cannot change after this connection is created.',
   providerUnavailable: 'Disabled on this server',
+  verificationEvidence: 'Evidence and limitations',
   providers: 'Messenger availability',
   available: 'Available',
   providerName: { bale: 'Bale', eitaa: 'Eitaa', rubika: 'Rubika' },
@@ -135,11 +136,19 @@ const en = {
   excludeSenders: 'Exclude sender IDs',
   senderFilterHint:
     'One sender ID per line, up to 100 unique entries. Use sender IDs returned by the gateway. Bale and Eitaa sender IDs are positive integers without leading zeros; Eitaa channel_ group IDs are not sender IDs.',
-  unsupportedUpdatesWarning: 'Some updates contain unsupported types or content. This is separate from an expired recovery state; inspect the durable event history.',
-  legacyRecoveryWarning: 'A previous build recorded an unclassified recovery warning. Its cause cannot be reconstructed; it is not proof of missing messages.',
+  unsupportedUpdatesWarning:
+    'Some updates contain unsupported types or content. This is separate from an expired recovery state; inspect the durable event history.',
+  legacyRecoveryWarning:
+    'A previous build recorded an unclassified recovery warning. Its cause cannot be reconstructed; it is not proof of missing messages.',
   peerTypes: 'Peer types',
   directions: 'Event direction',
-  filterPeer: { user: 'Users', group: 'Groups', channel: 'Channels', bot: 'Bots', service: 'Services' },
+  filterPeer: {
+    user: 'Users',
+    group: 'Groups',
+    channel: 'Channels',
+    bot: 'Bots',
+    service: 'Services',
+  },
   filterDirection: { incoming: 'Incoming', outgoing: 'Outgoing', unknown: 'Unknown direction' },
   unknownDirectionHint:
     'Select Unknown direction to include events whose direction could not be established. Leaving every direction unchecked allows all directions.',
@@ -256,6 +265,7 @@ const fa: typeof en = {
   chooseProvider: 'پیام‌رسان را انتخاب کنید',
   providerImmutable: 'پیام‌رسان این اتصال پس از ساخت قابل تغییر نیست.',
   providerUnavailable: 'در این سرور غیرفعال است',
+  verificationEvidence: 'شواهد و محدودیت‌ها',
   providers: 'وضعیت پیام‌رسان‌ها',
   available: 'در دسترس',
   providerName: { bale: 'بله', eitaa: 'ایتا', rubika: 'روبیکا' },
@@ -384,11 +394,19 @@ const fa: typeof en = {
   excludeSenders: 'شناسهٔ فرستندگان مستثنا',
   senderFilterHint:
     'در هر خط یک شناسهٔ فرستنده؛ حداکثر ۱۰۰ مقدار یکتا. برای بله و ایتا عدد صحیح مثبت و بدون صفر ابتدایی لازم است؛ شناسهٔ گروه ایتا با پیشوند channel_ شناسهٔ فرستنده نیست.',
-  unsupportedUpdatesWarning: 'بعضی رویدادها نوع یا محتوای پشتیبانی‌نشده دارند. این وضعیت از منقضی‌شدن state بازیابی جداست؛ جزئیات در تاریخچهٔ رویدادها ثبت می‌شود.',
-  legacyRecoveryWarning: 'نسخهٔ قبلی هشداری با علت نامشخص ثبت کرده است. علت آن قابل بازسازی نیست و به‌تنهایی گم‌شدن پیام را ثابت نمی‌کند.',
+  unsupportedUpdatesWarning:
+    'بعضی رویدادها نوع یا محتوای پشتیبانی‌نشده دارند. این وضعیت از منقضی‌شدن state بازیابی جداست؛ جزئیات در تاریخچهٔ رویدادها ثبت می‌شود.',
+  legacyRecoveryWarning:
+    'نسخهٔ قبلی هشداری با علت نامشخص ثبت کرده است. علت آن قابل بازسازی نیست و به‌تنهایی گم‌شدن پیام را ثابت نمی‌کند.',
   peerTypes: 'نوع مخاطب',
   directions: 'جهت رویداد',
-  filterPeer: { user: 'کاربران', group: 'گروه‌ها', channel: 'کانال‌ها', bot: 'بات‌ها', service: 'سرویس‌ها' },
+  filterPeer: {
+    user: 'کاربران',
+    group: 'گروه‌ها',
+    channel: 'کانال‌ها',
+    bot: 'بات‌ها',
+    service: 'سرویس‌ها',
+  },
   filterDirection: { incoming: 'ورودی', outgoing: 'خروجی', unknown: 'جهت نامشخص' },
   unknownDirectionHint:
     'برای دریافت رویدادهایی که جهتشان مشخص نشده، «جهت نامشخص» را انتخاب کنید. انتخاب نکردن هیچ جهت یعنی پذیرش همهٔ جهت‌ها.',

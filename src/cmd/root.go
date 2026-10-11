@@ -18,7 +18,10 @@ import (
 	"github.com/mimalef70/goomni/src/config"
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/mediafile"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/eitaa"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/rubika"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/infrastructure/workpool"
 	"github.com/mimalef70/goomni/src/internal/balemeow"
@@ -118,7 +121,7 @@ func run(parent context.Context, cfg config.Settings) error {
 
 	ctx, stop := signal.NotifyContext(parent, os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	st, e := storage.Open(cfg.Database, cfg.MasterKey)
+	st, e := storage.Open(cfg.Database, cfg.MasterKey, providers.Contracts())
 	if e != nil {
 		return e
 	}
@@ -153,9 +156,9 @@ func run(parent context.Context, cfg config.Settings) error {
 		<-mediaDone
 		_ = mediaManager.Close()
 	}()
-	targets := make([]storage.WebhookTarget, 0, len(cfg.Webhooks))
+	targets := make([]domains.WebhookTarget, 0, len(cfg.Webhooks))
 	for _, u := range cfg.Webhooks {
-		targets = append(targets, storage.WebhookTarget{URL: u, Secret: cfg.WebhookSecret})
+		targets = append(targets, domains.WebhookTarget{URL: u, Secret: cfg.WebhookSecret})
 	}
 	mediaPool := workpool.New(cfg.MediaWorkers)
 	pollPool := workpool.New(4)
@@ -234,12 +237,12 @@ func run(parent context.Context, cfg config.Settings) error {
 		}
 		return native
 	}
-	registry, err := domains.NewProviderRegistry(domains.ProviderRegistration{Contract: bale.Contract{}, Factory: factory}, domains.ProviderRegistration{Contract: eitaameow.Contract{Enabled: cfg.EitaaEnabled}, Factory: eitaaFactory}, domains.ProviderRegistration{Contract: rubikameow.Contract{Enabled: cfg.RubikaEnabled}, Factory: rubikaFactory})
+	registry, err := domains.NewProviderRegistry(domains.ProviderRegistration{Contract: bale.Contract{}, Factory: factory}, domains.ProviderRegistration{Contract: eitaa.Contract{Enabled: cfg.EitaaEnabled}, Factory: eitaaFactory}, domains.ProviderRegistration{Contract: rubika.Contract{Enabled: cfg.RubikaEnabled}, Factory: rubikaFactory})
 	if err != nil {
 		return err
 	}
 
-	service := usecase.New(st, usecase.Options{Providers: registry, GlobalWebhooks: targets, MergeGlobal: cfg.WebhookMergeGlobal, SendTimeout: 2 * time.Minute, SendWorkers: cfg.SendWorkers, WebhookWorkers: cfg.WebhookWorkers, ReconnectWorkers: cfg.ReconnectWorkers, QueueLimit: cfg.QueueLimit, ConnectionQueueLimit: cfg.ConnectionQueueLimit}, factory)
+	service := usecase.New(st, usecase.Options{Providers: registry, GlobalWebhooks: targets, MergeGlobal: cfg.WebhookMergeGlobal, SendTimeout: 2 * time.Minute, SendWorkers: cfg.SendWorkers, WebhookWorkers: cfg.WebhookWorkers, ReconnectWorkers: cfg.ReconnectWorkers, QueueLimit: cfg.QueueLimit, ConnectionQueueLimit: cfg.ConnectionQueueLimit})
 	if e = service.Start(ctx); e != nil {
 		return e
 	}

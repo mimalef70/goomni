@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 	"time"
@@ -10,126 +9,7 @@ import (
 	"github.com/mimalef70/goomni/src/validations"
 )
 
-func (s *Service) CreateSchedule(ctx context.Context, id string, request domains.SendRequest) (domains.Schedule, error) {
-	return s.CreateScheduleIdempotent(ctx, id, request, "")
-}
-
-func (s *Service) CreateScheduleIdempotent(ctx context.Context, id string, request domains.SendRequest, key string) (domains.Schedule, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.Schedule{}, err
-	}
-	if len(key) > 256 {
-		return domains.Schedule{}, domains.E("INVALID_IDEMPOTENCY_KEY", "idempotency key exceeds 256 bytes", 400)
-	}
-	if request.Operation != "" || len(request.Payload) > 0 || request.Kind == "operation" {
-		// Only reviewed message producers may recur. Administrative operations,
-		// stories and financial actions are never admitted by this scheduler.
-		contract, err := s.provider(d.Provider)
-		if err != nil {
-			return domains.Schedule{}, err
-		}
-		definition, exists := operationDefinition(contract, request.Operation)
-		if !exists {
-			return domains.Schedule{}, domains.Unsupported(request.Operation)
-		}
-		if !definition.Schedulable || definition.Mode != "mutation" {
-			return domains.Schedule{}, domains.E("INVALID_REQUEST", "this operation cannot be scheduled", 400)
-		}
-		if (request.Kind != "" && request.Kind != "operation") || request.Phone != "" || request.Text != "" || request.ReplyMessageID != "" || request.MediaID != "" || len(request.Mentions) > 0 {
-			return domains.Schedule{}, domains.E("INVALID_REQUEST", "scheduled operations take message fields inside payload", 400)
-		}
-		normalized, peer, err := s.normalizeMutation(d, request.Operation, request.Payload)
-		if err != nil {
-			return domains.Schedule{}, err
-		}
-		if (request.Peer.ID != "" || request.Peer.Type != "") && request.Peer != peer {
-			return domains.Schedule{}, domains.E("INVALID_REQUEST", "conflicting scheduled operation destinations", 400)
-		}
-		request.Kind, request.Peer, request.Payload = "operation", peer, normalized
-	} else if err := s.validateSend(d, request); err != nil {
-		return domains.Schedule{}, err
-	}
-	if !request.IsScheduled() {
-		return domains.Schedule{}, domains.E("INVALID_SCHEDULE", "scheduled_at is required", 400)
-	}
-	if request.RequestID != "" {
-		return domains.Schedule{}, domains.E("INVALID_REQUEST", "request_id is assigned by the gateway", 400)
-	}
-	if request.Kind == "" {
-		request.Kind = "text"
-	}
-	if key != "" {
-		// A retry can arrive after scheduled_at or completion. Existing matching
-		// work wins before new-schedule time and media availability checks.
-		previous, found, err := s.store.LookupScheduleIdempotent(ctx, d.ConnectionID, request, key)
-		if err != nil || found {
-			return previous, err
-		}
-	}
-	// Historical accepted requests keep their original hash and calendar data.
-	// New requests use the single current public spelling for one-time sends.
-	if strings.EqualFold(strings.TrimSpace(request.Recurrence), "once") {
-		return domains.Schedule{}, domains.E("INVALID_SCHEDULE", "use recurrence none for a one-time send", 400)
-	}
-	spec, err := validations.ParseScheduleOptions(request.ScheduleOptions, time.Now().UTC())
-	if err != nil {
-		return domains.Schedule{}, domains.E("INVALID_SCHEDULE", err.Error(), 400)
-	}
-	if request.MediaID != "" {
-		if _, err = s.store.GetMedia(ctx, d.ConnectionID, request.MediaID); err != nil {
-			return domains.Schedule{}, err
-		}
-	}
-	return s.store.CreateScheduleIdempotent(ctx, d.ConnectionID, request, spec.ScheduledAt, key)
-}
-func (s *Service) ListSchedules(ctx context.Context, id string, limit, offset int) ([]domains.Schedule, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	limit, offset = page(limit, offset)
-	return s.store.ListSchedules(ctx, d.ConnectionID, limit, offset)
-}
-func (s *Service) GetSchedule(ctx context.Context, id, scheduleID string) (domains.Schedule, error) {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return domains.Schedule{}, err
-	}
-	return s.store.GetSchedule(ctx, d.ConnectionID, scheduleID)
-}
-func (s *Service) ScheduleAction(ctx context.Context, id, scheduleID, action string) error {
-	d, err := s.ResolveDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	job, err := s.store.GetSchedule(ctx, d.ConnectionID, scheduleID)
-	if err != nil {
-		return err
-	}
-	var target string
-	switch strings.ToLower(action) {
-	case "pause":
-		if job.State != "active" {
-			return domains.E("INVALID_SCHEDULE_STATE", "only active schedules can be paused", 409)
-		}
-		target = "paused"
-	case "resume":
-		if job.State != "paused" {
-			return domains.E("INVALID_SCHEDULE_STATE", "only paused schedules can be resumed", 409)
-		}
-		target = "active"
-	case "cancel":
-		if job.State != "active" && job.State != "paused" {
-			return domains.E("INVALID_SCHEDULE_STATE", "schedule is already terminal", 409)
-		}
-		target = "cancelled"
-	default:
-		return domains.E("INVALID_SCHEDULE_ACTION", "action must be pause, resume or cancel", 400)
-	}
-	return s.store.SetScheduleState(ctx, d.ConnectionID, scheduleID, target)
-}
-func (s *Service) scheduleLoop() {
+func (s *serviceRuntime) scheduleLoop() {
 	defer s.wg.Done()
 	var cursor scheduleCursor
 	for s.ctx.Err() == nil {
@@ -150,14 +30,14 @@ type scheduleCursor struct {
 // One poll attempts at most 100 occurrences. Progress is independent of queue
 // admission, and a wrap performs at most one additional bounded read. This is
 // transient scheduler state: restarting safely starts again from the oldest row.
-func (s *Service) materializeDueSchedules(at time.Time, cursor scheduleCursor) (scheduleCursor, error) {
+func (s *serviceRuntime) materializeDueSchedules(at time.Time, cursor scheduleCursor) (scheduleCursor, error) {
 	const batchSize = 100
-	jobs, err := s.store.DueSchedules(s.ctx, at, batchSize, cursor.nextAt, cursor.id)
+	jobs, err := s.scheduleStore.DueSchedules(s.ctx, at, batchSize, cursor.nextAt, cursor.id)
 	if err != nil {
 		return cursor, err
 	}
 	if len(jobs) == 0 && cursor.id != "" {
-		jobs, err = s.store.DueSchedules(s.ctx, at, batchSize, time.Time{}, "")
+		jobs, err = s.scheduleStore.DueSchedules(s.ctx, at, batchSize, time.Time{}, "")
 		if err != nil {
 			return cursor, err
 		}
@@ -175,25 +55,25 @@ func (s *Service) materializeDueSchedules(at time.Time, cursor scheduleCursor) (
 	return cursor, nil
 }
 
-func (s *Service) materializeSchedule(job domains.Schedule) {
+func (s *serviceRuntime) materializeSchedule(job domains.Schedule) {
 	// Match creation-time parsing, including schedules already persisted with
 	// surrounding whitespace. Keep the stored request unchanged: its original
 	// representation is part of the existing idempotency contract.
 	start, err := time.Parse(time.RFC3339, strings.TrimSpace(job.Request.ScheduledAt))
 	if err != nil {
-		_ = s.store.SetScheduleState(s.ctx, job.ConnectionID, job.ID, "failed")
+		_ = s.scheduleStore.SetScheduleState(s.ctx, job.ConnectionID, job.ID, "failed")
 		return
 	}
 	// Validation uses the original creation-time boundary; later occurrences can
 	// legitimately be processed after the original scheduled_at.
 	spec, err := validations.ParseScheduleOptions(job.Request.ScheduleOptions, start.Add(-time.Nanosecond))
 	if err != nil {
-		_ = s.store.SetScheduleState(s.ctx, job.ConnectionID, job.ID, "failed")
+		_ = s.scheduleStore.SetScheduleState(s.ctx, job.ConnectionID, job.ID, "failed")
 		return
 	}
 	now := time.Now().UTC()
 	if (spec.EndAt != nil && now.After(*spec.EndAt)) || (spec.OccurrenceLimit > 0 && job.Count >= spec.OccurrenceLimit) {
-		_ = s.store.SetScheduleState(s.ctx, job.ConnectionID, job.ID, "completed")
+		_ = s.scheduleStore.SetScheduleState(s.ctx, job.ConnectionID, job.ID, "completed")
 		return
 	}
 	var next *time.Time
@@ -208,7 +88,7 @@ func (s *Service) materializeSchedule(job domains.Schedule) {
 	}
 	// Storage atomically enqueues an occurrence with an authoritative occurrence record and
 	// advances this schedule. A restart between these actions cannot duplicate it.
-	_, err = s.store.MaterializeSchedule(s.ctx, job.ConnectionID, job.ID, job.NextAt, next, s.admissionLimits())
+	_, err = s.scheduleStore.MaterializeSchedule(s.ctx, job.ConnectionID, job.ID, job.NextAt, next, s.admissionLimits())
 	s.workerError(err)
 }
 func eventTypeFromBody(body json.RawMessage) string {

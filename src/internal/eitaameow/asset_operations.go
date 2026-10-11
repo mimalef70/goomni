@@ -12,7 +12,7 @@ import (
 func assetOperations() []domains.OperationContract {
 	result := []domains.OperationContract{}
 	add := func(name, mode string, p map[string]domains.FieldSchema, required ...string) {
-		result = append(result, domains.OperationContract{Operation: name, Mode: mode, Path: "/operations/" + name, Method: "POST", Description: "Eitaa " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: p, Required: required}})
+		result = append(result, domains.OperationContract{Operation: name, Mode: mode, Description: "Eitaa " + name, Request: domains.FieldSchema{Type: "object", Properties: p, Required: required}})
 	}
 	add("account.avatars", "read", map[string]domains.FieldSchema{"offset": boundedInt(0, 100000), "limit": boundedInt(1, 100)})
 	add("account.avatar.remove", "mutation", map[string]domains.FieldSchema{"photo_id": {Type: "string", MinLength: 1, MaxLength: 20, Pattern: "^-?[1-9][0-9]*$"}}, "photo_id")

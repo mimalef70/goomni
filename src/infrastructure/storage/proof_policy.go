@@ -1,17 +1,30 @@
 package storage
 
-import (
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
-)
+import "github.com/mimalef70/goomni/src/domains"
 
-// Policies contain no persistence or provider calls. The storage transaction
-// supplies the original durable event and request, never a changed duplicate.
-type proofPolicy func(string, domains.Event, domains.SendRequest) bool
-
-func acceptancePolicy(provider domains.Provider, kind string) proofPolicy {
-	if provider == domains.ProviderBale && kind == domains.BaleMessageEchoProof {
-		return bale.OwnMessageProof
+func (s *Store) acceptancePolicy(provider domains.Provider, kind string) *domains.AcceptancePolicy {
+	r, err := s.providers.Get(provider)
+	if err != nil {
+		return nil
 	}
-	return nil
+	c, ok := r.Contract.(domains.AcceptanceContract)
+	if !ok {
+		return nil
+	}
+	p := c.AcceptancePolicy()
+	if p.Kind == "" || p.RequestID == nil || p.Verify == nil || (kind != "" && p.Kind != kind) {
+		return nil
+	}
+	return &p
+}
+func (s *Store) mediaContract(provider domains.Provider) (domains.PrivateMediaContract, error) {
+	r, err := s.providers.Get(provider)
+	if err != nil {
+		return nil, err
+	}
+	c, ok := r.Contract.(domains.PrivateMediaContract)
+	if !ok {
+		return nil, domains.E("INVALID_PROVIDER_MEDIA", "provider has no reviewed private media policy", 502)
+	}
+	return c, nil
 }

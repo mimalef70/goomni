@@ -90,7 +90,7 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 	if sink == nil || c.cfg.LoadCheckpoint == nil {
 		return domains.E("BATCH_SINK_REQUIRED", "Eitaa requires durable update callbacks", 500)
 	}
-	if err := (Contract{}).ValidateSession(s); err != nil {
+	if err := (protocolRules{}).ValidateSession(s); err != nil {
 		return err
 	}
 	if err := c.Disconnect(ctx); err != nil {

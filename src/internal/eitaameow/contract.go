@@ -11,24 +11,21 @@ import (
 	"github.com/mimalef70/goomni/src/domains"
 )
 
-// Contract advertises only operations implemented by this adapter. The schema
+// protocolRules advertises only operations implemented by this adapter. The schema
 // catalog deliberately remains larger than the gateway capability set.
-type Contract struct{ Enabled bool }
+type protocolRules struct{}
 
-func (c Contract) Descriptor() domains.ProviderDescriptor {
-	return domains.ProviderDescriptor{ID: domains.ProviderEitaa, Name: "Eitaa", Enabled: c.Enabled, Verification: "offline; live-unverified", Interactions: domains.ProviderInteractions{ReadOperation: "message.read", ReadArgument: "message_id", ReceiptModel: "message_id_watermark", ReadEvents: true, SenderNames: "unavailable", AvatarDownload: true}, DeliveryMethods: []string{"sms", "call", "flash_call", "app"}, Send: domains.ProviderSendCapabilities{Kinds: []string{"text", "file", "image", "audio", "voice", "video"}, MaxTextCharacters: 4096, MentionsSupported: false, MaxMentions: 0, ReplySupported: true, MediaFormatNotes: domains.ProviderMediaFormatNotes{Voice: "Complete single-stream Ogg Opus, mapping 0 mono/stereo; inspected without transcoding.", Audio: "Complete single-stream Ogg Opus; send other codecs as files.", Video: "Nonfragmented AVC MP4 with inspected dimensions/timing and an optional real first-frame JPEG preview; no transcoding or playback guarantee. The provider can return short clips as files; inspect received media.type."}}}
-}
-func (Contract) ValidateUserID(s string) bool {
+func (protocolRules) ValidateUserID(s string) bool {
 	n, e := strconv.ParseInt(s, 10, 64)
 	return e == nil && n > 0 && strconv.FormatInt(n, 10) == s
 }
-func (c Contract) ValidatePeer(p domains.Peer) error {
+func (c protocolRules) ValidatePeer(p domains.Peer) error {
 	if !c.ValidateUserID(peerWireID(p)) || (p.Type != "user" && p.Type != "group" && p.Type != "channel") || p.AccessHash != "" {
 		return domains.E("INVALID_PEER", "Eitaa peer requires a canonical provider ID; channel-backed groups use channel_<decimal>", 400)
 	}
 	return nil
 }
-func (c Contract) ValidateSend(r domains.SendRequest) error {
+func (c protocolRules) ValidateSend(r domains.SendRequest) error {
 	if err := c.ValidatePeer(r.Peer); err != nil {
 		return err
 	}
@@ -54,7 +51,7 @@ func (c Contract) ValidateSend(r domains.SendRequest) error {
 	}
 	return nil
 }
-func (Contract) ValidateSession(s *domains.Session) error { _, e := decodeSession(s); return e }
+func (protocolRules) ValidateSession(s *domains.Session) error { _, e := decodeSession(s); return e }
 func decodeSession(s *domains.Session) (privateSession, error) {
 	bad := domains.E("INVALID_SESSION", "stored Eitaa session is invalid", 500)
 	if s == nil || s.Provider != domains.ProviderEitaa || s.Version != sessionVersion || len(s.Data) > 2<<20 {
@@ -64,7 +61,7 @@ func decodeSession(s *domains.Session) (privateSession, error) {
 	d.DisallowUnknownFields()
 	d.UseNumber()
 	var p privateSession
-	if d.Decode(&p) != nil || p.Token == "" || len(p.Token) > 8192 || len(p.IMEI) != 21 || p.UserID != s.UserID || !(Contract{}).ValidateUserID(p.UserID) || len(p.Peers) > 6000 {
+	if d.Decode(&p) != nil || p.Token == "" || len(p.Token) > 8192 || len(p.IMEI) != 21 || p.UserID != s.UserID || !(protocolRules{}).ValidateUserID(p.UserID) || len(p.Peers) > 6000 {
 		return privateSession{}, bad
 	}
 	if d.Decode(new(any)) != io.EOF {
@@ -76,7 +73,7 @@ func decodeSession(s *domains.Session) (privateSession, error) {
 	for key, ref := range p.Peers {
 		typ, id, ok := strings.Cut(key, ":")
 		peer := domains.Peer{Type: typ, ID: id}
-		if !ok || (Contract{}).ValidatePeer(peer) != nil || !peerReferenceMatches(peer, ref) {
+		if !ok || (protocolRules{}).ValidatePeer(peer) != nil || !peerReferenceMatches(peer, ref) {
 			return privateSession{}, bad
 		}
 	}
@@ -89,14 +86,10 @@ func idField() domains.FieldSchema {
 func peerField() domains.FieldSchema {
 	return domains.FieldSchema{Type: "object", Properties: map[string]domains.FieldSchema{"type": {Type: "string", Enum: []json.RawMessage{json.RawMessage(`"user"`), json.RawMessage(`"group"`), json.RawMessage(`"channel"`)}}, "id": {Type: "string", MinLength: 1, MaxLength: 27, Pattern: "^(channel_)?[1-9][0-9]*$"}}, Required: []string{"type", "id"}}
 }
-func (Contract) Operations() []domains.OperationContract {
+func (protocolRules) Operations() []domains.OperationContract {
 	list := []domains.OperationContract{}
 	add := func(name, mode, path string, props map[string]domains.FieldSchema, required ...string) {
-		method := "POST"
-		if mode == "read" {
-			method = "GET"
-		}
-		list = append(list, domains.OperationContract{Operation: name, Mode: mode, Method: method, Path: path, Description: "Eitaa " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}})
+		list = append(list, domains.OperationContract{Operation: name, Mode: mode, Description: "Eitaa " + name, Request: domains.FieldSchema{Type: "object", Properties: props, Required: required}})
 	}
 	add("account.info", "read", "/user/info", map[string]domains.FieldSchema{})
 	for _, name := range []string{"chat.list", "group.list", "channel.list"} {
@@ -120,7 +113,6 @@ func (Contract) Operations() []domains.OperationContract {
 	list = append(list, adminOperations()...)
 	list = append(list, moderationOperations()...)
 	for i := range list {
-		list[i].Method, list[i].Path = "POST", "/operations/"+list[i].Operation
 		switch list[i].Operation {
 		case "message.forward", "message.album", "send.poll":
 			list[i].Schedulable = true
@@ -128,7 +120,7 @@ func (Contract) Operations() []domains.OperationContract {
 	}
 	return list
 }
-func (c Contract) NormalizeOperation(name string, raw json.RawMessage) (json.RawMessage, domains.Peer, error) {
+func (c protocolRules) NormalizeOperation(name string, raw json.RawMessage) (json.RawMessage, domains.Peer, error) {
 	for _, op := range c.Operations() {
 		if op.Operation != name {
 			continue

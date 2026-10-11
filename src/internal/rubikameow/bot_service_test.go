@@ -14,7 +14,7 @@ func TestBotServiceMessageLifecycleAndContract(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			guid := map[string]string{"bot": "b0fixture", "service": "s0fixture"}[kind]
 			peer := domains.Peer{Type: kind, ID: guid}
-			contract := Contract{}
+			contract := protocolRules{}
 			if contract.ValidatePeer(peer) != nil || contract.ValidateUserID(guid) || !contract.ValidateSenderID(guid) {
 				t.Fatal("account/actor namespaces conflated")
 			}

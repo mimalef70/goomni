@@ -137,7 +137,7 @@ func TestPinActivitySearchAndCompletePermissionContracts(t *testing.T) {
 		})
 	}
 	for _, raw := range []string{`{"peer":{"type":"group","id":"50"},"permissions":{"send_messages":true}}`, `{"peer":{"type":"group","id":"50"},"permissions":` + string(encodedRights) + `,"until":"tomorrow"}`} {
-		if _, _, e := (Contract{}).NormalizeOperation("group.permissions", json.RawMessage(raw)); e == nil {
+		if _, _, e := (protocolRules{}).NormalizeOperation("group.permissions", json.RawMessage(raw)); e == nil {
 			t.Fatal("partial or malformed rights replacement admitted")
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/pkg/sqlite"
 	"github.com/stretchr/testify/require"
@@ -17,11 +18,11 @@ import (
 func TestWorkerLookupFailurePreservesAcceptedOperation(t *testing.T) {
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "lookup.db")
-	store, err := storage.Open(path, []byte(strings.Repeat("k", 32)))
+	store, err := storage.Open(path, []byte(strings.Repeat("k", 32)), providers.Contracts())
 	require.NoError(t, err)
 	defer store.Close()
 	client := &fakeClient{status: readyStatus()}
-	s := New(store, Options{PollInterval: time.Millisecond}, func(domains.Device) domains.Client { return client })
+	s := newTestService(store, Options{PollInterval: time.Millisecond}, func(domains.Device) domains.Client { return client })
 	s.ctx = ctx
 	defer s.Close(ctx)
 	d := mustDevice(t, s, "lookup-failure")

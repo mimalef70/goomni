@@ -90,7 +90,7 @@ func TestAssetMutationRejectsForeignOrMalformedReference(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, raw := range []string{`{"photo_id":"9223372036854775808"}`, `{"photo_id":"93","access_hash":"777"}`} {
-		if _, _, err := (Contract{}).NormalizeOperation("account.avatar.remove", json.RawMessage(raw)); err == nil {
+		if _, _, err := (protocolRules{}).NormalizeOperation("account.avatar.remove", json.RawMessage(raw)); err == nil {
 			t.Fatal("unsafe asset accepted")
 		}
 	}

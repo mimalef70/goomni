@@ -2,9 +2,10 @@ package domains
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestWebhookFilterExactSetsAndUnknownActors(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -97,12 +98,12 @@ func TestProviderMigrationPreservesSessionsProofsAndSignedDeliveryBytes(t *testi
 	require.NoError(t, err)
 	session := &domains.Session{Provider: domains.ProviderBale, Version: 1, UserID: "456", Token: "synthetic-token", Data: json.RawMessage(`{"cookies":[]}`)}
 	require.NoError(t, s.SaveSession(ctx, d.ConnectionID, session))
-	op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("retained"), "accepted-once", AdmissionLimits{Global: 20})
+	op, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("retained"), "accepted-once", domains.AdmissionLimits{Global: 20})
 	require.NoError(t, err)
 	_, err = s.ClaimOperations(ctx, 1)
 	require.NoError(t, err)
 	require.NoError(t, s.FinishOperation(ctx, d.ConnectionID, op.ID, "unknown", nil, "SEND_UNKNOWN", "ambiguous"))
-	queued, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("still queued"), "queued-once", AdmissionLimits{Global: 20})
+	queued, _, err := s.Enqueue(ctx, d.ConnectionID, textRequest("still queued"), "queued-once", domains.AdmissionLimits{Global: 20})
 	require.NoError(t, err)
 	scheduled := textRequest("future occurrence")
 	next := time.Now().UTC().Add(time.Hour).Truncate(time.Millisecond)
@@ -110,7 +111,7 @@ func TestProviderMigrationPreservesSessionsProofsAndSignedDeliveryBytes(t *testi
 	job, err := s.CreateScheduleIdempotent(ctx, d.ConnectionID, scheduled, next, "future-once")
 	require.NoError(t, err)
 	nextOccurrence := next.Add(time.Hour)
-	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, next, &nextOccurrence, AdmissionLimits{Global: 20})
+	_, err = s.MaterializeSchedule(ctx, d.ConnectionID, job.ID, next, &nextOccurrence, domains.AdmissionLimits{Global: 20})
 	require.NoError(t, err)
 	job, err = s.GetSchedule(ctx, d.ConnectionID, job.ID)
 	require.NoError(t, err)
@@ -121,7 +122,7 @@ func TestProviderMigrationPreservesSessionsProofsAndSignedDeliveryBytes(t *testi
 	require.NoError(t, s.db.QueryRow(`SELECT queue_order FROM operations WHERE id=?`, queued.ID).Scan(&orderBefore))
 	m := privateMedia()
 	ev := documentEvent("document", 1720000000000, &m)
-	_, err = s.AppendEvent(ctx, d.ConnectionID, ev, []WebhookTarget{{URL: "https://synthetic.invalid/webhook", Secret: "synthetic-secret"}})
+	_, err = s.AppendEvent(ctx, d.ConnectionID, ev, []domains.WebhookTarget{{URL: "https://synthetic.invalid/webhook", Secret: "synthetic-secret"}})
 	require.NoError(t, err)
 	// Schema-7 payloads had no provider field. Give the queued webhook distinct
 	// JSON whitespace as well: an upgrade must retain the exact signed bytes.
@@ -147,7 +148,7 @@ func TestProviderMigrationPreservesSessionsProofsAndSignedDeliveryBytes(t *testi
 	_, err = s.db.Exec(`UPDATE gobale_meta SET version=7`)
 	require.NoError(t, err)
 	require.NoError(t, s.Close())
-	upgraded, err := Open(path, testKey)
+	upgraded, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer upgraded.Close()
 	loaded, err := upgraded.LoadSession(ctx, d.ConnectionID)

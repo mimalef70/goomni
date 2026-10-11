@@ -5,7 +5,7 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
-    image: ${APP_IMAGE:-docker.io/mimalef70/goomni:v2.3.0}
+    image: ${APP_IMAGE:-docker.io/mimalef70/goomni:v2.4.0}
     build:
       context: .
       dockerfile: docker/golang.Dockerfile

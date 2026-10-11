@@ -3,8 +3,9 @@ package rubikameow
 import (
 	"context"
 	"errors"
-	"github.com/mimalef70/goomni/src/domains"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 func TestBotServiceConversationsParticipateInDurableRecovery(t *testing.T) {

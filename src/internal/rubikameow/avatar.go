@@ -35,7 +35,7 @@ func (c *Client) DownloadAvatar(ctx context.Context, user domains.Peer, size str
 	if size != "small" && size != "large" {
 		return nil, domains.AvatarInfo{}, domains.E("INVALID_REQUEST", "avatar size must be small or large", 400)
 	}
-	if user.Type != "user" || (Contract{}).ValidatePeer(user) != nil {
+	if user.Type != "user" || (protocolRules{}).ValidatePeer(user) != nil {
 		return nil, domains.AvatarInfo{}, domains.E("INVALID_PEER", "avatar requires a user peer", 400)
 	}
 	response, err := c.invoke(ctx, "getAvatars", object{"object_guid": user.ID}, false, "")

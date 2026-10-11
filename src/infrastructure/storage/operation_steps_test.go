@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +15,7 @@ func TestCompoundStagesAreDurablePrivateAndBoundToClaim(t *testing.T) {
 	s, path := testStore(t)
 	a := device(t, s, "stages")
 	b := device(t, s, "other")
-	op, _, err := s.Enqueue(ctx, a.ConnectionID, textRequest("compound"), "stage-key", AdmissionLimits{})
+	op, _, err := s.Enqueue(ctx, a.ConnectionID, textRequest("compound"), "stage-key", domains.AdmissionLimits{})
 	require.NoError(t, err)
 	stage := domains.OperationStage{Number: 1, Name: "upload", State: "started", Nonce: "synthetic-nonce", Data: json.RawMessage(`{"file_id":"private-file-reference"}`)}
 	require.Error(t, s.RecordOperationStage(ctx, a.ConnectionID, op.ID, op.Request.RequestID, stage))
@@ -42,7 +43,7 @@ func TestCompoundStagesAreDurablePrivateAndBoundToClaim(t *testing.T) {
 	require.NoError(t, s.db.QueryRow(`SELECT private FROM operation_stages WHERE operation_id=?`, op.ID).Scan(&cipher))
 	require.NotContains(t, string(cipher), "private-file-reference")
 	require.NoError(t, s.Close())
-	restored, err := Open(path, testKey)
+	restored, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer restored.Close()
 	after, err := restored.OperationStages(ctx, a.ConnectionID, op.ID)

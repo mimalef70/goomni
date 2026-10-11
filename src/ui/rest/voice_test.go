@@ -43,7 +43,7 @@ func TestVoiceRouteUsesScopedMediaDurableIdempotencyAndSchedule(t *testing.T) {
 	_, err = svc.SubmitCode(ctx, "two", challenge.ID, "synthetic")
 	require.NoError(t, err)
 	// The protocol tests validate real Ogg bytes; this REST test isolates durable routing.
-	err = srv.store.SaveMedia(ctx, domains.Media{ID: "voice-fixture", ConnectionID: one.ConnectionID, Name: "voice.ogg", ContentType: "audio/ogg", Size: 12, Path: "unused", CreatedAt: time.Now()})
+	err = srv.testStore().SaveMedia(ctx, domains.Media{ID: "voice-fixture", ConnectionID: one.ConnectionID, Name: "voice.ogg", ContentType: "audio/ogg", Size: 12, Path: "unused", CreatedAt: time.Now()})
 	require.NoError(t, err)
 	body := `{"peer":{"type":"user","id":"42"},"media_id":"voice-fixture","reply_message_id":"-777"}`
 	var first domains.Operation

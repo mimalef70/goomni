@@ -80,9 +80,10 @@ class CapacityRunnerTest(unittest.TestCase):
             assets.mkdir(parents=True)
             (root / "src/domains").mkdir()
             (root / "scripts").mkdir()
-            files = [assets / "app.js", root / "src/domains/operation_catalog.json", root / "scripts/start_soak.py"]
+            files = [assets / "app.js", root / "src/internal/balemeow/catalog/operation_catalog.json", root / "scripts/start_soak.py"]
             for path in files:
                 before = start_soak.source_hash(root)
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("synthetic source input")
                 self.assertNotEqual(before, start_soak.source_hash(root), str(path))
 

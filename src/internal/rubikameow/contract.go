@@ -11,26 +11,25 @@ import (
 
 var guidPattern = regexp.MustCompile(`^[ugcbs]0[A-Za-z0-9]{1,126}$`)
 
-type Contract struct{ Enabled bool }
+type protocolRules struct{}
 
-func (c Contract) Descriptor() domains.ProviderDescriptor {
-	return domains.ProviderDescriptor{ID: domains.ProviderRubika, Name: "Rubika", Enabled: c.Enabled, Verification: "offline; live-unverified", Interactions: domains.ProviderInteractions{Typing: &domains.OperationPreset{Operation: "chat.activity", Parameters: json.RawMessage(`{"activity":"Typing"}`)}, ReadOperation: "message.read", ReadArgument: "message_id", ReceiptModel: "chat_state", SenderNames: "unavailable", AvatarDownload: true, PartialEdits: true}, DeliveryMethods: []string{"sms", "app", "call"}, Send: domains.ProviderSendCapabilities{Kinds: []string{"text", "file", "image", "audio", "voice", "video"}, MaxTextCharacters: 4200, MentionsSupported: false, MaxMentions: 0, ReplySupported: true, MediaFormatNotes: domains.ProviderMediaFormatNotes{Voice: "Complete single-stream Ogg Opus, mapping 0 mono/stereo; inspected without transcoding.", Audio: "Complete MPEG layer III (MP3), at least one second, with duration inspected from frames; Ogg Opus uses voice.", Video: "Nonfragmented MP4 with one AVC video track and a decodable first IDR frame; real thumbnail, dimensions and millisecond timing are derived without transcoding."}}}
+func (protocolRules) ValidateUserID(id string) bool {
+	return guidPattern.MatchString(id) && id[0] == 'u'
 }
-func (Contract) ValidateUserID(id string) bool { return guidPattern.MatchString(id) && id[0] == 'u' }
-func (Contract) SupportsPeerType(kind string) bool {
+func (protocolRules) SupportsPeerType(kind string) bool {
 	return kind == "user" || kind == "group" || kind == "channel" || kind == "bot" || kind == "service"
 }
-func (Contract) ValidateSenderID(id string) bool {
+func (protocolRules) ValidateSenderID(id string) bool {
 	return guidPattern.MatchString(id) && (id[0] == 'u' || id[0] == 'b' || id[0] == 's')
 }
-func (Contract) ValidatePeer(p domains.Peer) error {
+func (protocolRules) ValidatePeer(p domains.Peer) error {
 	prefix := map[string]byte{"user": 'u', "group": 'g', "channel": 'c', "bot": 'b', "service": 's'}
 	if !guidPattern.MatchString(p.ID) || prefix[p.Type] != p.ID[0] || p.AccessHash != "" {
 		return domains.E("INVALID_PEER", "Rubika peer type must match its account GUID", 400)
 	}
 	return nil
 }
-func (c Contract) ValidateSend(r domains.SendRequest) error {
+func (c protocolRules) ValidateSend(r domains.SendRequest) error {
 	if e := c.ValidatePeer(r.Peer); e != nil {
 		return e
 	}
@@ -58,10 +57,10 @@ func (c Contract) ValidateSend(r domains.SendRequest) error {
 	}
 	return nil
 }
-func (Contract) ValidateSession(s *domains.Session) error { _, e := decodeSession(s); return e }
+func (protocolRules) ValidateSession(s *domains.Session) error { _, e := decodeSession(s); return e }
 func decodeSession(s *domains.Session) (privateSession, error) {
 	var p privateSession
-	if s == nil || s.Provider != domains.ProviderRubika || s.Version != 1 || len(s.Data) > 8192 || json.Unmarshal(s.Data, &p) != nil || p.UserID != s.UserID || !(Contract{}).ValidateUserID(p.UserID) {
+	if s == nil || s.Provider != domains.ProviderRubika || s.Version != 1 || len(s.Data) > 8192 || json.Unmarshal(s.Data, &p) != nil || p.UserID != s.UserID || !(protocolRules{}).ValidateUserID(p.UserID) {
 		return p, domains.E("INVALID_SESSION", "stored Rubika session is invalid", 500)
 	}
 	if _, e := authKey(p.Auth); e != nil {
@@ -83,12 +82,10 @@ func idField() domains.FieldSchema {
 func peerField() domains.FieldSchema {
 	return domains.FieldSchema{Type: "object", Properties: map[string]domains.FieldSchema{"type": {Type: "string", Enum: []json.RawMessage{json.RawMessage(`"user"`), json.RawMessage(`"group"`), json.RawMessage(`"channel"`), json.RawMessage(`"bot"`), json.RawMessage(`"service"`)}}, "id": idField()}, Required: []string{"type", "id"}}
 }
-func (Contract) Operations() []domains.OperationContract {
+func (protocolRules) Operations() []domains.OperationContract {
 	list := []domains.OperationContract{}
 	add := func(name, mode, path string, p map[string]domains.FieldSchema, required ...string) {
-		method := "POST"
-		path = "/operations/" + name
-		list = append(list, domains.OperationContract{Operation: name, Schedulable: name == "message.forward", Mode: mode, Path: path, Method: method, Description: "Rubika " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: p, Required: required}})
+		list = append(list, domains.OperationContract{Operation: name, Schedulable: name == "message.forward", Mode: mode, Description: "Rubika " + name, Request: domains.FieldSchema{Type: "object", Properties: p, Required: required}})
 	}
 	for _, name := range []string{"account.info", "contacts.list", "folders.list", "sticker.list"} {
 		add(name, "read", "/provider/"+name, map[string]domains.FieldSchema{})
@@ -119,7 +116,7 @@ func (Contract) Operations() []domains.OperationContract {
 	}
 	return append(list, extendedOperations()...)
 }
-func (c Contract) NormalizeOperation(name string, raw json.RawMessage) (json.RawMessage, domains.Peer, error) {
+func (c protocolRules) NormalizeOperation(name string, raw json.RawMessage) (json.RawMessage, domains.Peer, error) {
 	for _, op := range c.Operations() {
 		if op.Operation != name {
 			continue

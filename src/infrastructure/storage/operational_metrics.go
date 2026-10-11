@@ -13,47 +13,20 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// Latency contains cumulative, fixed-size buckets; it never retains requests.
-type Latency struct {
-	Count   uint64
-	Seconds float64
-	Buckets [9]uint64
-}
-
-var latencyBounds = [...]float64{.001, .005, .01, .05, .1, .5, 1, 5}
-
-func (h *Latency) observe(elapsed time.Duration) {
-	seconds := elapsed.Seconds()
-	h.Count++
-	h.Seconds += seconds
-	for i, bound := range latencyBounds {
-		if seconds <= bound {
-			h.Buckets[i]++
-		}
-	}
-	h.Buckets[len(latencyBounds)]++
-}
-
 type storageMetrics struct {
 	mu                         sync.Mutex
 	transactions               map[*sql.Tx]time.Time
-	begin, transaction, commit Latency
-	operations                 map[string]Latency
+	begin, transaction, commit domains.Latency
+	operations                 map[string]domains.Latency
 	errors                     map[string]uint64
 }
 
-type OperationalMetrics struct {
-	Pool                       sql.DBStats
-	Begin, Transaction, Commit Latency
-	Operations                 map[string]Latency
-	Errors                     map[string]uint64
-}
-
 // OperationalMetrics is a memory-only snapshot, safe even when storage is busy.
-func (s *Store) OperationalMetrics() OperationalMetrics {
+func (s *Store) OperationalMetrics() domains.StorageMetrics {
 	s.metrics.mu.Lock()
 	defer s.metrics.mu.Unlock()
-	m := OperationalMetrics{Pool: s.db.Stats(), Begin: s.metrics.begin, Transaction: s.metrics.transaction, Commit: s.metrics.commit, Operations: map[string]Latency{}, Errors: map[string]uint64{}}
+	pool := s.db.Stats()
+	m := domains.StorageMetrics{Pool: domains.PoolStats{MaxOpenConnections: pool.MaxOpenConnections, OpenConnections: pool.OpenConnections, InUse: pool.InUse, Idle: pool.Idle, WaitCount: pool.WaitCount, WaitDuration: pool.WaitDuration, MaxIdleClosed: pool.MaxIdleClosed, MaxIdleTimeClosed: pool.MaxIdleTimeClosed, MaxLifetimeClosed: pool.MaxLifetimeClosed}, Begin: s.metrics.begin, Transaction: s.metrics.transaction, Commit: s.metrics.commit, Operations: map[string]domains.Latency{}, Errors: map[string]uint64{}}
 	for k, v := range s.metrics.operations {
 		m.Operations[k] = v
 	}
@@ -87,7 +60,7 @@ func (s *Store) beginTx(ctx context.Context) (*sql.Tx, error) {
 	start := time.Now()
 	tx, err := s.db.BeginTx(ctx, nil)
 	s.metrics.mu.Lock()
-	s.metrics.begin.observe(time.Since(start))
+	s.metrics.begin.Observe(time.Since(start))
 	if err == nil {
 		if s.metrics.transactions == nil {
 			s.metrics.transactions = map[*sql.Tx]time.Time{}
@@ -102,7 +75,7 @@ func (s *Store) completeTransaction(tx *sql.Tx) {
 	s.metrics.mu.Lock()
 	defer s.metrics.mu.Unlock()
 	if started, ok := s.metrics.transactions[tx]; ok {
-		s.metrics.transaction.observe(time.Since(started))
+		s.metrics.transaction.Observe(time.Since(started))
 		delete(s.metrics.transactions, tx)
 	}
 }
@@ -111,7 +84,7 @@ func (s *Store) commitTx(tx *sql.Tx) error {
 	start := time.Now()
 	err := tx.Commit()
 	s.metrics.mu.Lock()
-	s.metrics.commit.observe(time.Since(start))
+	s.metrics.commit.Observe(time.Since(start))
 	s.metrics.mu.Unlock()
 	s.completeTransaction(tx)
 	return err
@@ -127,21 +100,21 @@ func (s *Store) rollbackTx(tx *sql.Tx) error {
 func (s *Store) observePersistence(name string, start time.Time, err error) {
 	s.metrics.mu.Lock()
 	if s.metrics.operations == nil {
-		s.metrics.operations = map[string]Latency{}
+		s.metrics.operations = map[string]domains.Latency{}
 	}
 	h := s.metrics.operations[name]
-	h.observe(time.Since(start))
+	h.Observe(time.Since(start))
 	s.metrics.operations[name] = h
 	s.metrics.mu.Unlock()
 	s.recordStorageError(err)
 }
 
-func (s *Store) AppendEvent(ctx context.Context, conn string, event domains.Event, targets []WebhookTarget) (created bool, err error) {
+func (s *Store) AppendEvent(ctx context.Context, conn string, event domains.Event, targets []domains.WebhookTarget) (created bool, err error) {
 	start := time.Now()
 	defer func() { s.observePersistence("append_event", start, err) }()
 	return s.appendEvent(ctx, conn, event, targets)
 }
-func (s *Store) Enqueue(ctx context.Context, conn string, req domains.SendRequest, key string, limits AdmissionLimits) (op domains.Operation, created bool, err error) {
+func (s *Store) Enqueue(ctx context.Context, conn string, req domains.SendRequest, key string, limits domains.AdmissionLimits) (op domains.Operation, created bool, err error) {
 	start := time.Now()
 	defer func() { s.observePersistence("enqueue", start, err) }()
 	return s.enqueue(ctx, conn, req, key, limits)
@@ -166,7 +139,7 @@ func (s *Store) UpdateDelivery(ctx context.Context, conn, id, state string, next
 	defer func() { s.observePersistence("update_delivery", start, err) }()
 	return s.updateDelivery(ctx, conn, id, state, next, lastError)
 }
-func (s *Store) MaterializeSchedule(ctx context.Context, conn, id string, expected time.Time, next *time.Time, limits AdmissionLimits) (op domains.Operation, err error) {
+func (s *Store) MaterializeSchedule(ctx context.Context, conn, id string, expected time.Time, next *time.Time, limits domains.AdmissionLimits) (op domains.Operation, err error) {
 	start := time.Now()
 	defer func() { s.observePersistence("schedule_occurrence", start, err) }()
 	return s.materializeSchedule(ctx, conn, id, expected, next, limits)
@@ -177,11 +150,9 @@ func (s *Store) CreateScheduleIdempotent(ctx context.Context, conn string, reque
 	return s.createScheduleIdempotent(ctx, conn, request, next, key)
 }
 
-type DiskMetrics struct{ DatabaseBytes, WALBytes, SHMBytes, FreeBytes int64 }
-
-// DiskMetrics only stats the known journal files and filesystem; it does not
+// domains.DiskMetrics only stats the known journal files and filesystem; it does not
 // checkpoint SQLite or walk retained history. No paths escape this method.
-func (s *Store) DiskMetrics() (m DiskMetrics, err error) {
+func (s *Store) DiskMetrics() (m domains.DiskMetrics, err error) {
 	for _, file := range []struct {
 		suffix string
 		value  *int64

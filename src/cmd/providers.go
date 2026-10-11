@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"os"
+
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/mediafile"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/infrastructure/workpool"
-	"io"
-	"os"
 )
 
 func openProviderMedia(ctx context.Context, d domains.Device, id, root string, store *storage.Store, pool *workpool.Pool, refresh func(context.Context) error) (io.ReadCloser, domains.NativeMediaInfo, error) {

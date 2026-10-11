@@ -1,13 +1,8 @@
 package storage
 
-// AdmissionLimits bound durable outstanding work. Unknown outcomes retain their
-// slot until explicitly reconciled; they must never be discarded to make room.
-type AdmissionLimits struct {
-	Global     int
-	Connection int
-}
+import "github.com/mimalef70/goomni/src/domains"
 
-func (v AdmissionLimits) normalized() AdmissionLimits {
+func normalizedLimits(v domains.AdmissionLimits) domains.AdmissionLimits {
 	if v.Global <= 0 {
 		v.Global = 1000
 	}

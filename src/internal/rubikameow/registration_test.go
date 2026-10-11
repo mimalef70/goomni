@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/mimalef70/goomni/src/domains"
 	"testing"
+
+	"github.com/mimalef70/goomni/src/domains"
 )
 
 func TestRegistrationPreservesCredentialsAndChecksBeforeRetry(t *testing.T) {

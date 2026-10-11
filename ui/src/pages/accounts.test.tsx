@@ -19,6 +19,7 @@ const send = {
   mentions_supported: true,
   max_mentions: 100,
   reply_supported: true,
+  evidence: {},
   media_format_notes: { voice: 'Complete Ogg Opus; synthetic catalogue fixture.' },
 }
 const providers = [
@@ -27,6 +28,12 @@ const providers = [
     name: 'Bale',
     enabled: true,
     verification: 'synthetic',
+    evidence: {
+      level: 'offline_only',
+      scope: 'Synthetic test fixture',
+      references: [],
+      limitations: [],
+    },
     delivery_methods: ['sms'],
     send,
   },
@@ -35,6 +42,12 @@ const providers = [
     name: 'Eitaa',
     enabled: true,
     verification: 'synthetic',
+    evidence: {
+      level: 'offline_only',
+      scope: 'Synthetic test fixture',
+      references: [],
+      limitations: [],
+    },
     delivery_methods: ['sms'],
     send: {
       ...send,
@@ -49,6 +62,12 @@ const providers = [
     name: 'Rubika',
     enabled: false,
     verification: 'unavailable',
+    evidence: {
+      level: 'offline_only',
+      scope: 'Synthetic test fixture',
+      references: [],
+      limitations: [],
+    },
     delivery_methods: [],
     send: {
       ...send,

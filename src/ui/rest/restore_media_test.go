@@ -12,6 +12,7 @@ import (
 
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/mediafile"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/usecase"
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,7 @@ func TestUploadedMediaSurvivesBackupRestoreToDifferentRoot(t *testing.T) {
 	}
 	require.NoError(t, json.NewDecoder(res.Body).Decode(&envelope))
 	res.Body.Close()
-	media, err := s.store.GetMedia(context.Background(), d.ConnectionID, envelope.Results.ID)
+	media, err := s.testStore().GetMedia(context.Background(), d.ConnectionID, envelope.Results.ID)
 	require.NoError(t, err)
 	require.False(t, filepath.IsAbs(media.Path))
 	oldPath, err := mediafile.Resolve(s.opts.MediaRoot, media.Path)
@@ -45,17 +46,17 @@ func TestUploadedMediaSurvivesBackupRestoreToDifferentRoot(t *testing.T) {
 
 	restoredRoot := t.TempDir()
 	backup := filepath.Join(restoredRoot, "restored.db")
-	require.NoError(t, s.store.Backup(context.Background(), backup))
+	require.NoError(t, s.testStore().Backup(context.Background(), backup))
 	newMediaRoot := filepath.Join(restoredRoot, "different-media-location")
 	newPath := filepath.Join(newMediaRoot, filepath.FromSlash(media.Path))
 	require.NoError(t, os.MkdirAll(filepath.Dir(newPath), 0700))
 	require.NoError(t, os.WriteFile(newPath, data, 0600))
 	// The old location disappears, proving the restored response uses new root.
 	require.NoError(t, os.Rename(s.opts.MediaRoot, s.opts.MediaRoot+"-old"))
-	st, err := storage.Open(backup, bytes.Repeat([]byte{7}, 32))
+	st, err := storage.Open(backup, bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, st.Close()) })
-	restoredService := usecase.New(st, usecase.Options{}, func(domains.Device) domains.Client { return &testClient{} })
+	restoredService := newTestService(st, usecase.Options{}, func(domains.Device) domains.Client { return &testClient{} })
 	restored, err := New(restoredService, st, Options{BasicAuth: "test:password", MediaRoot: newMediaRoot})
 	require.NoError(t, err)
 	r = httptest.NewRequest("GET", "/media/"+media.ID, nil)

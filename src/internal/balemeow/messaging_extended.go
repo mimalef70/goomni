@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/balemeow/catalog"
 	"github.com/mimalef70/goomni/src/internal/balemeow/wire"
 	"google.golang.org/protobuf/proto"
 )
@@ -29,7 +30,7 @@ func (c *Client) messagingExtended(ctx context.Context, operation string, raw js
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return nil, boundedError("INVALID_REQUEST", "invalid messaging body", 400)
 	}
-	contract, ok := domains.OperationDefinition(operation)
+	contract, ok := catalog.OperationDefinition(operation)
 	if !ok {
 		return nil, domains.Unsupported(operation)
 	}

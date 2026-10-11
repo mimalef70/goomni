@@ -69,7 +69,7 @@ func validateBatch(batch domains.EventBatch) error {
 // AppendBatch commits provider page events, private references, delivery records,
 // reviewed acceptance proofs and scoped cursors together. The returned count is
 // zero on any failure, including commit failure; an uncertain commit is an error.
-func (s *Store) AppendBatch(ctx context.Context, conn string, batch domains.EventBatch, targets []WebhookTarget) (created int, err error) {
+func (s *Store) AppendBatch(ctx context.Context, conn string, batch domains.EventBatch, targets []domains.WebhookTarget) (created int, err error) {
 	start := time.Now()
 	defer func() { s.observePersistence("append_batch", start, err) }()
 	if err = validateBatch(batch); err != nil {
@@ -106,7 +106,7 @@ func (s *Store) AppendBatch(ctx context.Context, conn string, batch domains.Even
 	}
 	for _, proof := range batch.Proofs {
 		id, present := acceptedIDs[proof.EventID]
-		if !present || proof.Provider != d.Provider || acceptancePolicy(proof.Provider, proof.Kind) == nil || proof.RequestID == "" {
+		if !present || proof.Provider != d.Provider || s.acceptancePolicy(proof.Provider, proof.Kind) == nil || proof.RequestID == "" {
 			return 0, domains.E("INVALID_ACCEPTANCE_PROOF", "acceptance proof is not supported for this connection and batch", 502)
 		}
 		var body string
@@ -119,7 +119,7 @@ func (s *Store) AppendBatch(ctx context.Context, conn string, batch domains.Even
 		}
 		// A changed duplicate may never inject evidence missing from its original
 		// durable body. Correlation is by exact account/peer/request identity only.
-		if event.MessageID != proof.RequestID {
+		if s.acceptancePolicy(proof.Provider, proof.Kind).RequestID(event) != proof.RequestID {
 			continue
 		}
 		if _, err = s.reconcileOwnMessageTx(ctx, tx, conn, d.AccountID, event); err != nil {

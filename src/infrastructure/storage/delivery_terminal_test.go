@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,12 +15,12 @@ func TestTerminalReceiptFailureSurvivesRestartAndReplayFollowsQueuedMessages(t *
 	ctx := context.Background()
 	s, path := testStore(t)
 	d := device(t, s, "terminal-receipt")
-	target := WebhookTarget{URL: "https://one.test/hook", Secret: "synthetic"}
-	other := WebhookTarget{URL: "https://two.test/hook", Secret: "synthetic-other"}
+	target := domains.WebhookTarget{URL: "https://one.test/hook", Secret: "synthetic"}
+	other := domains.WebhookTarget{URL: "https://two.test/hook", Secret: "synthetic-other"}
 	receipt := domains.Event{ID: "receipt", Type: "message.read", Peer: domains.Peer{Type: "user", ID: "42"}, Time: time.Unix(1720000000, 0), Payload: json.RawMessage(`{"start_date":"123","date":"0","range_valid":false,"range_status":"unknown","message_ids_supported":false}`)}
-	_, err := s.AppendEvent(ctx, d.ConnectionID, receipt, []WebhookTarget{target, other})
+	_, err := s.AppendEvent(ctx, d.ConnectionID, receipt, []domains.WebhookTarget{target, other})
 	require.NoError(t, err)
-	_, err = s.AppendEvent(ctx, d.ConnectionID, event("later-message", ""), []WebhookTarget{target, other})
+	_, err = s.AppendEvent(ctx, d.ConnectionID, event("later-message", ""), []domains.WebhookTarget{target, other})
 	require.NoError(t, err)
 	jobs, err := s.ClaimDeliveries(ctx, 10, time.Now().Add(time.Second))
 	require.NoError(t, err)
@@ -35,7 +36,7 @@ func TestTerminalReceiptFailureSurvivesRestartAndReplayFollowsQueuedMessages(t *
 	}
 	require.NotEmpty(t, failed.ID)
 	require.NoError(t, s.Close())
-	reopened, err := Open(path, testKey)
+	reopened, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	t.Cleanup(func() { reopened.Close() })
 	retained, err := reopened.GetDelivery(ctx, d.ConnectionID, failed.ID)
@@ -45,7 +46,7 @@ func TestTerminalReceiptFailureSurvivesRestartAndReplayFollowsQueuedMessages(t *
 	require.Contains(t, retained.LastError, "HTTP 422")
 	require.Equal(t, failed.Body, retained.Body)
 
-	replays, err := reopened.ReplayDelivery(ctx, d.ConnectionID, failed.ID, []WebhookTarget{target})
+	replays, err := reopened.ReplayDelivery(ctx, d.ConnectionID, failed.ID, []domains.WebhookTarget{target})
 	require.NoError(t, err)
 	require.Len(t, replays, 1)
 	require.NotEqual(t, failed.ID, replays[0].ID)

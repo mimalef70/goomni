@@ -27,7 +27,7 @@ func arrayField(lo, hi int, item domains.FieldSchema) domains.FieldSchema {
 func extendedOperations() []domains.OperationContract {
 	var out []domains.OperationContract
 	add := func(name, mode string, p map[string]domains.FieldSchema, required ...string) {
-		out = append(out, domains.OperationContract{Operation: name, Method: "POST", Path: "/operations/" + name, Mode: mode, Schedulable: strings.HasPrefix(name, "send."), Description: "Rubika " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: p, Required: required}})
+		out = append(out, domains.OperationContract{Operation: name, Mode: mode, Schedulable: strings.HasPrefix(name, "send."), Description: "Rubika " + name, Request: domains.FieldSchema{Type: "object", Properties: p, Required: required}})
 	}
 	peer := func() map[string]domains.FieldSchema { return map[string]domains.FieldSchema{"peer": peerField()} }
 	text := func(n int) domains.FieldSchema { f := textField(n); f.MinLength = 1; return f }
@@ -161,7 +161,7 @@ func normalizeExtended(name string, raw json.RawMessage) error {
 	if json.Unmarshal(raw, &p) != nil {
 		return domains.E("INVALID_REQUEST", "invalid operation payload", 400)
 	}
-	c := Contract{}
+	c := protocolRules{}
 	seen := map[string]bool{}
 	for _, id := range p.Users {
 		if !c.ValidateUserID(id) || seen[id] {

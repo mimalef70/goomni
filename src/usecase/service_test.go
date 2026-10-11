@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
+
 	domainSend "github.com/mimalef70/goomni/src/domains/send"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 )
@@ -106,11 +108,11 @@ func readyStatus() domains.ConnectionStatus {
 }
 func testService(t *testing.T, options Options, factory domains.ClientFactory) (*Service, *storage.Store) {
 	t.Helper()
-	st, err := storage.Open(filepath.Join(t.TempDir(), "test.db"), []byte(strings.Repeat("k", 32)))
+	st, err := storage.Open(filepath.Join(t.TempDir(), "test.db"), []byte(strings.Repeat("k", 32)), providers.Contracts())
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := New(st, options, factory)
+	s := newTestService(st, options, factory)
 	s.ctx = context.Background()
 	t.Cleanup(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -507,7 +509,7 @@ func TestGlobalWebhookTargetsDeliverAndDeviceOverrideIsIndependent(t *testing.T)
 	defer global.Close()
 	device := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { deviceCalls.Add(1); w.WriteHeader(204) }))
 	defer device.Close()
-	options := Options{MergeGlobal: true, GlobalWebhooks: []storage.WebhookTarget{{URL: global.URL, Secret: "global-key"}}}
+	options := Options{MergeGlobal: true, GlobalWebhooks: []domains.WebhookTarget{{URL: global.URL, Secret: "global-key"}}}
 	s, st := testService(t, options, func(domains.Device) domains.Client { return &fakeClient{} })
 	d := mustDevice(t, s, "alpha")
 	secret := "device-key"
@@ -660,7 +662,7 @@ func TestSynthetic50AccountsRoutingAndWorkerBounds(t *testing.T) {
 		}
 		return f
 	}
-	options := Options{QueueLimit: expectedSends + 1, PollInterval: time.Millisecond * 5, SendWorkers: 4, WebhookWorkers: 8, GlobalWebhooks: []storage.WebhookTarget{{URL: server.URL + "/one", Secret: "one"}, {URL: server.URL + "/two", Secret: "two"}}}
+	options := Options{QueueLimit: expectedSends + 1, PollInterval: time.Millisecond * 5, SendWorkers: 4, WebhookWorkers: 8, GlobalWebhooks: []domains.WebhookTarget{{URL: server.URL + "/one", Secret: "one"}, {URL: server.URL + "/two", Secret: "two"}}}
 	var st *storage.Store
 	s, st = testService(t, options, factory)
 	type operationRef struct {

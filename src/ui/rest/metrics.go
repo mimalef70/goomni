@@ -10,8 +10,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/mimalef70/goomni/src/domains"
+
 	"github.com/gofiber/fiber/v3"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"golang.org/x/sys/unix"
 )
 
@@ -20,7 +21,7 @@ const metricsMaxAge = 15 * time.Second
 
 type metricsSnapshot struct {
 	queue                                                                map[string]int64
-	disk                                                                 storage.DiskMetrics
+	disk                                                                 domains.DiskMetrics
 	mediaBytes, mediaFreeBytes                                           int64
 	queueAt, diskAt, mediaAt, mediaDiskAt                                time.Time
 	queueFailed, diskFailed, mediaFailed, mediaDiskFailed, mediaScanning bool
@@ -112,7 +113,7 @@ func metric(b *strings.Builder, name, kind string, value any) {
 	fmt.Fprintf(b, "# TYPE goomni_%s %s\ngoomni_%s %v\n", name, kind, name, value)
 }
 
-func latencyMetric(b *strings.Builder, name, labels string, h storage.Latency) {
+func latencyMetric(b *strings.Builder, name, labels string, h domains.Latency) {
 	if labels == "" {
 		fmt.Fprintf(b, "# TYPE goomni_%s histogram\n", name)
 	}

@@ -37,7 +37,7 @@ def approved_files():
     paths = [ROOT / name for name in TOP_LEVEL]
     paths.extend(ROOT / name for name in (
         "docs/openapi.yaml", "docs/operations.md", "docs/webhook-payload.md",
-        "docs/consumer-integration.md", "docs/upgrade-goomni.md",
+        "docs/consumer-integration.md", "docs/upgrade-goomni.md", "docs/architecture.md",
         "ui/README.md", "src/internal/balemeow/testdata/coverage/capabilities.json",
         "src/internal/eitaameow/schema/LICENSE", "src/internal/rubikameow/LICENSE.reference",
     ))

@@ -11,7 +11,7 @@ import (
 
 func moreOperations() []domains.OperationContract {
 	add := func(name string, properties map[string]domains.FieldSchema, required ...string) domains.OperationContract {
-		return domains.OperationContract{Operation: name, Mode: "mutation", Path: "/operations/" + name, Method: "POST", Description: "Eitaa " + name, Verification: "offline; live-unverified", Request: domains.FieldSchema{Type: "object", Properties: properties, Required: required}}
+		return domains.OperationContract{Operation: name, Mode: "mutation", Description: "Eitaa " + name, Request: domains.FieldSchema{Type: "object", Properties: properties, Required: required}}
 	}
 	ops := []domains.OperationContract{
 		add("poll.close", map[string]domains.FieldSchema{"peer": peerField(), "message_id": idField()}, "peer", "message_id"),

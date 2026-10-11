@@ -24,7 +24,7 @@ type callRequest struct {
 }
 
 func (c *Client) Send(ctx context.Context, r domains.SendRequest) (domains.SendResult, error) {
-	if e := (Contract{}).ValidateSend(r); e != nil {
+	if e := (protocolRules{}).ValidateSend(r); e != nil {
 		return domains.SendResult{}, e
 	}
 	if !validMessageID(r.RequestID) {
@@ -91,7 +91,7 @@ func (c *Client) Call(ctx context.Context, name string, raw json.RawMessage) (js
 	rid := fields.str("request_id")
 	delete(fields, "request_id")
 	public, _ := json.Marshal(fields)
-	normalized, _, e := (Contract{}).NormalizeOperation(name, public)
+	normalized, _, e := (protocolRules{}).NormalizeOperation(name, public)
 	if e != nil {
 		return nil, e
 	}
@@ -100,7 +100,7 @@ func (c *Client) Call(ctx context.Context, name string, raw json.RawMessage) (js
 		return nil, protocolError()
 	}
 	mutation := false
-	for _, op := range (Contract{}).Operations() {
+	for _, op := range (protocolRules{}).Operations() {
 		if op.Operation == name {
 			mutation = op.Mode == "mutation"
 		}
@@ -282,7 +282,7 @@ func (c *Client) Call(ctx context.Context, name string, raw json.RawMessage) (js
 			row := asObject(value)
 			id := row.str("member_guid")
 			peer := peerFromGUID(id)
-			if (Contract{}).ValidatePeer(peer) != nil || seen[id] {
+			if (protocolRules{}).ValidatePeer(peer) != nil || seen[id] {
 				return nil, protocolError()
 			}
 			seen[id] = true

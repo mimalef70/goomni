@@ -1,3 +1,3 @@
 package rubikameow
 
-func (Contract) ValidateMessageID(id string) bool { return validMessageID(id) }
+func (protocolRules) ValidateMessageID(id string) bool { return validMessageID(id) }

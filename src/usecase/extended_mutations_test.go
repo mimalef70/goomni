@@ -3,8 +3,9 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
+
 	"testing"
 	"time"
 )
@@ -77,11 +78,11 @@ func TestReviewedSendOperationScheduleHasOneDurableOccurrence(t *testing.T) {
 		t.Fatal(job)
 	}
 	// The same occurrence cannot materialize twice, including after retries.
-	_, err = st.MaterializeSchedule(ctx, d.ConnectionID, job.ID, job.NextAt, nil, storage.AdmissionLimits{Global: 100})
+	_, err = st.MaterializeSchedule(ctx, d.ConnectionID, job.ID, job.NextAt, nil, domains.AdmissionLimits{Global: 100})
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _ = st.MaterializeSchedule(ctx, d.ConnectionID, job.ID, job.NextAt, nil, storage.AdmissionLimits{Global: 100})
+	_, _ = st.MaterializeSchedule(ctx, d.ConnectionID, job.ID, job.NextAt, nil, domains.AdmissionLimits{Global: 100})
 	jobs, err := st.ClaimOperations(ctx, 10)
 	if err != nil || len(jobs) != 1 {
 		t.Fatal(jobs, err)

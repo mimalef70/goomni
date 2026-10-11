@@ -1,0 +1,3683 @@
+{
+  "bale": {
+    "provider": {
+      "level": "live_scoped",
+      "date": "2026-10-10",
+      "scope": "Two operator-controlled accounts: native login, restart without OTP, direct text, selected media and scoped recovery trials. These are dated pre-release observations, not acceptance of every operation or later binary.",
+      "references": [
+        "docs/providers/acceptance.md"
+      ],
+      "limitations": [
+        "Exhaustive initial history, multi-day recovery and real 300-account capacity remain unverified.",
+        "Known gaps and operation-specific limits remain visible; enabling this provider is a separate configuration choice.",
+        "Normal-user keyboard templates were rejected; mentions and Mini App credential interoperability remain live-unverified."
+      ]
+    },
+    "send": {
+      "text": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account text send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build.",
+          "Mentions are implemented but remain live-unverified."
+        ]
+      },
+      "file": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account file send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "image": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account image send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "audio": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account audio send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "voice": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account voice send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build.",
+          "Byte-identical download and independent decoding passed; official-Web audio playback was not tested."
+        ]
+      },
+      "video": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account video send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      }
+    },
+    "operations": {
+      "account.about": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/0"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.avatar": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/1"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.block": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/2"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.blocked": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/3"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/128"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.name": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/4"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.privacy": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/5"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.privacy.set": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/6"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.privacy.status": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/7"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.session.terminate": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/8"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.sessions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/9"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.sessions.terminate": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/10"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.settings": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/11"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.settings.set": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/12"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.unblock": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/13"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.username": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/14"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.username.check": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/15"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "bot.callback": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/16"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "channel.create": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/17"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "channel.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/18"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.clear": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/19"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "chat.delete": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/20"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "chat.history": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/118"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/120"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.messages": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/119"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chats": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/121"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.add": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/21"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.import": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/22"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/126"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/23"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.rename": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/24"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.reset": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/25"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.resolve": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/26"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.search": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/127"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "folders.create": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/27"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "folders.delete": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/28"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "folders.edit": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/29"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "folders.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/30"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.admins": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/31"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.banned": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/32"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.create": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/109"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.default_permissions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/33"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.default_permissions.set": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/34"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.demote": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/35"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.description": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/112"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.history": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/36"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/124"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.invite": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/110"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.join": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/37"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.join_public": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/38"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.leave": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/39"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.link": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/125"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.link.revoke": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/40"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/122"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.members": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/123"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.permissions": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/41"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.permissions.set": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/42"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.photo": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/43"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.photo.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/44"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.pin": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/45"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.pins": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/46"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.preview": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/47"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.promote": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/48"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/113"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.restriction": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/49"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.title": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/111"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.transfer": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/50"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.unban": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/51"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.unpin": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/52"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.unpin_all": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/53"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.username": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/54"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.visibility": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/55"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "link.summary": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/56"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.delete": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/117"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.edit": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Controlled two-account edits matched the target in recipient events.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence is limited to the controlled test messages and dated builds."
+        ]
+      },
+      "message.forward": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Controlled two-account forward and one-time scheduled forward trials passed.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence is limited to the controlled test messages and dated builds."
+        ]
+      },
+      "message.pin": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/57"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.pins": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/58"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.reaction.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/59"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.reaction.set": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/60"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.reaction.users": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/61"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.reactions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/62"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.read": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/115"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.received": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/63"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.unpin": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/64"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.unpin_all": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/65"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.upvote": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/66"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.upvote.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/67"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.upvoters": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/68"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.views": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/69"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.views.increment": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/70"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "miniapp.custom": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/71"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "miniapp.data": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/72"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "miniapp.hash": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/73"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "miniapp.menu": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/74"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "miniapp.url": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/75"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "poll.close": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/76"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "poll.full_results": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/77"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "poll.results": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/78"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "poll.vote": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/79"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "presence.contacts": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/80"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "presence.group": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/81"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "presence.group.count": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/82"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "presence.online": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/83"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "presence.stop": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/84"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "presence.typing": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/85"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "presence.users": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/86"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "report.dismiss": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/87"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "report.messages": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/88"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "report.peer": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/89"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "report.story": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/90"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "send.contact": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/91"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.location": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/92"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.poll": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/93"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.sticker": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/94"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "send.template": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/95"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "sticker.get": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/96"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "sticker.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/97"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "sticker.pack.add": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/98"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "sticker.pack.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/99"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "story.add": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/100"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "story.delete": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/101"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "story.get": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/102"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "story.list": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/103"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "story.react": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/104"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "story.viewers": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/105"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "users.get": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/106"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "wallet.kifpools": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/107"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "wallet.list": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/bale/operations/108"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      }
+    }
+  },
+  "eitaa": {
+    "provider": {
+      "level": "live_scoped",
+      "date": "2026-10-10",
+      "scope": "Two operator-controlled accounts: native login, restart without OTP, direct text, selected media and scoped recovery trials. These are dated pre-release observations, not acceptance of every operation or later binary.",
+      "references": [
+        "docs/providers/acceptance.md"
+      ],
+      "limitations": [
+        "Exhaustive initial history, multi-day recovery and real 300-account capacity remain unverified.",
+        "Known gaps and operation-specific limits remain visible; enabling this provider is a separate configuration choice.",
+        "Poll sending remained rejected; fresh invitations and the recorded optional constructors remain unsupported."
+      ]
+    },
+    "send": {
+      "text": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account text send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "file": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account file send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "image": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account image send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build.",
+          "The provider converted the tested PNG to JPEG; byte equality is not promised."
+        ]
+      },
+      "audio": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account audio send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build.",
+          "Audio is inspected Ogg Opus; other codecs use file sends."
+        ]
+      },
+      "voice": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account voice send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "video": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Two- and five-second AVC MP4 samples arrived as video with byte-identical downloads; playback advanced for the tested two-second Web sample.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build.",
+          "Tested one-second clips arrived as ordinary files, including an official-Web send; use the received media type."
+        ]
+      }
+    },
+    "operations": {
+      "account.about": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/22"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.avatar": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/49"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.avatar.clear": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/71"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.avatar.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/70"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.avatars": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/69"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.block": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/18"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.blocked": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/20"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/0"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.name": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/21"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.unblock": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/19"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.username": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/23"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.username.check": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/60"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "channel.create": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/25"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "channel.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/3"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.activity": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/55"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "chat.archive": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/87"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "chat.history": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/6"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/1"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.messages": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/7"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.search": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/56"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.add": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/14"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.ids": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/62"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "contacts.import": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/15"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/4"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/16"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.resolve": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/17"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.saved": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/63"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "contacts.search": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/5"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.status": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/61"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "folder.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/43"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "folder.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/45"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "folder.set": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/44"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.add": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/31"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.admins": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/28"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.ban": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/34"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.banned": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/29"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.create": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/24"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.demote": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/33"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.description": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/72"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.discussion.candidates": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/78"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.discussion.message": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/85"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.discussion.read": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/86"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.discussion.set": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/79"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.discussion.unlink": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/80"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.history_visibility": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/82"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/26"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.invite.create": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/90"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.invite.delete": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/93"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.invite.edit": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/91"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.invite.get": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/89"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.invite.importers": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/96"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.invite.revoke": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/92"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.invites": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/88"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.invites.admins": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/95"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.invites.delete_revoked": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/94"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.join": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/42"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.join_public": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/37"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.leave": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/38"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.link": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/40"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/2"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.member.permissions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/58"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.members": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/27"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.name": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/30"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.online": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/76"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.participant": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/77"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.permissions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/57"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.photo": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/50"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.preview": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/41"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.promote": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/36"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.protect_content": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/74"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/32"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.signatures": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/73"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.slowmode": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/81"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "group.unban": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/35"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.upgrade": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/83"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.username": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/39"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.username.available": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/75"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.album": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "A two-image album with captions was found on the controlled recipient.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Other album types and failure boundaries remain unverified live."
+        ]
+      },
+      "message.delete": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/9"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.edit": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Controlled two-account edits matched the target in recipient events.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence is limited to the controlled test messages and dated builds."
+        ]
+      },
+      "message.forward": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Controlled two-account forward and one-time scheduled forward trials passed.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence is limited to the controlled test messages and dated builds."
+        ]
+      },
+      "message.pin": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/53"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.read": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/11"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.read_participants": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/67"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.unpin": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/54"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.unpin_all": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/84"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "message.views": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/68"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "messages.search": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/64"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "poll.close": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/52"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "poll.results": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/46"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "poll.vote": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/47"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "poll.voters": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/66"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "send.contact": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/13"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.location": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Corrected static location sent in both directions; correlated nonces, exact recipient coordinates and official-Web presentation were checked.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Earlier mismatched sends remain unknown; no live-location claim."
+        ]
+      },
+      "send.poll": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/48"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "users.common_chats": {
+        "level": "live_failed",
+        "date": "2026-10-10",
+        "scope": "A controlled live attempt did not succeed; this record does not classify every failure as a provider defect.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/65"
+        ],
+        "limitations": [
+          "The unsuccessful attempt remains recorded. See later scoped observations before relying on this operation."
+        ]
+      },
+      "users.get": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/eitaa/operations/59"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      }
+    }
+  },
+  "rubika": {
+    "provider": {
+      "level": "live_scoped",
+      "date": "2026-10-10",
+      "scope": "Two operator-controlled accounts: native login, restart without OTP, direct text, selected media and scoped recovery trials. These are dated pre-release observations, not acceptance of every operation or later binary.",
+      "references": [
+        "docs/providers/acceptance.md"
+      ],
+      "limitations": [
+        "Exhaustive initial history, multi-day recovery and real 300-account capacity remain unverified.",
+        "Known gaps and operation-specific limits remain visible; enabling this provider is a separate configuration choice."
+      ]
+    },
+    "send": {
+      "text": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account text send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "file": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account file send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "image": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account image send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "audio": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account audio send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build.",
+          "Audio uses inspected MP3; Ogg Opus uses voice."
+        ]
+      },
+      "voice": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account voice send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      },
+      "video": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Selected two-account video send/receive and recipient download trials; no arbitrary codec or payload guarantee.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence belongs to the dated test binaries; not a new live test of the current build."
+        ]
+      }
+    },
+    "operations": {
+      "account.about": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/36"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.avatar": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/81"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/0"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "account.name": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/35"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "account.username": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/37"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "avatar.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/82"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "avatar.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/84"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "channel.create": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/39"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "channel.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/6"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.action": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/76"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.activity": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/34"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.get_by_ids": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/33"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.history": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/7"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.history.clear": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/77"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "chat.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/9"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/4"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.messages": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/8"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "chat.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/78"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "chat.search": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/32"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.add": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/28"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.block": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/26"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/1"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.online": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/70"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "contacts.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/29"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.resolve": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/30"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "contacts.unblock": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/27"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "folders.add": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/55"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "folders.edit": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/56"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "folders.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/2"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "folders.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/57"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "gif.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/66"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.add": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/43"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.admins": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/13"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.ban": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/24"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.banned": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/14"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.chat.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/79"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.common": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/73"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.create": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/38"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.default_permissions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/47"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.default_permissions.set": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/48"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.demote": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/46"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.description": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/41"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.history": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/54"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.info": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/10"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.join": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/52"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.join_public": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/50"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "group.leave": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/49"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.link": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/11"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.link.revoke": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/51"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/5"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.members": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/12"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.mentions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/75"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.name": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/40"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.online": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/74"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.permissions": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/44"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.photo": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/83"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.preview": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/53"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.promote": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/45"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.unban": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/25"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "group.username": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/42"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "link.resolve": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/80"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "message.delete": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/17"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.edit": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Controlled two-account edits matched the target in recipient events.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Sparse Rubika edits remain partial; no complete-history or arbitrary-message claim."
+        ]
+      },
+      "message.forward": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Controlled two-account forward and one-time scheduled forward trials passed.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Evidence is limited to the controlled test messages and dated builds."
+        ]
+      },
+      "message.pin": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/20"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.reaction": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/22"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.reaction.remove": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/23"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.read": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/19"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "message.unpin": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/21"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "peers.get": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/71"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "poll.results": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/58"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "poll.vote": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/59"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "poll.voters": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/60"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "search.global": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/31"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "search.messages": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/72"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.contact": {
+        "level": "live_scoped",
+        "date": "2026-10-10",
+        "scope": "Sender contact cards passed both directions and exact-ID recipient reads, including without user_id.",
+        "references": [
+          "docs/providers/acceptance.md"
+        ],
+        "limitations": [
+          "Other contact card variants remain unverified."
+        ]
+      },
+      "send.gif": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/67"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "send.location": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/68"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.poll": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native write acknowledgement was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/61"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "send.sticker": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/65"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "sticker.get": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/62"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "sticker.list": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/3"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      },
+      "sticker.pack.add": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/63"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "sticker.pack.remove": {
+        "level": "offline_only",
+        "date": "2026-10-10",
+        "scope": "Registered contract with synthetic checks; this operation was not run in the controlled live matrix.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/64"
+        ],
+        "limitations": [
+          "Live semantic acceptance remains pending."
+        ]
+      },
+      "users.get": {
+        "level": "live_response",
+        "date": "2026-10-10",
+        "scope": "A controlled native read response was observed.",
+        "references": [
+          "docs/providers/live-20261010.json#/providers/rubika/operations/15"
+        ],
+        "limitations": [
+          "A successful response alone does not verify the full effect or every payload variant."
+        ]
+      }
+    }
+  }
+}

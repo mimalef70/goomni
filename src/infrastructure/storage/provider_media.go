@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"strconv"
-	"unicode/utf8"
 
 	"github.com/mimalef70/goomni/src/domains"
 )
@@ -24,7 +22,7 @@ type privateProviderMedia struct {
 // The durable event and delivery body must agree with the private reference
 // accepted in their transaction. A quote's attachment belongs to another
 // message, so only the current content chain may advertise this registration.
-func setEventMediaAvailability(event *domains.Event, available bool) error {
+func (s *Store) setEventMediaAvailability(event *domains.Event, available bool) error {
 	fileID := ""
 	if event.Media != nil {
 		fileID = event.Media.FileID
@@ -35,101 +33,42 @@ func setEventMediaAvailability(event *domains.Event, available bool) error {
 		message.Media = &media
 		event.Message = &message
 	}
-	if event.Provider != domains.ProviderBale {
-		return nil
-	}
-	payload, err := setContentMediaAvailability(event.Payload, fileID, available, 0)
+	contract, err := s.mediaContract(event.Provider)
 	if err != nil {
 		return err
 	}
-	event.Payload = payload
-	return nil
+	return contract.ProjectMediaAvailability(event, available)
 }
 
-func setContentMediaAvailability(raw json.RawMessage, fileID string, available bool, depth int) (json.RawMessage, error) {
-	if len(raw) == 0 || depth >= 8 {
-		return raw, nil
+func (s *Store) validateProviderMediaKey(provider domains.Provider, peer domains.Peer, id string) error {
+	c, err := s.mediaContract(provider)
+	if err != nil {
+		return err
 	}
-	var body map[string]json.RawMessage
-	if err := json.Unmarshal(raw, &body); err != nil {
-		return nil, err
-	}
-	var kind string
-	_ = json.Unmarshal(body["kind"], &kind)
-	changed := false
-	if kind == "document" {
-		var advertised string
-		_ = json.Unmarshal(body["file_id"], &advertised)
-		body["download_supported"] = json.RawMessage("false")
-		if available && fileID != "" && advertised == fileID {
-			body["download_supported"] = json.RawMessage("true")
-		}
-		changed = true
-	}
-	if kind == "template" || kind == "template_response" {
-		if content, ok := body["content"]; ok {
-			updated, err := setContentMediaAvailability(content, fileID, available, depth+1)
-			if err != nil {
-				return nil, err
-			}
-			body["content"] = updated
-			changed = true
-		}
-	}
-	if !changed {
-		return raw, nil
-	}
-	return json.Marshal(body)
+	return c.ValidateMediaKey(peer, id)
 }
-
-func validateProviderMediaKey(provider domains.Provider, peer domains.Peer, messageID string) error {
-	if e := peer.Validate(); e != nil {
-		return e
-	}
-	if provider == domains.ProviderBale {
-		id, e := strconv.ParseInt(messageID, 10, 64)
-		if e != nil || id == 0 || len(messageID) == 0 || messageID[0] == '+' {
-			return domains.E("INVALID_MESSAGE_ID", "a nonzero signed decimal message id is required", 400)
-		}
-	} else if !validOpaqueID(messageID) {
-		return domains.E("INVALID_MESSAGE_ID", "message id must be a bounded nonempty UTF-8 string", 400)
-	}
-	return nil
-}
-func validateProviderMedia(provider domains.Provider, m domains.ProviderMedia) error {
+func (s *Store) validateProviderMedia(provider domains.Provider, m domains.ProviderMedia) error {
 	if m.Provider != provider {
 		return providerMismatch()
 	}
 	if m.Version < 1 {
 		return domains.E("INVALID_PROVIDER_MEDIA", "private media format version is required", 502)
 	}
-	if provider == domains.ProviderBale {
-		id, e := strconv.ParseInt(m.FileID, 10, 64)
-		if e != nil || id == 0 {
-			return domains.E("INVALID_PROVIDER_MEDIA", "invalid provider file id", 502)
-		}
-		if _, e = strconv.ParseInt(m.AccessHash, 10, 64); e != nil {
-			return domains.E("INVALID_PROVIDER_MEDIA", "invalid provider media access reference", 502)
-		}
-	} else if !validOpaqueID(m.FileID) || len(m.Data) == 0 || len(m.Data) > 1<<20 || !json.Valid(m.Data) {
-		return domains.E("INVALID_PROVIDER_MEDIA", "invalid private provider media reference", 502)
-	}
 	if m.Size < 0 || len(m.Name) > 4096 || len(m.ContentType) > 255 {
 		return domains.E("INVALID_PROVIDER_MEDIA", "invalid provider media metadata", 502)
 	}
-	return nil
+	c, err := s.mediaContract(provider)
+	if err != nil {
+		return err
+	}
+	return c.ValidateMediaReference(m)
 }
-
-func validOpaqueID(id string) bool {
-	if id == "" || len(id) > 1024 || !utf8.ValidString(id) {
-		return false
+func (s *Store) validateMediaRevision(provider domains.Provider, peer domains.Peer, kind string, revision *domains.MediaRevision) error {
+	c, err := s.mediaContract(provider)
+	if err != nil {
+		return err
 	}
-	for _, c := range id {
-		if c < 32 || c == 127 {
-			return false
-		}
-	}
-	return true
+	return c.ValidateMediaRevision(peer, kind, revision)
 }
 func providerMediaAAD(conn string, peer domains.Peer, messageID string) string {
 	return conn + ":provider-media:" + peer.Key() + ":" + messageID
@@ -139,16 +78,16 @@ func (s *Store) saveProviderMediaTx(ctx context.Context, tx *sql.Tx, conn string
 	if e != nil {
 		return false, e
 	}
-	if e := validateProviderMediaKey(provider, peer, messageID); e != nil {
+	if e := s.validateProviderMediaKey(provider, peer, messageID); e != nil {
 		return false, e
 	}
-	if e := validateMediaRevision(provider, peer, kind, revision); e != nil {
+	if e := s.validateMediaRevision(provider, peer, kind, revision); e != nil {
 		return false, e
 	}
 	var ciphertext []byte
 	var privateJSON []byte
 	if m != nil {
-		if e := validateProviderMedia(provider, *m); e != nil {
+		if e := s.validateProviderMedia(provider, *m); e != nil {
 			return false, e
 		}
 		private := privateProviderMedia{FileID: m.FileID, AccessHash: m.AccessHash, Size: m.Size, Name: m.Name, ContentType: m.ContentType, Data: m.Data}
@@ -194,7 +133,7 @@ func (s *Store) GetProviderMedia(ctx context.Context, conn string, peer domains.
 	if e != nil {
 		return domains.ProviderMedia{}, e
 	}
-	if e := validateProviderMediaKey(d.Provider, peer, messageID); e != nil {
+	if e := s.validateProviderMediaKey(d.Provider, peer, messageID); e != nil {
 		return domains.ProviderMedia{}, e
 	}
 	var ciphertext []byte

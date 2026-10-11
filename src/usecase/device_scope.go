@@ -19,12 +19,12 @@ type deviceScope struct {
 // the returned context, including nested calls and operation polling. It never
 // resolves the alias again. Transports must bind before reading a request body
 // or performing any other work that can block after selecting the account.
-func (s *Service) BindDevice(ctx context.Context, device domains.Device) (context.Context, error) {
+func (s *serviceRuntime) BindDevice(ctx context.Context, device domains.Device) (context.Context, error) {
 	if previous, ok := ctx.Value(deviceScopeKey{}).(deviceScope); ok &&
 		(previous.alias != device.ID || previous.connection != device.ConnectionID) {
 		return nil, domains.E("DEVICE_SCOPE_MISMATCH", "request is bound to another connection", 409)
 	}
-	current, err := s.store.DeviceByConnection(ctx, device.ConnectionID)
+	current, err := s.accountStore.DeviceByConnection(ctx, device.ConnectionID)
 	if err != nil {
 		return nil, err
 	}

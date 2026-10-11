@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/balemeow/catalog"
 	"github.com/mimalef70/goomni/src/internal/balemeow/wire"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -37,7 +38,7 @@ func (c *Client) miniAppExtended(ctx context.Context, op string, raw json.RawMes
 	if json.Unmarshal(raw, &p) != nil {
 		return nil, boundedError("INVALID_REQUEST", "invalid mini app body", 400)
 	}
-	contract, ok := domains.OperationDefinition(op)
+	contract, ok := catalog.OperationDefinition(op)
 	if !ok {
 		return nil, domains.Unsupported(op)
 	}

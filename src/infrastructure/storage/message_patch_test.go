@@ -3,10 +3,12 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"github.com/mimalef70/goomni/src/domains"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPartialEditDurabilitySearchAndIsolation(t *testing.T) {
@@ -14,7 +16,7 @@ func TestPartialEditDurabilitySearchAndIsolation(t *testing.T) {
 	s, path := testStore(t)
 	d := providerDevice(t, s, "rubika", domains.ProviderRubika)
 	other := providerDevice(t, s, "other", domains.ProviderRubika)
-	targets := []WebhookTarget{{URL: "https://synthetic.invalid/hooks", Secret: "synthetic"}}
+	targets := []domains.WebhookTarget{{URL: "https://synthetic.invalid/hooks", Secret: "synthetic"}}
 	for i, body := range []*string{nil, new(""), new("سلام %_🙂")} {
 		event := domains.Event{Provider: domains.ProviderRubika, ID: []string{"absent", "empty", "text"}[i], Type: "message.edited", Peer: domains.Peer{Type: "user", ID: "u0peer"}, MessageID: "42", Direction: "unknown", Time: time.Unix(int64(100+i), 0).UTC(), Payload: json.RawMessage(`{"partial":true,"timestamp_source":"observed","provider_update_timestamp":"opaque","unprojected_fields":true}`), MessagePatch: &domains.MessagePatch{ID: "42", ChatID: "u0peer", OriginalMessageID: "42", Partial: true, Body: body, Supported: body != nil}}
 		_, err := s.AppendBatch(ctx, d.ConnectionID, domains.EventBatch{Events: []domains.Event{event}}, targets)
@@ -32,7 +34,7 @@ func TestPartialEditDurabilitySearchAndIsolation(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, before, 3)
 	require.NoError(t, s.Close())
-	s, err = Open(path, testKey)
+	s, err = Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer s.Close()
 	after, err := s.ListDeliveries(ctx, d.ConnectionID, 100, 0)

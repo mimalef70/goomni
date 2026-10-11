@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
-	"github.com/mimalef70/goomni/src/infrastructure/storage"
 )
 
 type adminAuthClient struct {
@@ -106,7 +105,7 @@ func TestOverviewFiftyAccountsDoesNotConstructOrCallProvider(t *testing.T) {
 	if f.callCalls != 0 {
 		t.Fatal("overview called RPC")
 	}
-	_, err = st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "synthetic", Type: "message", Payload: json.RawMessage(`{"text":"not in overview"}`)}, []storage.WebhookTarget{{URL: "https://example.test/hook", Secret: "not in overview"}})
+	_, err = st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: "synthetic", Type: "message", Payload: json.RawMessage(`{"text":"not in overview"}`)}, []domains.WebhookTarget{{URL: "https://example.test/hook", Secret: "not in overview"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -267,7 +266,7 @@ func TestLoginStatePasswordCompletionAndLifecycleCleanup(t *testing.T) {
 	}
 	// A new usecase (as after restart) has no in-memory challenge even though the
 	// persisted device and immutable account binding are retained.
-	fresh := New(s.store, Options{}, func(domains.Device) domains.Client { return &fakeClient{} })
+	fresh := newTestService(s.storePorts(), Options{}, func(domains.Device) domains.Client { return &fakeClient{} })
 	state, err = fresh.LoginState(ctx, d.ID)
 	if err != nil || state.State != "auth_required" || state.Challenge != nil {
 		t.Fatalf("restart revived challenge: %+v %v", state, err)
@@ -287,7 +286,7 @@ func TestWebhookDetailsRoutingAndSecretRedaction(t *testing.T) {
 	ctx := context.Background()
 	for _, merge := range []bool{false, true} {
 		t.Run(fmt.Sprint(merge), func(t *testing.T) {
-			options := Options{MergeGlobal: merge, GlobalWebhooks: []storage.WebhookTarget{{URL: "https://global.test/hook", Secret: "never-expose-global"}}, GlobalWebhookEvents: []string{"message"}}
+			options := Options{MergeGlobal: merge, GlobalWebhooks: []domains.WebhookTarget{{URL: "https://global.test/hook", Secret: "never-expose-global"}}, GlobalWebhookEvents: []string{"message"}}
 			s, _ := testService(t, options, func(domains.Device) domains.Client { return &fakeClient{} })
 			d := mustDevice(t, s, "webhook")
 			got, err := s.WebhookDetails(ctx, d.ID)

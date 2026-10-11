@@ -25,6 +25,8 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/mimalef70/goomni/src/config"
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
+	"github.com/mimalef70/goomni/src/infrastructure/providers/bale"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/ui/rest"
 	"github.com/mimalef70/goomni/src/ui/web"
@@ -141,7 +143,7 @@ func seed(ctx context.Context, svc *usecase.Service, st *storage.Store) error {
 		if err != nil {
 			return err
 		}
-		_, err = st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: name, Type: "message", Peer: domains.Peer{Type: "user", ID: "42"}, Time: time.Now().UTC(), Payload: json.RawMessage(`{"text":"Synthetic local test event — رویداد آزمایشی"}`)}, []storage.WebhookTarget{{URL: d.Webhook.URL, Secret: d.Webhook.Secret, Revision: d.Webhook.Revision, Device: true}})
+		_, err = st.AppendEvent(ctx, d.ConnectionID, domains.Event{ID: name, Type: "message", Peer: domains.Peer{Type: "user", ID: "42"}, Time: time.Now().UTC(), Payload: json.RawMessage(`{"text":"Synthetic local test event — رویداد آزمایشی"}`)}, []domains.WebhookTarget{{URL: d.Webhook.URL, Secret: d.Webhook.Secret, Revision: d.Webhook.Revision, Device: true}})
 		return err
 	}
 	if err = appendFixture("paused-fixture"); err != nil {
@@ -183,12 +185,13 @@ func run() error {
 		return err
 	}
 	defer os.RemoveAll(dir)
-	st, err := storage.Open(filepath.Join(dir, "test.db"), bytes.Repeat([]byte{91}, 32))
+	st, err := storage.Open(filepath.Join(dir, "test.db"), bytes.Repeat([]byte{91}, 32), providers.Contracts())
 	if err != nil {
 		return err
 	}
 	defer st.Close()
-	svc := usecase.New(st, usecase.Options{}, newSyntheticClient)
+	registry, _ := domains.NewProviderRegistry(domains.ProviderRegistration{Contract: bale.Contract{}, Factory: newSyntheticClient})
+	svc := usecase.New(st, usecase.Options{Providers: registry})
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,12 +55,12 @@ func TestScheduledUploadAtomicityConcurrencyRestartAndSharedKeys(t *testing.T) {
 	require.NoError(t, s.db.QueryRow(`SELECT COUNT(*) FROM media`).Scan(&n))
 	require.Equal(t, 1, n)
 	errorCode(t, s.DeleteMedia(ctx, d.ConnectionID, first.Request.MediaID), "MEDIA_IN_USE")
-	op, err := s.MaterializeSchedule(ctx, d.ConnectionID, first.ID, next, nil, AdmissionLimits{})
+	op, err := s.MaterializeSchedule(ctx, d.ConnectionID, first.ID, next, nil, domains.AdmissionLimits{})
 	require.NoError(t, err)
 	require.Equal(t, first.Request.MediaID, op.Request.MediaID)
 	require.NotEmpty(t, op.Request.RequestID)
 	require.NoError(t, s.Close())
-	s, err = Open(path, testKey)
+	s, err = Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	t.Cleanup(func() { s.Close() })
 	req.MediaID = "new-upload"
@@ -73,7 +74,7 @@ func TestScheduledUploadAtomicityConcurrencyRestartAndSharedKeys(t *testing.T) {
 	require.NoError(t, err, "a duplicate keeps its completed schedule even without a future next time")
 	_, err = s.CreateScheduleUpload(ctx, d.ConnectionID, req, next, "same", m, strings.Repeat("b", 64))
 	errorCode(t, err, "IDEMPOTENCY_CONFLICT")
-	_, _, err = s.Enqueue(ctx, d.ConnectionID, textRequest("now"), "same", AdmissionLimits{})
+	_, _, err = s.Enqueue(ctx, d.ConnectionID, textRequest("now"), "same", domains.AdmissionLimits{})
 	errorCode(t, err, "IDEMPOTENCY_CONFLICT")
 	_, err = s.GetMedia(ctx, d.ConnectionID, m.ID)
 	errorCode(t, err, "NOT_FOUND")

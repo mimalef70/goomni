@@ -750,7 +750,7 @@ func (c *Client) projectMessage(guid string, update object) (domains.Event, erro
 	self := c.session.UserID
 	c.mu.RUnlock()
 	var fromMe *bool
-	if (Contract{}).ValidateSenderID(event.SenderID) {
+	if (protocolRules{}).ValidateSenderID(event.SenderID) {
 		value := event.SenderID == self
 		fromMe = &value
 		event.Direction = "incoming"

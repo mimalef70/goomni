@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -65,7 +66,7 @@ func TestProvisioningReplayPrivacyAndChangedRequest(t *testing.T) {
 	public, err := json.Marshal(d)
 	require.NoError(t, err)
 	require.NotContains(t, string(public), request.WebhookSecret)
-	otherKeyStore, err := Open(filepath.Join(t.TempDir(), "other.db"), bytes.Repeat([]byte{7}, 32))
+	otherKeyStore, err := Open(filepath.Join(t.TempDir(), "other.db"), bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, err)
 	defer otherKeyStore.Close()
 	otherHash, err := otherKeyStore.provisioningHash(request)
@@ -220,14 +221,14 @@ func TestProvisioningEmptyConfigAndNamespace(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, replay)
 	// A provisioning key does not consume this connection's send namespace.
-	_, created, err := s.Enqueue(ctx, d.ConnectionID, textRequest("namespace"), "shared-key", AdmissionLimits{Global: 10, Connection: 10})
+	_, created, err := s.Enqueue(ctx, d.ConnectionID, textRequest("namespace"), "shared-key", domains.AdmissionLimits{Global: 10, Connection: 10})
 	require.NoError(t, err)
 	require.True(t, created)
 }
 
 func TestProvisioningSurvivesProcessExitAfterCommit(t *testing.T) {
 	if os.Getenv("GOOMNI_TEST_PROVISION_EXIT") == "1" {
-		s, err := Open(os.Getenv("GOOMNI_TEST_PROVISION_DB"), testKey)
+		s, err := Open(os.Getenv("GOOMNI_TEST_PROVISION_DB"), testKey, providers.Contracts())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -249,7 +250,7 @@ func TestProvisioningSurvivesProcessExitAfterCommit(t *testing.T) {
 	require.NoError(t, err, "%s", output)
 	connection := strings.TrimSpace(string(output))
 	require.Len(t, connection, 36)
-	s, err := Open(path, testKey)
+	s, err := Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	defer s.Close()
 	d, replay, err := s.ProvisionDevice(context.Background(), provisioningRequest("crash"), "lost-response")
@@ -266,7 +267,7 @@ func TestProvisioningMigrationPreservesV5AndV6Data(t *testing.T) {
 			s, path := testStore(t)
 			d := device(t, s, "existing")
 			require.NoError(t, s.SaveSession(ctx, d.ConnectionID, &domains.Session{Provider: domains.ProviderBale, Version: 1, UserID: "123", Token: "synthetic-session"}))
-			_, err := s.AppendEvent(ctx, d.ConnectionID, event("preserved", "checkpoint"), []WebhookTarget{{URL: "https://example.test/old", Secret: "old-secret"}})
+			_, err := s.AppendEvent(ctx, d.ConnectionID, event("preserved", "checkpoint"), []domains.WebhookTarget{{URL: "https://example.test/old", Secret: "old-secret"}})
 			require.NoError(t, err)
 			if version == 5 {
 				restoreV5APISchema(t, s)
@@ -276,7 +277,7 @@ func TestProvisioningMigrationPreservesV5AndV6Data(t *testing.T) {
 			_, err = s.db.Exec(`UPDATE gobale_meta SET version=?`, version)
 			require.NoError(t, err)
 			require.NoError(t, s.Close())
-			upgraded, err := Open(path, testKey)
+			upgraded, err := Open(path, testKey, providers.Contracts())
 			require.NoError(t, err)
 			defer upgraded.Close()
 			var actual int

@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
 	"github.com/mimalef70/goomni/src/pkg/sqlite"
 )
@@ -209,16 +210,16 @@ func TestOptionalSoak(t *testing.T) {
 	}
 	boot := func() {
 		var e error
-		store, e = storage.Open(dbPath, key)
+		store, e = storage.Open(dbPath, key, providers.Contracts())
 		if e != nil {
 			t.Fatal(e)
 		}
-		service = New(store, Options{PollInterval: 500 * time.Millisecond, GlobalWebhooks: []storage.WebhookTarget{{URL: server.URL, Secret: "soak-webhook-secret"}}}, factory)
+		service = newTestService(store, Options{PollInterval: 500 * time.Millisecond, GlobalWebhooks: []domains.WebhookTarget{{URL: server.URL, Secret: "soak-webhook-secret"}}}, factory)
 		if e = service.Start(ctx); e != nil {
 			t.Fatal(e)
 		}
 	}
-	store, err = storage.Open(dbPath, key)
+	store, err = storage.Open(dbPath, key, providers.Contracts())
 	if err != nil {
 		t.Fatal(err)
 	}

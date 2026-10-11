@@ -58,7 +58,7 @@ func TestMediaProviderPanicReleasesSlotAndContextBeforeNextTransfer(t *testing.T
 			s.opts.RequestTimeout = time.Nanosecond // Streams must own their lifetime.
 			d, err := svc.CreateDevice(context.Background(), "synthetic", domains.ProviderBale)
 			require.NoError(t, err)
-			available, err := s.store.SaveProviderMedia(context.Background(), d.ConnectionID, domains.Peer{Type: "user", ID: "123"}, "456", domains.ProviderMedia{Provider: domains.ProviderBale, Version: 1, FileID: "-789", AccessHash: "-987", Size: 7, Name: "fixture.png", ContentType: "image/png"})
+			available, err := s.testStore().SaveProviderMedia(context.Background(), d.ConnectionID, domains.Peer{Type: "user", ID: "123"}, "456", domains.ProviderMedia{Provider: domains.ProviderBale, Version: 1, FileID: "-789", AccessHash: "-987", Size: 7, Name: "fixture.png", ContentType: "image/png"})
 			require.NoError(t, err)
 			require.True(t, available)
 			for index := 0; index < 3; index++ {

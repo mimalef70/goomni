@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,12 +19,12 @@ func TestDeliveryAdminFiltersCountsAndPayloadProjection(t *testing.T) {
 	other := device(t, s, "other")
 	states := []string{"queued", "retry", "delivering", "delivered", "failed", "paused", "cancelled"}
 	for i, state := range states {
-		_, err := s.AppendEvent(ctx, d.ConnectionID, event(fmt.Sprintf("event-%d", i), ""), []WebhookTarget{{URL: fmt.Sprintf("https://example.test/%d", i), Secret: "synthetic"}})
+		_, err := s.AppendEvent(ctx, d.ConnectionID, event(fmt.Sprintf("event-%d", i), ""), []domains.WebhookTarget{{URL: fmt.Sprintf("https://example.test/%d", i), Secret: "synthetic"}})
 		require.NoError(t, err)
 		_, err = s.db.Exec(`UPDATE deliveries SET state=? WHERE url=?`, state, fmt.Sprintf("https://example.test/%d", i))
 		require.NoError(t, err)
 	}
-	_, err := s.AppendEvent(ctx, other.ConnectionID, event("other", ""), []WebhookTarget{{URL: "https://other.test/hook", Secret: "synthetic"}})
+	_, err := s.AppendEvent(ctx, other.ConnectionID, event("other", ""), []domains.WebhookTarget{{URL: "https://other.test/hook", Secret: "synthetic"}})
 	require.NoError(t, err)
 	counts, err := s.DeliveryCounts(ctx)
 	require.NoError(t, err)
@@ -79,7 +80,7 @@ func TestDeviceInstanceTokenPersistsAndDoesNotFollowAliasReuse(t *testing.T) {
 	require.NotContains(t, string(raw), d.ConnectionID)
 	require.Contains(t, string(raw), d.InstanceID)
 	require.NoError(t, s.Close())
-	s, err = Open(path, testKey)
+	s, err = Open(path, testKey, providers.Contracts())
 	require.NoError(t, err)
 	t.Cleanup(func() { s.Close() })
 	restored, err := s.GetDevice(ctx, d.ID)

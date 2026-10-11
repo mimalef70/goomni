@@ -16,7 +16,7 @@ func (c *Client) listAvatars(ctx context.Context, raw json.RawMessage) (json.Raw
 	var p struct {
 		Peer domains.Peer `json:"peer"`
 	}
-	if json.Unmarshal(raw, &p) != nil || (Contract{}).ValidatePeer(p.Peer) != nil {
+	if json.Unmarshal(raw, &p) != nil || (protocolRules{}).ValidatePeer(p.Peer) != nil {
 		return nil, domains.E("INVALID_PEER", "a valid avatar peer is required", 400)
 	}
 	if p.Peer.Type != "user" && p.Peer.Type != "group" && p.Peer.Type != "channel" {
@@ -64,7 +64,7 @@ func (c *Client) avatarMutation(ctx context.Context, name string, raw json.RawMe
 	if name == "account.avatar" {
 		p.Peer = domains.Peer{Type: "user", ID: account}
 	}
-	if err := (Contract{}).ValidatePeer(p.Peer); err != nil {
+	if err := (protocolRules{}).ValidatePeer(p.Peer); err != nil {
 		return nil, true, err
 	}
 	if p.Peer.Type == "user" && p.Peer.ID != account {

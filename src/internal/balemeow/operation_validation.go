@@ -2,16 +2,18 @@ package balemeow
 
 import (
 	"encoding/json"
+
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/balemeow/catalog"
 )
 
 func prepareExtendedCall(operation string, raw json.RawMessage) (json.RawMessage, error) {
-	def, ok := domains.OperationDefinition(operation)
+	def, ok := catalog.OperationDefinition(operation)
 	if !ok {
 		return nil, domains.Unsupported(operation)
 	}
 	if def.Mode != "mutation" {
-		v, _, e := domains.NormalizeOperation(operation, raw)
+		v, _, e := catalog.NormalizeOperation(operation, raw)
 		return v, e
 	}
 	var values map[string]json.RawMessage
@@ -30,7 +32,7 @@ func prepareExtendedCall(operation string, raw json.RawMessage) (json.RawMessage
 	}
 	delete(values, "request_id")
 	body, _ := json.Marshal(values)
-	normalized, _, err := domains.NormalizeOperation(operation, body)
+	normalized, _, err := catalog.NormalizeOperation(operation, body)
 	if err != nil {
 		return nil, err
 	}

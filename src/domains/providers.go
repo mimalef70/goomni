@@ -40,13 +40,14 @@ func ValidOpaqueID(id string) bool {
 // Text limits also apply to captions. Format notes do not establish provider
 // acceptance or live interoperability; native validation remains authoritative.
 type ProviderSendCapabilities struct {
-	Kinds             []string                 `json:"kinds"`
-	MaxTextBytes      int                      `json:"max_text_bytes,omitempty"`
-	MaxTextCharacters int                      `json:"max_text_characters,omitempty"`
-	MentionsSupported bool                     `json:"mentions_supported"`
-	MaxMentions       int                      `json:"max_mentions"`
-	ReplySupported    bool                     `json:"reply_supported"`
-	MediaFormatNotes  ProviderMediaFormatNotes `json:"media_format_notes"`
+	Kinds             []string                      `json:"kinds"`
+	MaxTextBytes      int                           `json:"max_text_bytes,omitempty"`
+	MaxTextCharacters int                           `json:"max_text_characters,omitempty"`
+	MentionsSupported bool                          `json:"mentions_supported"`
+	MaxMentions       int                           `json:"max_mentions"`
+	ReplySupported    bool                          `json:"reply_supported"`
+	MediaFormatNotes  ProviderMediaFormatNotes      `json:"media_format_notes"`
+	Evidence          map[string]CapabilityEvidence `json:"evidence"`
 }
 
 type ProviderMediaFormatNotes struct {
@@ -85,6 +86,7 @@ type ProviderDescriptor struct {
 	Name            string                   `json:"name"`
 	Enabled         bool                     `json:"enabled"`
 	Verification    string                   `json:"verification"`
+	Evidence        CapabilityEvidence       `json:"evidence"`
 	DeliveryMethods []string                 `json:"delivery_methods"`
 	Send            ProviderSendCapabilities `json:"send"`
 	Interactions    ProviderInteractions     `json:"interactions"`
@@ -111,6 +113,24 @@ type SessionPersister func(context.Context, *Session) error
 type AuthChallengeSource interface{ CurrentChallenge() Challenge }
 type SessionPersistenceClient interface{ SetSessionPersister(SessionPersister) }
 type MessageIdentityContract interface{ ValidateMessageID(string) bool }
+
+// PrivateMediaContract validates provider-private references and ordering
+// evidence. Storage still owns encryption, account binding and atomic writes.
+type PrivateMediaContract interface {
+	ValidateMediaKey(Peer, string) error
+	ValidateMediaReference(ProviderMedia) error
+	ValidateMediaRevision(Peer, string, *MediaRevision) error
+	ProjectMediaAvailability(*Event, bool) error
+}
+
+// AcceptancePolicy is reviewed evidence, not permission to retry a write.
+// Storage supplies the original durable event/request under its transaction.
+type AcceptancePolicy struct {
+	Kind      string
+	RequestID func(Event) string
+	Verify    func(string, Event, SendRequest) bool
+}
+type AcceptanceContract interface{ AcceptancePolicy() AcceptancePolicy }
 
 // SenderIdentityContract validates actors independently of login account IDs.
 type SenderIdentityContract interface{ ValidateSenderID(string) bool }
@@ -171,7 +191,7 @@ func (r *ProviderRegistry) List() []ProviderDescriptor {
 			result = append(result, v.Contract.Descriptor())
 		} else {
 			names := map[Provider]string{ProviderBale: "Bale", ProviderEitaa: "Eitaa", ProviderRubika: "Rubika"}
-			result = append(result, ProviderDescriptor{ID: p, Name: names[p], Enabled: false, Verification: "pending", DeliveryMethods: []string{}, Send: ProviderSendCapabilities{Kinds: []string{}}, Interactions: ProviderInteractions{ReceiptModel: "none", SenderNames: "unavailable"}})
+			result = append(result, ProviderDescriptor{ID: p, Name: names[p], Enabled: false, Verification: "Provider is not registered", Evidence: CapabilityEvidence{Level: "unavailable", Scope: "No provider is registered.", References: []string{}, Limitations: []string{}}, DeliveryMethods: []string{}, Send: ProviderSendCapabilities{Kinds: []string{}, Evidence: map[string]CapabilityEvidence{}}, Interactions: ProviderInteractions{ReceiptModel: "none", SenderNames: "unavailable"}})
 		}
 	}
 	return result

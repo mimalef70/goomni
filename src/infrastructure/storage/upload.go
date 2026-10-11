@@ -14,7 +14,7 @@ import (
 // together. Failed admission, conflicts and retries leave no media registration,
 // so the upload manager can safely clean the unused staging file. The hash binds
 // bytes and public metadata, never the randomly allocated staging identifier.
-func (s *Store) EnqueueUpload(ctx context.Context, conn string, req domains.SendRequest, key string, media domains.Media, digest string, limits AdmissionLimits) (op domains.Operation, err error) {
+func (s *Store) EnqueueUpload(ctx context.Context, conn string, req domains.SendRequest, key string, media domains.Media, digest string, limits domains.AdmissionLimits) (op domains.Operation, err error) {
 	start := time.Now()
 	defer func() { s.observePersistence("enqueue", start, err) }()
 	hash, err := uploadRequestHash(conn, req, media, digest)
