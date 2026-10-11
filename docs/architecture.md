@@ -42,7 +42,14 @@ reviewed evidence resolves them; the refactor adds no automatic resend.
 All public adapter contracts live in `src/infrastructure/providers/{provider}`.
 They declare discovery metadata, public operation routes, limits and admission
 rules. The provider registry is explicitly assembled by the command layer;
-there is no implicit default Bale factory. Eitaa and Rubika remain opt-in.
+there is no implicit default Bale factory. Bale, Eitaa and Rubika occupy the same
+architectural role: all three native clients are compiled into the binary and
+use the shared application services, SQLite store and durable work lifecycle.
+
+Enablement is runtime configuration, separate from this architecture. Bale is
+enabled by default; Eitaa and Rubika are opt-in through `EITAA_ENABLED=true` and
+`RUBIKA_ENABLED=true` respectively. Each provider retains its own protocol,
+capabilities and verification evidence.
 
 The native packages in `src/internal/{balemeow,eitaameow,rubikameow}` own transport,
 authentication, RPC, protocol validation and updates. Public naming conversions,

@@ -2,6 +2,7 @@
 """Stage the static API reference. No application runtime or account data needed."""
 from pathlib import Path
 import argparse
+import html
 import json
 import posixpath
 import re
@@ -25,7 +26,11 @@ if any(path.is_symlink() or (path.is_dir() and path.relative_to(out).as_posix() 
     raise SystemExit("Staging directory contains unrelated files; choose an empty output directory")
 spec = yaml.safe_load((root / "docs/openapi.yaml").read_text())
 assert spec["openapi"].startswith("3.") and spec["paths"]
-for name in ("index.html", "style.css", "app.js", "icon.svg"):
+index = (root / "docs/site/index.html").read_text()
+if index.count("{{GOOMNI_VERSION}}") != 1:
+    raise SystemExit("The documentation template must contain one version placeholder")
+(out / "index.html").write_text(index.replace("{{GOOMNI_VERSION}}", html.escape(spec["info"]["version"])))
+for name in ("style.css", "app.js", "icon.svg"):
     shutil.copyfile(root / "docs/site" / name, out / name)
 shutil.copyfile(root / "docs/openapi.yaml", out / "openapi.yaml")
 # Preserve the published JSON URL without tracking a duplicate source contract.

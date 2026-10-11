@@ -66,10 +66,16 @@ connections; save that ownership mapping in your application's database.
 flowchart LR
     Application[Your backend] -->|REST requests| GoOmni
     GoOmni -->|Signed webhook events| Application
-    GoOmni -->|Provider adapter| Bale
-    GoOmni -.->|Opt-in native adapter| Eitaa
-    GoOmni -.->|Opt-in native adapter| Rubika
+    GoOmni -->|Native provider adapter| Bale
+    GoOmni -->|Native provider adapter| Eitaa
+    GoOmni -->|Native provider adapter| Rubika
 ```
+
+All three messengers use the same provider boundary, shared application services,
+SQLite storage and durable send/webhook lifecycle. Enablement is a separate
+configuration choice: Bale is enabled by default; Eitaa and Rubika require
+`EITAA_ENABLED=true` and `RUBIKA_ENABLED=true` respectively. Capabilities and
+verification evidence are specific to each messenger.
 
 The panel is for gateway administrators. It manages accounts and webhooks; it is
 not a customer login page or a chat inbox.
