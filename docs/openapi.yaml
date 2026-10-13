@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: GoOmni REST API
-  version: 2.4.0
+  version: 2.4.1
   description: Native Go, multi-account messenger gateway. Bale is enabled by default. Native Eitaa and Rubika adapters
     are opt-in. All three providers have synthetic checks and dated, scoped live observations; full native acceptance
     remains pending. Structured evidence distinguishes unsuccessful trials, response-only observations and scoped

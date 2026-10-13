@@ -1,5 +1,45 @@
 # Changelog
 
+## 2.4.1 — 2026-10-13
+
+Correct Eitaa and Rubika recovery boundaries, isolate unavailable Rubika peers,
+and enrich live sender names through bounded account-local caches. Rubika avatar
+downloads also accept fresh provider references that omit file size.
+
+- Preserve the first-attachment boundary across reconnects and omit older live
+  message events before sender enrichment or webhook acceptance. Native history
+  reads remain separate; existing checkpoints without a boundary retain their
+  previous coverage.
+- Locate newly discovered Rubika conversations' activation boundary using actual
+  observed message IDs, then drain newer messages with bounded forward pages.
+  Preserve durable watermarks across storage failures, restarts and expired
+  mutation baselines.
+- Retain unavailable Rubika peers for delayed retry while other peers and account
+  discovery progress. Expose `message_peer_unavailable` as incomplete recovery;
+  a peer authentication rejection clears the session only when a bound-self read
+  also confirms authentication loss.
+- Report Eitaa and Rubika recovery as current only after known streams drain
+  without retained gaps or coverage warnings. Preserve recovery errors until a
+  successful pass; Eitaa also waits for all known channel streams.
+- Enrich Eitaa and Rubika sender names with bounded caches isolated per client,
+  including negative caching and retry limits for unsuccessful lookups.
+- Download size-less Rubika avatar references through a bounded canonical-DC
+  request, then inspect the image and actual byte count. Keep explicit sizes
+  strict and cap downloads at the smaller of 8 MiB and the configured media limit.
+
+### Verification and remaining limits
+
+- Synthetic regression coverage includes attachment boundaries, paginated outage
+  recovery, durable acceptance failures, peer/authentication isolation, sender
+  cache limits and missing-size avatar validation.
+- The dated 2026-10-13 avatar follow-up records two controlled accounts and one
+  image on its identified local build; it does not establish general visibility,
+  new recovery acceptance or capacity for this published binary.
+- Eitaa and Rubika remain opt-in. Exhaustive historical import, arbitrary
+  multi-day recovery and live-account capacity remain acceptance gates. Unknown
+  sends remain unknown without automatic resend; unavailable peers retain pending
+  recovery work. Existing provider limitations and dated evidence still apply.
+
 ## 2.4.0 — 2026-10-11
 
 Make the shared gateway easier to extend and operate: feature services and

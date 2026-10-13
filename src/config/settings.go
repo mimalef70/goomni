@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const AppVersion = "2.4.0"
+const AppVersion = "2.4.1"
 
 type Settings struct {
 	RubikaEnabled                                                                                 bool
