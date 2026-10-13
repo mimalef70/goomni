@@ -323,6 +323,33 @@ acceptance remain pending. Per-operation responses are recorded in the
 verification. Private captures, identifiers, sessions and test messages remain
 in ignored local artifacts.
 
+## Controlled Rubika avatar follow-up (2026-10-13)
+
+An operator-requested synthetic profile image exposed a native response mismatch:
+`getAvatars` returned fresh main/thumbnail references without a file size, while
+the downloader required that field and returned `AVATAR_INVALID`. Missing-size
+references now use a canonical-DC request capped at the smaller of 8 MiB and the
+configured media limit, followed by actual byte-count and image inspection.
+Explicit sizes remain strict; no private download reference is exposed.
+
+On the final local image, both the owning account and a second authenticated
+account fetched the 200x200 and 800x800 JPEG renditions with identical checksums
+across accounts. A consumer-side, self-scoped temporary contact exercised native
+download, blob storage and the public avatar URL; all three returned identical
+bytes and the URL returned HTTP 200. The temporary contact/blob were removed;
+the requested profile image remained on the account. These are two controlled
+accounts and one image, not general profile visibility or capacity acceptance.
+`make check race fuzz vuln` and the three isolated Docker installation/restart
+scenarios passed for this source.
+
+A separately retained recovery peer was confirmed as an archived channel whose
+native info reported `is_deleted: true`; its history returned `AUTH_REQUIRED`
+while the bound self identity remained authenticated. Its checkpoint stays
+pending with `message_peer_unavailable`, rather than declaring complete recovery
+or erasing the account session. No channel membership or remote history was
+modified. Explicit in-app browser control remained unavailable; these checks used
+native account sessions and consumer HTTP results.
+
 ## Evidence boundaries
 
 - **Source observation:** pinned MIT references and inspected public provider

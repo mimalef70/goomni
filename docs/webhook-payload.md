@@ -252,7 +252,7 @@ remain in `content`.
 | Projection field | Meaning |
 | --- | --- |
 | `id`, `chat_id`, `from` | Message and sender IDs remain strings. Treat `chat_id` as an adapter-defined display key; use the envelope `peer` and immutable connection for routing. `from` is empty when the original author is unknown. |
-| `sender_display_name`, `sender_name_status` | Account-scoped display name or an empty string with `unavailable`. Bale performs bounded name enrichment before durable acceptance. Eitaa/Rubika currently retain `unavailable`; no cross-provider enrichment guarantee is implied. |
+| `sender_display_name`, `sender_name_status` | Account-scoped display name or an empty string with `unavailable`. All three adapters perform bounded, account-scoped name enrichment before durable acceptance. Missing, inaccessible or unsafe names remain `unavailable`; a lookup failure does not discard the message. |
 | `is_from_me` | True/false only for established outgoing/incoming direction; null when unknown. |
 | `timestamp` | RFC3339 message/event time, retaining the provider semantics of that event. |
 | `body`, `kind`, `supported` | Display text and content kind. Unknown variants remain visible with fallback text and `supported:false`. |
@@ -282,6 +282,8 @@ Backlogs add queueing time: the update queue remains bounded, and overflow repor
 `EVENT_BACKPRESSURE` and closes the connection for recovery. This is not a promise
 of bounded end-to-end delivery latency or complete recovery of arbitrary gaps.
 Cancellation or disconnect ends lookup work without an unbounded wait.
+
+Eitaa also retains names from account-owned user metadata and resolves missing names with `users.getFullUser`. Rubika resolves private-user names with `getUserInfo`. Both validate the returned user identity, preserve Unicode and reject control characters. Account-owned contact names take priority over later public-profile observations, matching Bale local-name preference. Rubika refreshes at most three contact pages per lookup, at most once per 30 seconds; missing names still fall back to the verified profile. Their per-client cache is bounded to 4,096 entries; contact and profile reads share a 500 ms deadline after a bounded rate-limit wait. This is implementation coverage, pending controlled live acceptance for the added enrichment paths.
 
 Successful names are cached for 15 minutes; a completed lookup that finds no
 usable name is cached for 30 seconds. Partial contact/dialog users with omitted

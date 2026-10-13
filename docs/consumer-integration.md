@@ -74,7 +74,7 @@ or GOWA acknowledgements:
 | Mark read argument | `date` | `message_id` | `message_id` |
 | Received receipt model | Timestamp watermark | Message-ID watermark | Chat state only |
 | Delivered event | Available | Unavailable | Unavailable |
-| Sender display name | Bounded enrichment, may be unavailable | Unavailable | Unavailable |
+| Sender display name | Bounded enrichment, may be unavailable | Bounded enrichment, may be unavailable | Bounded enrichment, may be unavailable |
 | Authenticated avatar download | Available | Available | Available |
 
 Each interaction preset supplies a public `operation` and fixed `parameters`.

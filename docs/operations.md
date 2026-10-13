@@ -135,7 +135,9 @@ upload/send phase is journaled before provider contact; a later uncertain result
 stays `unknown`, retaining its media and stage history without automatic resend.
 User avatar downloads resolve the current authenticated reference and fully
 inspect bounded JPEG/PNG/GIF bytes before returning a stream. Rubika avatar
-mutations derive the provider's 200×200 and 800×800 square JPEG renditions from
+references can omit file size; downloads then use one bounded canonical-DC
+range and measure the inspected response body, capped at 8 MiB or the configured
+media limit. Supplied sizes remain strictly validated. Rubika avatar mutations derive the provider's 200×200 and 800×800 square JPEG renditions from
 the inspected source; each upload is journaled before the profile change. This
 specific avatar preparation is not a general media transcoder. Eitaa avatar
 history is a bounded paginated read; deleting an older photo requires its fresh
@@ -177,9 +179,34 @@ independent channel difference stream; only an actual `differenceTooLong` or
 An update without enough metadata to bind deleted/read message IDs to a peer has
 the separate `unresolved_message_peer` reason. Unsupported variants remain
 durable diagnostics and coverage warnings, without inventing a lost inbox.
-Initial attachment still starts from a provider baseline. Rubika accepts the
-bounded interval messages with that baseline; it does not silently skip the first
-messages of a newly discovered conversation or claim to import all old history.
+A Rubika peer-specific read failure retains the peer's durable recovery work and
+retries it after a bounded delay. Other peers and account-update discovery continue;
+`recovery_issue: message_peer_unavailable` with `last_error: RECOVERY_FAILED` means
+coverage is incomplete, not that the whole account is disconnected. A peer auth
+rejection clears the account session only if the bound-self identity read also
+confirms authentication loss. Persistence and account-wide transport/rate failures
+still stop checkpoint advancement. Initial boundary discovery validates message
+identity and time without decoding historical attachment references.
+
+Initial attachment starts from a durable provider baseline. Eitaa and Rubika
+retain a second-precision first-attachment boundary across reconnects. Message
+events older than that boundary are omitted before name enrichment and durable
+webhook acceptance, for both incoming and own messages. Their native history APIs
+remain separate. Existing checkpoints without a recorded boundary retain their
+prior coverage; consumers should also retain their own activation boundary.
+
+Rubika maintains independent mutation and new-message cursors. Every newly
+resolved conversation first locates its activation boundary using the latest
+interval and, when needed, bounded backward pages. The baseline is an actual
+observed message ID, never an ID invented from a timestamp. It then drains all
+newer IDs through bounded `FromMin` pages instead of treating the latest window
+as complete outage coverage. An old archive normally needs only the latest
+window; its earlier rows do not become live events. Pending peers rotate fairly,
+and each accepted
+page advances its watermark atomically. A storage failure or restart retries
+from the last accepted page. An expired mutation baseline never jumps that
+watermark to the latest snapshot. No exhaustive retention guarantee is implied
+when the provider has already discarded data.
 After Rubika expires a mutation state, rebaselining preserves an existing
 new-message watermark. Continued `FromMin` pages can recover newer messages across
 restarts; the warning about unproven historical edits/deletions remains visible.
@@ -644,3 +671,11 @@ scheduled load, actual offered/admitted/rejected work, generator misses and
 completed work. Output stays in ignored `artifacts/soak/`. A launch or an
 unfinished run is not acceptance evidence. Actual live checks require separately
 identified operator-controlled accounts and recipients.
+
+Recovery status is independent of transport connectivity. Eitaa and Rubika now
+report `current` only after their known account/peer pages have drained without
+retained gaps or unsupported-update observations. Eitaa also waits for every
+known channel stream to be visited. `current` describes coverage since the
+accepted baseline, not an import of all pre-attachment history. Retained expired
+state remains `gap_detected`; legacy uncertainty and unsupported coverage remain
+`degraded`. RPC/storage failures retain `last_error` until successful recovery.

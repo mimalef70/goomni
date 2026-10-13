@@ -129,7 +129,7 @@ schemas['ConnectionStatus']=obj({
  'auth':{'type':'string','enum':['unauthenticated','awaiting_code','awaiting_password','authenticated','auth_required']},
  'transport':{'type':'string','enum':['disconnected','connecting','handshaking','connected']},
  'recovery':{'type':'string','enum':['not_started','degraded','recovering','current','gap_detected']},
- 'recovery_issue':{'type':'string','enum':['legacy_unclassified','chat_state_expired','message_state_expired','difference_too_long','channel_difference_too_long','unresolved_message_peer'],'description':'Provider-scoped durable recovery provenance. Legacy mixed warnings remain unclassified; channel invalidations and unsupported update coverage alone do not prove expired recovery state.'},
+ 'recovery_issue':{'type':'string','enum':['legacy_unclassified','chat_state_expired','message_state_expired','difference_too_long','channel_difference_too_long','unresolved_message_peer','message_peer_unavailable'],'description':'Provider-scoped durable recovery provenance. Legacy mixed warnings remain unclassified; channel invalidations, unavailable peers and unsupported update coverage alone do not prove expired recovery state.'},
  'unsupported_updates_observed':{'type':'boolean','description':'Unsupported namespace/content accepted during this client lifetime. Reset on client recreation; durable events provide the audit history. Independent of recovery gaps.'},
  'last_error':text},['auth','transport','recovery'],'Transport connected does not imply recovery is current.')
 schemas['DeliveryCounts']=obj({'pending':count,'failed':count,'paused':count},['pending','failed','paused'])

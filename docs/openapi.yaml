@@ -92488,8 +92488,10 @@ components:
           - difference_too_long
           - channel_difference_too_long
           - unresolved_message_peer
+          - message_peer_unavailable
           description: Provider-scoped durable recovery provenance. Legacy mixed warnings remain unclassified; channel
-            invalidations and unsupported update coverage alone do not prove expired recovery state.
+            invalidations, unavailable peers and unsupported update coverage alone do not prove expired recovery
+            state.
         unsupported_updates_observed:
           type: boolean
           description: Unsupported namespace/content accepted during this client lifetime. Reset on client recreation;
