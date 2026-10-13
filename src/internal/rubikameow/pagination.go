@@ -9,6 +9,32 @@ import (
 	"github.com/mimalef70/goomni/src/domains"
 )
 
+// Rubika's Web client treats omitted messages as an empty page and an
+// omitted has_continue as false. Wrong types and nonadvancing continuation
+// remain protocol errors; an empty service-chat archive is a valid boundary.
+func messagePage(response object) ([]any, bool, error) {
+	var rows []any
+	if raw := response["messages"]; raw != nil {
+		var ok bool
+		rows, ok = raw.([]any)
+		if !ok || len(rows) > 1000 {
+			return nil, false, protocolError()
+		}
+	}
+	more := false
+	if raw, present := response["has_continue"]; present {
+		var ok bool
+		more, ok = raw.(bool)
+		if !ok {
+			return nil, false, protocolError()
+		}
+	}
+	if more && len(rows) == 0 {
+		return nil, false, protocolError()
+	}
+	return rows, more, nil
+}
+
 // The reviewed Web client uses inclusive max_id and subtracts one from its
 // smallest accepted ID. Derive our boundary from returned items, never from a
 // provider cursor beyond a locally truncated page.
@@ -25,13 +51,9 @@ func (c *Client) history(ctx context.Context, p callRequest) (json.RawMessage, e
 	if err != nil {
 		return nil, err
 	}
-	rows, ok := o["messages"].([]any)
-	if !ok || len(rows) > 1000 {
-		return nil, protocolError()
-	}
-	more, ok := o["has_continue"].(bool)
-	if !ok {
-		return nil, protocolError()
+	rows, more, err := messagePage(o)
+	if err != nil {
+		return nil, err
 	}
 	upper := int64(0)
 	if p.OffsetID != "" {

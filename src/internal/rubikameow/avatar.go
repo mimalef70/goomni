@@ -7,6 +7,8 @@ import (
 	"errors"
 	"image"
 	"io"
+	"net/http"
+	"strconv"
 
 	"github.com/mimalef70/goomni/src/domains"
 )
@@ -58,29 +60,67 @@ func (c *Client) DownloadAvatar(ctx context.Context, user domains.Peer, size str
 		return nil, domains.AvatarInfo{}, avatarUnavailable()
 	}
 	id, dc, hash, length := file.str("file_id"), file.str("dc_id"), file.str("access_hash_rec"), file.num("size")
-	if !validMessageID(id) || !dcPattern.MatchString(dc) || !validSecret(hash) || length < 1 {
+	_, sizeProvided := file["size"]
+	if !validMessageID(id) || !dcPattern.MatchString(dc) || !validSecret(hash) || (sizeProvided && length < 1) {
 		return nil, domains.AvatarInfo{}, avatarInvalid()
 	}
-	if length > min(int64(8<<20), c.cfg.MaxMediaBytes) {
+	limit := min(int64(8<<20), c.cfg.MaxMediaBytes)
+	if sizeProvided && length > limit {
 		return nil, domains.AvatarInfo{}, domains.E("AVATAR_TOO_LARGE", "contact avatar exceeds the size limit", 413)
 	}
 	c.mu.RLock()
-	account := c.session.UserID
+	account, auth := c.session.UserID, c.session.Auth
 	c.mu.RUnlock()
-	raw, _ := json.Marshal(privateMedia{Version: 1, Account: account, DC: dc, ID: id, Hash: hash, Size: length})
-	// Download constructs the canonical HTTPS data-centre URL from numeric DC only,
-	// ignores any provider URL field and never follows redirects.
-	stream, err := c.Download(ctx, domains.ProviderMedia{Provider: domains.ProviderRubika, Version: 1, Data: raw, FileID: id, Size: length})
-	if err != nil {
-		return nil, domains.AvatarInfo{}, avatarError(err)
-	}
-	defer stream.Close()
-	body, err := io.ReadAll(io.LimitReader(stream, length+1))
-	if err != nil {
-		return nil, domains.AvatarInfo{}, avatarError(err)
-	}
-	if int64(len(body)) != length {
-		return nil, domains.AvatarInfo{}, avatarInvalid()
+	var body []byte
+	if sizeProvided {
+		raw, _ := json.Marshal(privateMedia{Version: 1, Account: account, DC: dc, ID: id, Hash: hash, Size: length})
+		stream, err := c.Download(ctx, domains.ProviderMedia{Provider: domains.ProviderRubika, Version: 1, Data: raw, FileID: id, Size: length})
+		if err != nil {
+			return nil, domains.AvatarInfo{}, avatarError(err)
+		}
+		defer stream.Close()
+		body, err = io.ReadAll(io.LimitReader(stream, length+1))
+		if err != nil {
+			return nil, domains.AvatarInfo{}, avatarError(err)
+		}
+		if int64(len(body)) != length {
+			return nil, domains.AvatarInfo{}, avatarInvalid()
+		}
+	} else {
+		// Native avatar references omit file size. Request only one bounded range
+		// from the canonical data centre; inspect the actual returned bytes.
+		endpoint := "https://messenger" + dc + ".iranlms.ir/GetFile.ashx"
+		request, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, nil)
+		if err != nil {
+			return nil, domains.AvatarInfo{}, avatarInvalid()
+		}
+		request.Header.Set("auth", auth)
+		request.Header.Set("access-hash-rec", hash)
+		request.Header.Set("file-id", id)
+		request.Header.Set("start-index", "0")
+		request.Header.Set("last-index", strconv.FormatInt(limit, 10))
+		response, err := c.http.Do(request)
+		if err != nil {
+			return nil, domains.AvatarInfo{}, domains.E("PROVIDER_TRANSPORT_ERROR", "Rubika avatar download failed", 502)
+		}
+		defer response.Body.Close()
+		if response.StatusCode == 403 || response.StatusCode == 404 {
+			return nil, domains.AvatarInfo{}, avatarUnavailable()
+		}
+		if response.StatusCode != http.StatusOK {
+			return nil, domains.AvatarInfo{}, avatarInvalid()
+		}
+		if response.ContentLength > limit {
+			return nil, domains.AvatarInfo{}, domains.E("AVATAR_TOO_LARGE", "contact avatar exceeds the size limit", 413)
+		}
+		body, err = io.ReadAll(io.LimitReader(response.Body, limit+1))
+		if err != nil {
+			return nil, domains.AvatarInfo{}, avatarError(err)
+		}
+		length = int64(len(body))
+		if length > limit {
+			return nil, domains.AvatarInfo{}, domains.E("AVATAR_TOO_LARGE", "contact avatar exceeds the size limit", 413)
+		}
 	}
 	cfg, format, err := image.DecodeConfig(bytes.NewReader(body))
 	if err != nil || cfg.Width < 1 || cfg.Height < 1 || cfg.Width > 8192 || cfg.Height > 8192 || int64(cfg.Width)*int64(cfg.Height) > 16777216 {

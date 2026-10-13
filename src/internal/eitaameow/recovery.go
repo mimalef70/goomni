@@ -16,6 +16,7 @@ import (
 const accountScope = "eitaa.account"
 
 type checkpoint struct {
+	StartedAt   int64  `json:"started_at,omitempty"`
 	Version     int    `json:"version"`
 	Account     string `json:"account"`
 	PTS         int64  `json:"pts"`
@@ -32,14 +33,14 @@ func eventHash(s string) string           { sum := sha256.Sum256([]byte(s)); ret
 func checkpointJSON(cp checkpoint) string { data, _ := json.Marshal(cp); return string(data) }
 func stateCheckpoint(o object, account string, gap bool) (checkpoint, error) {
 	cp := checkpoint{Version: 2, Account: account, PTS: o.num("pts"), QTS: o.num("qts"), Date: o.num("date"), Seq: o.num("seq"), Gap: gap}
-	if o.str("_") != "updates.state" || cp.PTS < 0 || cp.QTS < 0 || cp.Date <= 0 || cp.Seq < 0 {
+	if o.str("_") != "updates.state" || cp.PTS < 0 || cp.QTS < 0 || cp.Date <= 0 || cp.Seq < 0 || cp.StartedAt < 0 {
 		return checkpoint{}, protocolError()
 	}
 	return cp, nil
 }
 func parseCheckpoint(raw, account string) (checkpoint, error) {
 	var cp checkpoint
-	if len(raw) > 4096 || json.Unmarshal([]byte(raw), &cp) != nil || (cp.Version != 1 && cp.Version != 2) || cp.Account != account || cp.PTS < 0 || cp.QTS < 0 || cp.Date <= 0 || cp.Seq < 0 {
+	if len(raw) > 4096 || json.Unmarshal([]byte(raw), &cp) != nil || (cp.Version != 1 && cp.Version != 2) || cp.Account != account || cp.PTS < 0 || cp.QTS < 0 || cp.Date <= 0 || cp.Seq < 0 || cp.StartedAt < 0 {
 		return cp, domains.E("INVALID_CHECKPOINT", "stored Eitaa checkpoint is invalid for this account", 500)
 	}
 	if cp.Version == 1 {
@@ -67,7 +68,10 @@ func validGapReason(gap bool, reason string, channel bool) bool {
 func (c *Client) setRecoveryStatus(cp checkpoint) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.status.Recovery, c.status.RecoveryIssue = "degraded", cp.GapReason
+	c.status.Recovery, c.status.RecoveryIssue = "current", cp.GapReason
+	if cp.Gap || c.channelGapReason != "" || cp.Unsupported || c.status.UnsupportedUpdatesObserved {
+		c.status.Recovery = "degraded"
+	}
 	if cp.More || c.channelMore {
 		c.status.Recovery = "recovering"
 	}
@@ -90,6 +94,7 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 	if sink == nil || c.cfg.LoadCheckpoint == nil {
 		return domains.E("BATCH_SINK_REQUIRED", "Eitaa requires durable update callbacks", 500)
 	}
+	sink = c.enrichSink(sink)
 	if err := (protocolRules{}).ValidateSession(s); err != nil {
 		return err
 	}
@@ -103,6 +108,7 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 	c.mu.Lock()
 	c.session = ps
 	c.channelCursor, c.channelGapReason, c.channelMore = "", "", false
+	c.channelVisited = make(map[string]bool)
 	c.mu.Unlock()
 	c.setStatus("authenticated", "connecting", "recovering", "")
 	started := false
@@ -130,6 +136,7 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 		if e != nil {
 			return e
 		}
+		cp.StartedAt = cp.Date
 		next := checkpointJSON(cp)
 		payload := json.RawMessage(`{"phase":"starting_now","initial_history_imported":false}`)
 		event := domains.Event{Provider: domains.ProviderEitaa, ID: eventHash("baseline|" + ps.UserID + "|" + next), Type: "connection.recovery", Direction: "unknown", Time: time.Unix(cp.Date, 0).UTC(), Payload: payload}
@@ -143,6 +150,9 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 			return err
 		}
 	}
+	c.mu.Lock()
+	c.startedAt = cp.StartedAt
+	c.mu.Unlock()
 	c.setRecoveryStatus(cp)
 	// The connect deadline bounds setup, not the accepted connection lifetime.
 	// Disconnect owns cancellation and joins this loop before replacement.
@@ -236,6 +246,7 @@ func (c *Client) pollPage(ctx context.Context, expected string, cp checkpoint, s
 		if err != nil {
 			return cp, err
 		}
+		next.StartedAt = cp.StartedAt
 		next.GapReason, next.Unsupported, next.More = cp.GapReason, cp.Unsupported, o.str("_") == "updates.differenceSlice"
 		if next.Gap && next.GapReason == "" {
 			next.GapReason = "legacy_unclassified"

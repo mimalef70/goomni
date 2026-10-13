@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/sendernames"
 )
 
 const sessionVersion = 1
@@ -52,6 +53,9 @@ type authChallenge struct {
 	Public          domains.Challenge
 }
 type Client struct {
+	channelVisited   map[string]bool
+	names            sendernames.Cache
+	startedAt        int64
 	cfg              Config
 	codec            *codec
 	http             *http.Client

@@ -67,7 +67,7 @@ func runNativeClients(t *testing.T, count int) {
 			handshakes.Add(1)
 			user := authUsers[h.str("auth")]
 			key, _ := authKey(h.str("auth"))
-			encoded, _ := encrypt(object{"user_guid": user, "message_updates": []any{object{"action": "New", "object_guid": "u0peer", "message_id": "9007199254740993", "message": object{"message_id": "9007199254740993", "time": json.Number("1700000000"), "text": "synthetic", "type": "Text", "author_object_guid": "u0peer"}}}}, key)
+			encoded, _ := encrypt(object{"user_guid": user, "message_updates": []any{object{"action": "New", "object_guid": "u0peer", "message_id": "9007199254740993", "message": object{"message_id": "9007199254740993", "time": time.Now().Unix(), "text": "synthetic", "type": "Text", "author_object_guid": "u0peer"}}}}, key)
 			frame, _ := json.Marshal(object{"type": "messenger", "data_enc": encoded})
 			if e = conn.Write(ctx, websocket.MessageText, frame); e != nil {
 				return
@@ -100,11 +100,14 @@ func runNativeClients(t *testing.T, count int) {
 		rpcs.Add(1)
 		var data object
 		switch call.str("method") {
+		case "getContacts":
+			data = object{"users": []any{}}
 		case "getUserInfo":
-			if asObject(call["input"]).str("user_guid") != user {
+			requested := asObject(call["input"]).str("user_guid")
+			if requested != user && requested != "u0peer" {
 				t.Error("cross-account RPC")
 			}
-			data = object{"user": object{"user_guid": user}}
+			data = object{"user": object{"user_guid": requested, "first_name": "Synthetic"}}
 		case "getChats":
 			data = object{"state": "100", "chats": []any{}, "has_continue": false}
 		case "getChatsUpdates":

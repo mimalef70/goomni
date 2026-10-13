@@ -21,21 +21,27 @@ import (
 const accountScope = "rubika.chats"
 
 type pendingChat struct {
+	RetryAt     int64  `json:"retry_at,omitempty"`
+	Backfill    bool   `json:"backfill,omitempty"`
 	GUID        string `json:"guid"`
 	LastMessage string `json:"last_message,omitempty"`
 }
 type checkpoint struct {
-	Version      int           `json:"version"`
-	Account      string        `json:"account"`
-	Peer         string        `json:"peer,omitempty"`
-	State        string        `json:"state"`
-	Listing      bool          `json:"listing,omitempty"`
-	RefreshPeers bool          `json:"refresh_peers,omitempty"`
-	Page         string        `json:"page,omitempty"`
-	Gap          bool          `json:"gap,omitempty"`
-	GapReason    string        `json:"gap_reason,omitempty"`
-	Pending      []pendingChat `json:"pending,omitempty"`
-	LastMessage  string        `json:"last_message,omitempty"`
+	PollChats      bool          `json:"poll_chats,omitempty"`
+	BaselineBefore string        `json:"baseline_before,omitempty"`
+	ScanFromStart  bool          `json:"scan_from_start,omitempty"`
+	StartedAt      int64         `json:"started_at,omitempty"`
+	Version        int           `json:"version"`
+	Account        string        `json:"account"`
+	Peer           string        `json:"peer,omitempty"`
+	State          string        `json:"state"`
+	Listing        bool          `json:"listing,omitempty"`
+	RefreshPeers   bool          `json:"refresh_peers,omitempty"`
+	Page           string        `json:"page,omitempty"`
+	Gap            bool          `json:"gap,omitempty"`
+	GapReason      string        `json:"gap_reason,omitempty"`
+	Pending        []pendingChat `json:"pending,omitempty"`
+	LastMessage    string        `json:"last_message,omitempty"`
 }
 
 var errMoreMessages = errors.New("another bounded message page is pending")
@@ -47,7 +53,7 @@ func parseCheckpoint(raw, account string) (checkpoint, error) {
 	if raw == "" {
 		return checkpoint{Version: 2, Account: account, Listing: true}, nil
 	}
-	if len(raw) > 1<<20 || json.Unmarshal([]byte(raw), &cp) != nil || (cp.Version != 1 && cp.Version != 2) || cp.Account != account || len(cp.State) > 256 || len(cp.Page) > 256 || len(cp.Pending) > 4000 {
+	if len(raw) > 1<<20 || json.Unmarshal([]byte(raw), &cp) != nil || (cp.Version != 1 && cp.Version != 2) || cp.Account != account || cp.StartedAt < 0 || len(cp.State) > 256 || len(cp.Page) > 256 || len(cp.Pending) > 4000 {
 		return cp, domains.E("INVALID_CHECKPOINT", "stored Rubika checkpoint is invalid", 500)
 	}
 	if cp.Version == 1 {
@@ -70,8 +76,11 @@ func parseCheckpoint(raw, account string) (checkpoint, error) {
 	if cp.LastMessage != "" && !validMessageID(cp.LastMessage) {
 		return cp, domains.E("INVALID_CHECKPOINT", "stored Rubika message cursor is invalid", 500)
 	}
+	if cp.BaselineBefore != "" && (!validMessageID(cp.BaselineBefore) || cp.LastMessage != "" || cp.ScanFromStart) {
+		return cp, domains.E("INVALID_CHECKPOINT", "stored Rubika baseline cursor is invalid", 500)
+	}
 	for _, p := range cp.Pending {
-		if !guidPattern.MatchString(p.GUID) {
+		if !guidPattern.MatchString(p.GUID) || p.RetryAt < 0 {
 			return cp, domains.E("INVALID_CHECKPOINT", "stored Rubika peer checkpoint is invalid", 500)
 		}
 	}
@@ -103,6 +112,7 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 	if sink == nil || c.cfg.LoadCheckpoint == nil {
 		return domains.E("BATCH_SINK_REQUIRED", "Rubika requires durable update callbacks", 500)
 	}
+	sink = c.enrichSink(sink)
 	ps, e := decodeSession(s)
 	if e != nil {
 		return e
@@ -159,6 +169,17 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 	if e != nil {
 		return e
 	}
+	if raw == "" {
+		cp.StartedAt = time.Now().UTC().Unix()
+		next := checkpointJSON(cp)
+		if e = sink(ctx, domains.EventBatch{Checkpoints: []domains.CheckpointTransition{{Scope: accountScope, Expected: raw, Next: next}}}); e != nil {
+			return e
+		}
+		raw = next
+	}
+	c.mu.Lock()
+	c.startedAt = cp.StartedAt
+	c.mu.Unlock()
 	// Durable gap evidence must remain visible even if dialing fails. Loading
 	// it cannot imply that the transport is connected.
 	c.mu.Lock()
@@ -223,8 +244,7 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 				}
 				next, e := c.recoverPage(runCtx, raw, cp, sink)
 				if e != nil {
-					var de *domains.Error
-					if errors.As(e, &de) && de.Code == "AUTH_REQUIRED" {
+					if c.recoveryAuthRequired(runCtx, e) {
 						c.setStatus("auth_required", "disconnected", "degraded", "AUTH_REQUIRED")
 						cancel()
 						return
@@ -236,8 +256,14 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 				}
 				failures = 0
 				delay := 10 * time.Second
-				if next.Listing || next.RefreshPeers || len(next.Pending) > 0 {
+				if next.Listing || next.RefreshPeers {
 					delay = time.Second
+				}
+				for _, peer := range next.Pending {
+					if peer.RetryAt <= time.Now().Unix() {
+						delay = time.Second
+						break
+					}
 				}
 				nextPoll = time.Now().Add(pollJitter(delay))
 				raw = checkpointJSON(next)
@@ -276,25 +302,46 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 	}
 	next := cp
 	next.Pending = append([]pendingChat(nil), cp.Pending...)
-	if len(cp.Pending) > 0 {
+	if len(cp.Pending) > 0 && (!cp.PollChats || len(cp.Pending) > 3000) {
 		// Rotate a peer with another bounded page behind its neighbours. A busy
 		// conversation must not monopolize account recovery after an outage.
 		remaining := append([]pendingChat(nil), cp.Pending[min(4, len(cp.Pending)):]...)
 		for i := 0; i < min(4, len(cp.Pending)); i++ {
-			gap, e := c.recoverPeer(ctx, cp.Pending[i], sink)
-			if errors.Is(e, errMoreMessages) {
-				remaining = append(remaining, cp.Pending[i])
+			peer := cp.Pending[i]
+			if peer.RetryAt > time.Now().Unix() {
+				remaining = append(remaining, peer)
 				continue
 			}
-			if e != nil {
-				return cp, e
-			}
+			acceptanceFailed := false
+			gap, e := c.recoverPeer(ctx, peer, func(ctx context.Context, batch domains.EventBatch) error {
+				err := sink(ctx, batch)
+				acceptanceFailed = acceptanceFailed || err != nil
+				return err
+			})
 			if gap {
 				next.Gap = true
 				next.GapReason = "message_state_expired"
 			}
+			if errors.Is(e, errMoreMessages) {
+				peer.RetryAt = 0
+				remaining = append(remaining, peer)
+				continue
+			}
+			if e != nil {
+				// Keep unreadable work durable, but let other conversations and
+				// account updates proceed. Storage/admission/global failures must
+				// still abort; they cannot be treated as one unavailable peer.
+				if acceptanceFailed || !c.retryRecoveryPeer(ctx, e) {
+					return cp, e
+				}
+				peer.RetryAt = time.Now().Add(time.Minute).Unix()
+				remaining = append(remaining, peer)
+			}
 		}
 		next.Pending = remaining
+		// Account updates must still discover new messages while a peer is
+		// deferred or paging. Reserving 1000 slots bounds the durable queue.
+		next.PollChats = true
 		if e := sink(ctx, domains.EventBatch{Checkpoints: []domains.CheckpointTransition{{Scope: accountScope, Expected: expected, Next: checkpointJSON(next)}}}); e != nil {
 			return cp, e
 		}
@@ -341,6 +388,10 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 		if !ok || len(chats) > 1000 {
 			return cp, protocolError()
 		}
+		pendingIndex := make(map[string]int, len(next.Pending))
+		for i, peer := range next.Pending {
+			pendingIndex[peer.GUID] = i
+		}
 		for _, value := range chats {
 			chat := asObject(value)
 			guid := chat.str("object_guid")
@@ -348,7 +399,17 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 				events = append(events, unsupportedPeerEvent(cp.Account, guid, "chat", state))
 				continue
 			}
-			next.Pending = append(next.Pending, pendingChat{GUID: guid, LastMessage: chat.str("last_message_id")})
+			lastMessage := chat.str("last_message_id")
+			if i, exists := pendingIndex[guid]; exists {
+				old, _ := strconv.ParseInt(next.Pending[i].LastMessage, 10, 64)
+				observed, _ := strconv.ParseInt(lastMessage, 10, 64)
+				if observed > old {
+					next.Pending[i].LastMessage = lastMessage
+				}
+			} else {
+				pendingIndex[guid] = len(next.Pending)
+				next.Pending = append(next.Pending, pendingChat{GUID: guid, LastMessage: lastMessage, Backfill: true})
+			}
 			payload, _ := json.Marshal(publicObject(chat))
 			events = append(events, domains.Event{Provider: domains.ProviderRubika, ID: eventHash("chat|" + state + "|" + guid), Type: "chat.updated", Peer: peerFromGUID(guid), Direction: "unknown", Time: time.Now().UTC(), Payload: payload})
 		}
@@ -384,7 +445,8 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 			}
 		}
 	}
-	if len(events) > 1000 {
+	next.PollChats = false
+	if len(events) > 1000 || len(next.Pending) > 4000 {
 		return cp, protocolError()
 	}
 	if e = sink(ctx, domains.EventBatch{Events: events, Checkpoints: []domains.CheckpointTransition{{Scope: accountScope, Expected: expected, Next: checkpointJSON(next)}}}); e != nil {
@@ -410,6 +472,9 @@ func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.Ba
 		return false, domains.E("INVALID_CHECKPOINT", "message checkpoint belongs to another peer", 500)
 	}
 	cp.Peer = p.GUID
+	if cp.BaselineBefore != "" {
+		return cp.Gap && cp.GapReason != "legacy_unclassified", c.recoverBaselinePage(ctx, p, raw, cp, sink)
+	}
 	next := cp
 	next.Listing = false
 	events := []domains.Event{}
@@ -425,14 +490,17 @@ func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.Ba
 		if !validState(next.State) {
 			return false, protocolError()
 		}
-		// The interval response is not just a state token. It may contain the
-		// first messages of a conversation discovered while disconnected. Accept
-		// that bounded window and its cursor together before advancing the chat.
+		// Establish the mutation baseline without mistaking its latest window
+		// for complete new-message coverage. A new peer locates its activation
+		// boundary first; an existing new-message watermark never jumps here.
 		messages, ok := o["messages"].([]any)
 		if !ok || len(messages) > 1000 {
 			return false, protocolError()
 		}
-		maxID := int64(0)
+		c.mu.RLock()
+		startedAt := c.startedAt
+		c.mu.RUnlock()
+		maxID, minID, beforeStart := int64(0), int64(0), int64(0)
 		for _, value := range messages {
 			message := asObject(value)
 			if guid := message.str("object_guid"); guid != "" && guid != p.GUID {
@@ -442,13 +510,28 @@ func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.Ba
 			if !validMessageID(id) {
 				return false, protocolError()
 			}
-			event, err := c.projectMessage(p.GUID, object{"object_guid": p.GUID, "action": "New", "message_id": id, "message": message})
-			if err != nil {
-				return false, err
+			timestamp := message.num("time")
+			if timestamp <= 0 {
+				return false, protocolError()
 			}
-			events = append(events, event)
+			// Boundary discovery needs only native identity and creation time.
+			// Projecting old attachments here can stall every later conversation
+			// on an obsolete media reference or a file above the download limit.
+			if cp.LastMessage == "" && !p.Backfill && (startedAt == 0 || timestamp >= startedAt) {
+				event, err := c.projectMessage(p.GUID, object{"object_guid": p.GUID, "action": "New", "message_id": id, "message": message})
+				if err != nil {
+					return false, err
+				}
+				events = append(events, event)
+			}
 			n, _ := strconv.ParseInt(id, 10, 64)
 			maxID = max(maxID, n)
+			if minID == 0 || n < minID {
+				minID = n
+			}
+			if startedAt > 0 && timestamp < startedAt {
+				beforeStart = max(beforeStart, n)
+			}
 		}
 		if len(events) >= 1000 {
 			return false, protocolError()
@@ -456,8 +539,18 @@ func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.Ba
 		// A fresh mutation baseline after OldState must not jump the independent
 		// new-message watermark to this latest bounded interval. Preserve the
 		// last durable ID so FromMin can drain every observable later page.
-		if maxID > 0 && cp.LastMessage == "" {
+		if maxID > 0 && cp.LastMessage == "" && !p.Backfill {
 			next.LastMessage = strconv.FormatInt(maxID, 10)
+		}
+		if cp.LastMessage == "" && p.Backfill {
+			switch {
+			case beforeStart > 0:
+				next.LastMessage = strconv.FormatInt(beforeStart, 10)
+			case startedAt > 0 && minID > 1:
+				next.BaselineBefore = strconv.FormatInt(minID-1, 10)
+			default:
+				next.ScanFromStart = true
+			}
 		}
 		events = append(events, recoveryEvent(account, "conversation_starting_now", p.GUID+"|"+next.State))
 	} else {
@@ -493,9 +586,12 @@ func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.Ba
 	}
 	c.observeCoverage(events)
 	gap := next.Gap && next.GapReason != "legacy_unclassified"
+	if next.BaselineBefore != "" {
+		return gap, errMoreMessages
+	}
 	// A retained historical gap does not disable recovery of later new
 	// messages. Only the just-expired mutation state needs a new baseline first.
-	if raw != "" && next.State != "" && validMessageID(p.LastMessage) {
+	if (raw != "" || p.Backfill) && next.State != "" && validMessageID(p.LastMessage) {
 		if err := c.recoverNewMessages(ctx, p, next, sink); err != nil {
 			return gap, err
 		}
@@ -513,7 +609,7 @@ func (c *Client) recoverNewMessages(ctx context.Context, p pendingChat, cp check
 	}
 	method := "getMessages"
 	input := object{"object_guid": p.GUID, "sort": "FromMin", "min_id": strconv.FormatInt(last+1, 10), "limit": 100}
-	if cp.LastMessage == "" {
+	if cp.LastMessage == "" && !cp.ScanFromStart {
 		// Older checkpoints have no new-message watermark. A bounded snapshot
 		// recovers observable messages without claiming an exhaustive import.
 		method = "getMessagesInterval"
@@ -523,9 +619,19 @@ func (c *Client) recoverNewMessages(ctx context.Context, p pendingChat, cp check
 	if err != nil {
 		return err
 	}
-	messages, ok := o["messages"].([]any)
-	if !ok || len(messages) > 1000 {
-		return protocolError()
+	var messages []any
+	hasMore := false
+	if method == "getMessages" {
+		messages, hasMore, err = messagePage(o)
+		if err != nil {
+			return err
+		}
+	} else {
+		var ok bool
+		messages, ok = o["messages"].([]any)
+		if !ok || len(messages) > 1000 {
+			return protocolError()
+		}
 	}
 	events := make([]domains.Event, 0, len(messages)+1)
 	maxID := last
@@ -549,11 +655,8 @@ func (c *Client) recoverNewMessages(ctx context.Context, p pendingChat, cp check
 		events = append(events, event)
 		maxID = max(maxID, n)
 	}
-	hasMore := false
 	if method == "getMessages" {
-		var valid bool
-		hasMore, valid = o["has_continue"].(bool)
-		if !valid || (hasMore && maxID == last) {
+		if hasMore && maxID == last {
 			return protocolError()
 		}
 	} else {
@@ -567,6 +670,7 @@ func (c *Client) recoverNewMessages(ctx context.Context, p pendingChat, cp check
 	}
 	next := cp
 	next.LastMessage = strconv.FormatInt(maxID, 10)
+	next.ScanFromStart = false
 	if err = sink(ctx, domains.EventBatch{Events: events, Checkpoints: []domains.CheckpointTransition{{Scope: "rubika.messages:" + p.GUID, Expected: checkpointJSON(cp), Next: checkpointJSON(next)}}}); err != nil {
 		return err
 	}
@@ -803,7 +907,13 @@ func pollJitter(base time.Duration) time.Duration {
 // Coverage is a local connection observation; durable events remain its audit
 // source. Only mark it after the complete event batch has been accepted.
 func (c *Client) observeCoverage(events []domains.Event) {
+	c.mu.RLock()
+	startedAt := c.startedAt
+	c.mu.RUnlock()
 	for _, event := range events {
+		if event.Type == "message" && startedAt > 0 && event.Time.Unix() < startedAt {
+			continue
+		}
 		var patchMetadata struct {
 			Unprojected bool `json:"unprojected_fields"`
 		}
@@ -821,7 +931,10 @@ func (c *Client) observeCoverage(events []domains.Event) {
 func (c *Client) setRecoveryStatus(cp checkpoint) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.status.Recovery = "degraded"
+	c.status.Recovery = "current"
+	if cp.Gap || c.status.UnsupportedUpdatesObserved {
+		c.status.Recovery = "degraded"
+	}
 	c.status.RecoveryIssue = cp.GapReason
 	if cp.Gap && cp.GapReason != "legacy_unclassified" {
 		c.status.Recovery = "gap_detected"
@@ -833,4 +946,16 @@ func (c *Client) setRecoveryStatus(cp checkpoint) {
 	}
 	c.status.Transport = "connected"
 	c.status.LastError = ""
+	for _, peer := range cp.Pending {
+		if peer.RetryAt > 0 {
+			c.status.LastError = "RECOVERY_FAILED"
+			if c.status.RecoveryIssue == "" {
+				c.status.RecoveryIssue = "message_peer_unavailable"
+			}
+			if !cp.Gap {
+				c.status.Recovery = "degraded"
+			}
+			break
+		}
+	}
 }

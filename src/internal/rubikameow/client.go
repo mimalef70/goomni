@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/sendernames"
 )
 
 type Config struct {
@@ -38,20 +39,23 @@ type authChallenge struct {
 	Phone, Hash, Tmp string
 }
 type Client struct {
-	cfg         Config
-	http        *http.Client
-	mu          sync.RWMutex
-	authMu      sync.Mutex
-	connectMu   sync.Mutex
-	discoveryMu sync.Mutex
-	session     privateSession
-	key         *rsa.PrivateKey
-	challenge   authChallenge
-	status      domains.ConnectionStatus
-	api, socket string
-	cancel      context.CancelFunc
-	done        chan struct{}
-	rpcSlots    chan struct{}
+	senderContactsAfter time.Time
+	names               sendernames.Cache
+	startedAt           int64
+	cfg                 Config
+	http                *http.Client
+	mu                  sync.RWMutex
+	authMu              sync.Mutex
+	connectMu           sync.Mutex
+	discoveryMu         sync.Mutex
+	session             privateSession
+	key                 *rsa.PrivateKey
+	challenge           authChallenge
+	status              domains.ConnectionStatus
+	api, socket         string
+	cancel              context.CancelFunc
+	done                chan struct{}
+	rpcSlots            chan struct{}
 }
 
 func New(cfg Config) (*Client, error) {

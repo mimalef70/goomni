@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/internal/sendernames"
 )
 
 type callRequest struct {
@@ -42,6 +43,14 @@ func (c *Client) rememberEntities(ctx context.Context, response object) error {
 				continue
 			}
 			kind := entity.str("_")
+			if kind == "user" {
+				name := sendernames.DisplayName(entity.str("first_name"), entity.str("last_name"), entity.str("username"))
+				if entity["contact"] == true || response.str("_") == "contacts.contacts" {
+					c.names.RememberContact(next.UserID, strconv.FormatInt(id, 10), sendernames.DisplayName(entity.str("first_name"), entity.str("last_name"), ""))
+				} else {
+					c.names.Remember(next.UserID, strconv.FormatInt(id, 10), name)
+				}
+			}
 			typ := ""
 			var ref object
 			switch kind {

@@ -152,6 +152,8 @@ func runNativeClients(t *testing.T, count int) {
 				} else {
 					result = object{"_": "updates.differenceEmpty", "date": 1700000000 + pts, "seq": pts}
 				}
+			case "users.getFullUser":
+				result = object{"_": "userFull", "user": object{"_": "user", "id": 1000 + index, "first_name": "Synthetic"}, "about": "", "common_chats_count": 0, "settings": object{"_": "peerSettings"}, "notify_settings": object{"_": "peerNotifySettings"}}
 			case "messages.getDialogs":
 				result = object{"_": "messages.dialogs", "dialogs": []object{}, "messages": []object{}, "chats": []object{}, "users": []object{}}
 			default:

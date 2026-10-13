@@ -57,6 +57,13 @@ func (c *Client) pollChannels(ctx context.Context, sink domains.BatchSink) error
 		c.channelCursor = id
 		c.mu.Unlock()
 	}
+	c.mu.Lock()
+	for _, id := range ids {
+		if !c.channelVisited[id] {
+			c.channelMore = true
+		}
+	}
+	c.mu.Unlock()
 	return first
 }
 
@@ -203,6 +210,10 @@ func (c *Client) pollChannelPage(ctx context.Context, id string, ref object, sin
 		return err
 	}
 	c.mu.Lock()
+	if c.channelVisited == nil {
+		c.channelVisited = make(map[string]bool)
+	}
+	c.channelVisited[id] = true
 	if cp.Gap && (c.channelGapReason == "" || cp.GapReason != "legacy_unclassified") {
 		c.channelGapReason = cp.GapReason
 	}
