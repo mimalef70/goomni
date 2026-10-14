@@ -34,7 +34,8 @@ Manager:
 ## Tests
 
 Run `go test -tags purego ./...` on Windows with `CGO_ENABLED=0`, or use
-`build.ps1 -Test`. The current CI runs on Linux only.
+`build.ps1 -Test`. CI runs the same tests and a build on Windows
+(`Test (windows, purego)`).
 - Tests that create symlinks skip when Windows refuses symlinks without
   Developer Mode or administrator rights.
 - `pkg/platform` checks the same link protections with directory junctions,

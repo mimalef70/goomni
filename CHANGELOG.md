@@ -5,8 +5,8 @@
 - Run natively on Windows. Locks, free-space metrics, the media scan, SQLite
   URIs and private secret files use Windows equivalents through `pkg/platform`.
   `goomni.exe` can run as a Windows service with a size-capped log and a crash
-  log. Build and install scripts are in `scripts/windows`. See
-  [Windows](docs/windows.md).
+  log. Build and install scripts are in `scripts/windows`, and CI tests on
+  Windows. See [Windows](docs/windows.md).
 
 ## 2.4.1 — 2026-10-13
 
