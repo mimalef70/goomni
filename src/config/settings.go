@@ -4,6 +4,7 @@ package config
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 	"github.com/spf13/viper"
 	"net/url"
 	"os"
@@ -87,8 +88,8 @@ func Load(v *viper.Viper) (Settings, error) {
 		if e != nil {
 			return s, fmt.Errorf("read master key file: %w", e)
 		}
-		if info.Mode().Perm()&0077 != 0 {
-			return s, fmt.Errorf("master key file must be private (chmod 600)")
+		if private, e := platform.PrivateFile(file, info); e != nil || !private {
+			return s, fmt.Errorf("master key file must be private (chmod 600; on Windows only its owner, SYSTEM, Administrators and service accounts may have access)")
 		}
 		b, e := os.ReadFile(file)
 		if e != nil {

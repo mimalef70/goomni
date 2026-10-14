@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/sys/unix"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 )
 
 // Lookup must include tombstoned connections and must fail closed on database
@@ -57,17 +57,16 @@ func Open(root string, lookup Lookup) (*Manager, error) {
 	if err != nil {
 		return nil, errors.New("media root cannot be resolved")
 	}
-	fd, err := unix.Open(filepath.Join(abs, ".gobale-media.lock"), unix.O_CREAT|unix.O_RDWR|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0600)
+	lock, err := platform.OpenLockFile(filepath.Join(abs, ".gobale-media.lock"))
 	if err != nil {
 		return nil, errors.New("media root ownership cannot be established")
 	}
-	lock := os.NewFile(uintptr(fd), "media-root-lock")
 	info, err := lock.Stat()
 	if err != nil || !info.Mode().IsRegular() {
 		lock.Close()
 		return nil, errors.New("invalid media root lock")
 	}
-	if err = unix.Flock(fd, unix.LOCK_EX|unix.LOCK_NB); err != nil {
+	if err = platform.LockExclusive(lock); err != nil {
 		lock.Close()
 		return nil, errors.New("media root is already owned by another process")
 	}
@@ -101,12 +100,7 @@ func ensureDirectory(path string) error {
 }
 
 func syncDirectory(path string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	return f.Sync()
+	return platform.SyncDir(path)
 }
 
 type Upload struct {
@@ -522,7 +516,7 @@ func (m *Manager) Close() error {
 		m.scan.Close()
 		m.scan = nil
 	}
-	if err := unix.Flock(int(m.lock.Fd()), unix.LOCK_UN); err != nil {
+	if err := platform.Unlock(m.lock); err != nil {
 		return err
 	}
 	return m.lock.Close()

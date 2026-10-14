@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"testing"
 
-	"golang.org/x/sys/unix"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 )
 
 func Run(t *testing.T) {
@@ -32,11 +32,10 @@ func Run(t *testing.T) {
 	if root != "/app/storages" {
 		t.Fatal("preflight requires the isolated data volume")
 	}
-	var stat unix.Statfs_t
-	if err = unix.Statfs(root, &stat); err != nil {
+	free, err := platform.FreeBytes(root)
+	if err != nil {
 		t.Fatal("cannot inspect data volume space")
 	}
-	free := int64(stat.Bavail) * int64(stat.Bsize)
 	if free < budget+2*(1<<30) {
 		report, _ := json.Marshal(map[string]any{"data_volume_free_bytes": free, "required_bytes": budget + 2*(1<<30)})
 		fmt.Println("GOOMNI_CAPACITY_PREFLIGHT_BLOCKED " + string(report))

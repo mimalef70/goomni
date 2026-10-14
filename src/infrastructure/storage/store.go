@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
@@ -19,8 +18,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 	"github.com/mimalef70/goomni/src/pkg/sqlite"
-	"golang.org/x/sys/unix"
 )
 
 type Store struct {
@@ -99,14 +98,14 @@ func Open(path string, key []byte, providers *domains.ProviderRegistry) (s *Stor
 	if err != nil {
 		return nil, err
 	}
-	if err = unix.Flock(int(lock.Fd()), unix.LOCK_EX|unix.LOCK_NB); err != nil {
+	if err = platform.LockExclusive(lock); err != nil {
 		lock.Close()
 		return nil, fmt.Errorf("database is already owned by another GoOmni process: %w", err)
 	}
 	lockTransferred := false
 	defer func() {
 		if err != nil && !lockTransferred {
-			unix.Flock(int(lock.Fd()), unix.LOCK_UN)
+			platform.Unlock(lock)
 			lock.Close()
 		}
 	}()
@@ -137,7 +136,7 @@ func Open(path string, key []byte, providers *domains.ProviderRegistry) (s *Stor
 	if err != nil {
 		return nil, err
 	}
-	uri := (&url.URL{Scheme: "file", Path: abs}).String()
+	uri := platform.SQLiteURI(abs)
 	db, err := sql.Open(sqlite.DriverName, sqlite.FormatChatStorageURI(uri, false, true))
 	if err != nil {
 		return nil, err
@@ -251,7 +250,7 @@ func (s *Store) closeFailedOpen(ctx context.Context) error {
 // The caller holds closeMu and has verified all driver connections retired.
 func (s *Store) releaseOwnership() error {
 	s.closed = true
-	unlock := unix.Flock(int(s.lock.Fd()), unix.LOCK_UN)
+	unlock := platform.Unlock(s.lock)
 	closeErr := s.lock.Close()
 	return errors.Join(unlock, closeErr)
 }

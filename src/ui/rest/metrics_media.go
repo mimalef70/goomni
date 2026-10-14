@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
-	"golang.org/x/sys/unix"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 )
 
 // An incremental depth-first scan keeps at most 16 directories open and handles
@@ -37,14 +36,14 @@ func (s *mediaScanner) step(ctx context.Context, root string) (total int64, comp
 		if root == "" {
 			return 0, true, nil
 		}
-		fd, e := unix.Open(root, unix.O_RDONLY|unix.O_CLOEXEC|unix.O_DIRECTORY|unix.O_NOFOLLOW, 0)
+		dir, e := platform.OpenDirNoFollow(root)
 		if os.IsNotExist(e) {
 			return 0, true, nil
 		}
 		if e != nil {
 			return 0, false, e
 		}
-		s.stack = []*os.File{os.NewFile(uintptr(fd), root)}
+		s.stack = []*os.File{dir}
 		s.bytes = 0
 	}
 	for n := 0; n < 2048; n++ {
@@ -74,14 +73,13 @@ func (s *mediaScanner) step(ctx context.Context, root string) (total int64, comp
 			if len(s.stack) == 16 {
 				return 0, false, fmt.Errorf("media directory nesting exceeds metric scan limit")
 			}
-			fd, e := unix.Openat(int(f.Fd()), entry.Name(), unix.O_RDONLY|unix.O_CLOEXEC|unix.O_DIRECTORY|unix.O_NOFOLLOW, 0)
-			if errors.Is(e, unix.ENOENT) || errors.Is(e, unix.ENOTDIR) || errors.Is(e, unix.ELOOP) {
+			child, e := platform.OpenDirAt(f, entry.Name())
+			if errors.Is(e, platform.ErrSkip) {
 				continue
 			}
 			if e != nil {
 				return 0, false, e
 			}
-			child := os.NewFile(uintptr(fd), filepath.Join(f.Name(), entry.Name()))
 			s.stack = append(s.stack, child)
 			continue
 		}

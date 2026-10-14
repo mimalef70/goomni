@@ -27,6 +27,7 @@ import (
 	"github.com/mimalef70/goomni/src/internal/balemeow"
 	"github.com/mimalef70/goomni/src/internal/eitaameow"
 	"github.com/mimalef70/goomni/src/internal/rubikameow"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 	"github.com/mimalef70/goomni/src/ui/rest"
 	"github.com/mimalef70/goomni/src/ui/web"
 	"github.com/mimalef70/goomni/src/usecase"
@@ -35,7 +36,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Execute() error { return NewCommand().Execute() }
+func Execute() error {
+	// Started by the Windows Service Control Manager: run as a service instead.
+	if handled, err := runAsService(); handled {
+		return err
+	}
+	return NewCommand().Execute()
+}
 func NewCommand() *cobra.Command {
 	v := viper.New()
 	v.SetConfigFile(".env")
@@ -307,6 +314,12 @@ func writePrivate(path string, b []byte) error {
 	f, e := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if e != nil {
 		return e
+	}
+	// Windows ignores the mode bits: restrict the access list before the secret is written
+	if e = platform.MakePrivate(path); e != nil {
+		f.Close()
+		_ = os.Remove(path)
+		return fmt.Errorf("make %s private: %w", path, e)
 	}
 	_, e = f.Write(b)
 	ce := f.Close()

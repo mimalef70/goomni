@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/providers"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 	"github.com/mimalef70/goomni/src/pkg/sqlite"
 	"github.com/stretchr/testify/require"
 )
@@ -621,7 +623,13 @@ func TestOnlineBackupIsRestorableAndNeverOverwrites(t *testing.T) {
 	require.Equal(t, "hook-secret", deliveries[0].Secret)
 	stat, e := os.Stat(backup)
 	require.NoError(t, e)
-	require.Equal(t, os.FileMode(0600), stat.Mode().Perm())
+	if runtime.GOOS == "windows" {
+		private, err := platform.PrivateFile(backup, stat)
+		require.NoError(t, err)
+		require.True(t, private)
+	} else {
+		require.Equal(t, os.FileMode(0600), stat.Mode().Perm())
+	}
 }
 
 func TestManualRetryOnlyFailedTargetAndCancelsOriginal(t *testing.T) {

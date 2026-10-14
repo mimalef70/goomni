@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/mimalef70/goomni/src/internal/symlinktest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +24,7 @@ func TestResolvePortableAndLegacyPathsRejectsEscapes(t *testing.T) {
 	}
 	outside := filepath.Join(base, "outside")
 	require.NoError(t, os.WriteFile(outside, []byte("outside"), 0600))
-	require.NoError(t, os.Symlink(outside, filepath.Join(root, "escaped")))
+	symlinktest.Create(t, outside, filepath.Join(root, "escaped"))
 	for _, stored := range []string{"", ".", "../outside", outside, "escaped", "connection"} {
 		_, err := Resolve(root, stored)
 		require.Error(t, err, stored)

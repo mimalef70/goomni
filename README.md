@@ -199,6 +199,12 @@ to your existing Docker volume and `APP_DATABASE` to its original container path
 (often `/app/storages/gobale.db`). Do not rerun `init` or remove the old volume.
 See the [complete Docker upgrade steps](docs/upgrade-goomni.md#docker-installations).
 
+### Windows
+
+GoOmni also runs natively on Windows as a service, without Docker or WSL. Build
+`goomni.exe` with `scripts\windows\build.ps1`, then install it with
+`install-service.ps1`. See [Windows](docs/windows.md).
+
 ### Build from source
 
 Use Go **1.26.9**, Node **24.12+**, Python **3.11+**, Make and a C compiler.
@@ -451,6 +457,7 @@ permissions, error handling and durable submissions.
 | [Upgrade from GoBale](docs/upgrade-goomni.md) | Consumer changes and preserving existing databases, sessions and volumes. |
 | [Webhook payloads](docs/webhook-payload.md) | Event examples, filtering, signatures, retry/replay and receiver setup. |
 | [Operations](docs/operations.md) | Full configuration, TLS, Docker, storage, backups, metrics and capacity testing. |
+| [Windows](docs/windows.md) | Native Windows build, service install, upgrade and the platform differences. |
 | [Changelog](CHANGELOG.md) | Published releases and unreleased changes. |
 | [Capability inventory](src/internal/balemeow/testdata/coverage/capabilities.json) | Recorded offline/live evidence and unresolved limitations. |
 | [Support](SUPPORT.md) / [Security](SECURITY.md) | Questions, bug reports and private vulnerability reporting. |
