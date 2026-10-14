@@ -13,7 +13,7 @@ import (
 	"github.com/mimalef70/goomni/src/domains"
 
 	"github.com/gofiber/fiber/v3"
-	"golang.org/x/sys/unix"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 )
 
 const metricsInterval = 5 * time.Second
@@ -65,8 +65,7 @@ func (s *Server) sampleMetrics(ctx context.Context, scan *mediaScanner) {
 	diskAt := time.Now().UTC()
 	// MediaRoot may be a separate mount. One filesystem stat per sample keeps
 	// its available capacity independent of the SQLite filesystem and scans.
-	var mediaDisk unix.Statfs_t
-	mediaDiskErr := unix.Statfs(s.opts.MediaRoot, &mediaDisk)
+	mediaFree, mediaDiskErr := platform.FreeBytes(s.opts.MediaRoot)
 	mediaDiskAt := time.Now().UTC()
 	mediaCtx, mediaCancel := context.WithTimeout(ctx, 50*time.Millisecond)
 	mediaBytes, complete, mediaErr := scan.step(mediaCtx, s.opts.MediaRoot)
@@ -85,7 +84,7 @@ func (s *Server) sampleMetrics(ctx context.Context, scan *mediaScanner) {
 		v.disk, v.diskAt = disk, diskAt
 	}
 	if mediaDiskErr == nil {
-		v.mediaFreeBytes = int64(mediaDisk.Bavail) * int64(mediaDisk.Bsize)
+		v.mediaFreeBytes = mediaFree
 		v.mediaDiskAt = mediaDiskAt
 	}
 	if mediaErr == nil && complete {

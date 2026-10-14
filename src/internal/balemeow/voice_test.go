@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync/atomic"
 	"testing"
 
@@ -197,6 +198,11 @@ func TestOpusPacketLengthsAndDurations(t *testing.T) {
 func TestPrepareVoiceSourceRewindsAndCleansPrivateTemporaryFile(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TMPDIR", dir)
+	if runtime.GOOS == "windows" {
+		// os.TempDir reads TMP/TEMP on Windows
+		t.Setenv("TMP", dir)
+		t.Setenv("TEMP", dir)
+	}
 	body := validVoiceBytes()
 	for _, seekable := range []bool{true, false} {
 		var reader io.Reader = bytes.NewReader(body)
@@ -217,7 +223,9 @@ func TestPrepareVoiceSourceRewindsAndCleansPrivateTemporaryFile(t *testing.T) {
 			require.Len(t, files, 1)
 			stat, err := os.Stat(files[0])
 			require.NoError(t, err)
-			require.Equal(t, os.FileMode(0600), stat.Mode().Perm())
+			if runtime.GOOS != "windows" { // Windows has no mode bits; the per-user temp folder is private
+				require.Equal(t, os.FileMode(0600), stat.Mode().Perm())
+			}
 		}
 		cleanup()
 		files, err = filepath.Glob(filepath.Join(dir, "goomni-voice-*"))

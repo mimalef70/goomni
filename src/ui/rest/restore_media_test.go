@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/mimalef70/goomni/src/domains"
@@ -52,7 +53,13 @@ func TestUploadedMediaSurvivesBackupRestoreToDifferentRoot(t *testing.T) {
 	require.NoError(t, os.MkdirAll(filepath.Dir(newPath), 0700))
 	require.NoError(t, os.WriteFile(newPath, data, 0600))
 	// The old location disappears, proving the restored response uses new root.
-	require.NoError(t, os.Rename(s.opts.MediaRoot, s.opts.MediaRoot+"-old"))
+	if runtime.GOOS == "windows" {
+		// Windows cannot rename a directory while the still-running first server holds
+		// its root lock file open inside it; moving the file away proves the same.
+		require.NoError(t, os.Rename(oldPath, oldPath+"-old"))
+	} else {
+		require.NoError(t, os.Rename(s.opts.MediaRoot, s.opts.MediaRoot+"-old"))
+	}
 	st, err := storage.Open(backup, bytes.Repeat([]byte{7}, 32), providers.Contracts())
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, st.Close()) })

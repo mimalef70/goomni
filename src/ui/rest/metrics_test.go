@@ -15,6 +15,7 @@ import (
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/providers"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
+	"github.com/mimalef70/goomni/src/internal/symlinktest"
 	"github.com/mimalef70/goomni/src/usecase"
 	"github.com/stretchr/testify/require"
 )
@@ -126,7 +127,7 @@ func TestMediaMetricsScanIsIncrementalAndSkipsSymlinks(t *testing.T) {
 	}
 	outside := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(outside, "private"), []byte(strings.Repeat("x", 100)), 0600))
-	require.NoError(t, os.Symlink(outside, filepath.Join(root, "skip")))
+	symlinktest.Create(t, outside, filepath.Join(root, "skip"))
 	scan := &mediaScanner{}
 	defer scan.close()
 	_, complete, err := scan.step(context.Background(), root)

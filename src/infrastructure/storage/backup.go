@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/mimalef70/goomni/src/pkg/platform"
 )
 
 // Backup creates a transactionally consistent SQLite snapshot without replacing
@@ -36,6 +38,10 @@ func (s *Store) Backup(ctx context.Context, destination string) (err error) {
 	if err = tmp.Close(); err != nil {
 		return err
 	}
+	// the snapshot holds the encrypted sessions: private on Windows too, before it is written
+	if err = platform.MakePrivate(name); err != nil {
+		return err
+	}
 	if _, err = s.db.ExecContext(ctx, `VACUUM INTO ?`, name); err != nil {
 		return fmt.Errorf("create SQLite snapshot: %w", err)
 	}
@@ -54,10 +60,5 @@ func (s *Store) Backup(ctx context.Context, destination string) (err error) {
 	if err = os.Link(name, dst); err != nil {
 		return fmt.Errorf("publish backup without replacing existing files: %w", err)
 	}
-	dir, err := os.Open(filepath.Dir(dst))
-	if err != nil {
-		return err
-	}
-	defer dir.Close()
-	return dir.Sync()
+	return platform.SyncDir(filepath.Dir(dst))
 }

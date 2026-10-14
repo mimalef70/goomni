@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/infrastructure/storage"
+	"github.com/mimalef70/goomni/src/internal/symlinktest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -84,6 +85,7 @@ func TestManagerRemovesOnlyOwnedUnregisteredFiles(t *testing.T) {
 }
 
 func TestManagerRejectsSymlinkAndMalformedOwnership(t *testing.T) {
+	symlinktest.Require(t)
 	ctx := context.Background()
 	m, err := Open(t.TempDir(), func(context.Context, string, string, string, string) (bool, error) { return false, nil })
 	require.NoError(t, err)
@@ -93,7 +95,7 @@ func TestManagerRejectsSymlinkAndMalformedOwnership(t *testing.T) {
 	outside := filepath.Join(t.TempDir(), "private-fixture")
 	require.NoError(t, os.WriteFile(outside, []byte("outside"), 0600))
 	require.NoError(t, os.Mkdir(filepath.Join(m.root, u.v.ConnectionID), 0700))
-	require.NoError(t, os.Symlink(outside, filepath.Join(m.root, u.RelativePath())))
+	symlinktest.Create(t, outside, filepath.Join(m.root, u.RelativePath()))
 	require.Error(t, u.Publish())
 	u.Release()
 	require.FileExists(t, outside)
@@ -193,7 +195,7 @@ func TestLegacyFinalOrphansAreReportedWithoutRemovalOrIdentifiers(t *testing.T) 
 			require.NoError(t, os.WriteFile(path, []byte("synthetic private content"), 0600))
 			// Unknown files and UUID-shaped symlinks are not ownership evidence.
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "unknown-file"), []byte("synthetic"), 0600))
-			require.NoError(t, os.Symlink(path, filepath.Join(dir, uuid.NewString())))
+			symlinktest.Create(t, path, filepath.Join(dir, uuid.NewString()))
 			var diagnostics []string
 			m.Diagnostic = func(code string) { diagnostics = append(diagnostics, code) }
 			err = m.CleanupLegacy(context.Background(), 256)

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 	"github.com/mimalef70/goomni/src/pkg/sqlite"
-	"golang.org/x/sys/unix"
 )
 
 type storageMetrics struct {
@@ -166,10 +166,8 @@ func (s *Store) DiskMetrics() (m domains.DiskMetrics, err error) {
 		}
 		*file.value = info.Size()
 	}
-	var stat unix.Statfs_t
-	if err = unix.Statfs(s.dbPath, &stat); err != nil {
+	if m.FreeBytes, err = platform.FreeBytes(s.dbPath); err != nil {
 		return m, err
 	}
-	m.FreeBytes = int64(stat.Bavail) * int64(stat.Bsize)
 	return m, nil
 }

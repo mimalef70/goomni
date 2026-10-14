@@ -3,9 +3,11 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/mimalef70/goomni/src/config"
+	"github.com/mimalef70/goomni/src/pkg/platform"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +29,14 @@ func TestInitPrivateAndNeverOverwrite(t *testing.T) {
 		require.NoError(t, e)
 		info, e := os.Stat(p)
 		require.NoError(t, e)
-		require.Equal(t, os.FileMode(0600), info.Mode().Perm())
+		if runtime.GOOS == "windows" {
+			// mode bits mean nothing on Windows: the access list must keep everyone else out
+			private, err := platform.PrivateFile(p, info)
+			require.NoError(t, err)
+			require.True(t, private)
+		} else {
+			require.Equal(t, os.FileMode(0600), info.Mode().Perm())
+		}
 		require.Error(t, initialize(dir))
 		after, e := os.ReadFile(p)
 		require.NoError(t, e)
