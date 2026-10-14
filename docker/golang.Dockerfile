@@ -8,7 +8,7 @@ COPY docs/openapi.yaml /workspace/docs/openapi.yaml
 COPY src/config/settings.go /workspace/src/config/settings.go
 RUN npm run build
 
-FROM --platform=$BUILDPLATFORM golang:1.26.9@sha256:f1f0bcc2c524a3ced375fcb4d1ecb7aa371aa7070e112599aaca45cc02d0101b AS build
+FROM --platform=$BUILDPLATFORM golang:1.27.1@sha256:162be5298a40ed317005c8339c6de4d10d3eef336d66dc8e9259b03ab9d3a6d2 AS build
 WORKDIR /src
 COPY src/go.mod src/go.sum ./
 RUN go mod download
