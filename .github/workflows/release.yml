@@ -116,7 +116,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.identity.outputs.version }}
         run: python3 scripts/package_release.py --version "$RELEASE_VERSION" --output dist
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-packages
           path: dist/
@@ -278,7 +278,7 @@ jobs:
             docker pull "$image@$IMAGE_DIGEST"
             python3 scripts/docker_smoke.py "$image@$IMAGE_DIGEST"
           done
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: public-verification-${{ matrix.arch }}
           path: ${{ runner.temp }}/public-release.json
