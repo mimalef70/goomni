@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.4.2 — 2026-11-13
 
 Rubika story replies and Rubino comments. Observed live on 2026-11-12 with two
 operator-controlled accounts.

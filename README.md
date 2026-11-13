@@ -18,8 +18,9 @@ your server. The administrative panel is included in the binary.
 Sponsored by **[MuChat](https://mu.chat)**. GoOmni is independent open-source
 software, available to everyone under the MIT license.
 
-GoOmni 2.4.1 corrects Eitaa/Rubika recovery boundaries, sender-name enrichment and
-Rubika avatar downloads. It retains structured capability `evidence` (date, scope,
+GoOmni 2.4.2 delivers Rubika story replies with their text and story image, adds
+Rubino posts, comments, comment replies and direct replies, and emits Rubino
+comment/mention events. It retains the 2.4.2 recovery fixes, structured capability `evidence` (date, scope,
 references and limitations) and indexed conversation summaries. Storage remains
 schema 9, with transactional upgrades from older schemas; take a cold snapshot
 before upgrading. See
@@ -84,10 +85,12 @@ not a customer login page or a chat inbox.
 
 ## Release status
 
-**GoOmni 2.4.1** fixes Eitaa/Rubika first-attachment boundaries and recovery status,
-Rubika outage pagination and unavailable-peer isolation, sender-name enrichment,
-and missing-size avatar downloads. It retains the shared services, capability
-evidence and indexed local reads from 2.4.0. It includes Linux/macOS archives and
+**GoOmni 2.4.2** delivers Rubika story replies (previously empty unsupported
+messages) with the reply text and the replied story's image, projects forwarded
+Rubino posts, and adds Rubino operations for posts, stories, comments, comment
+replies and resolving a commenter for a direct reply, plus `rubino.comment`,
+`rubino.mention` and `rubino.activity` events. It retains the recovery and avatar
+fixes from 2.4.2 and the shared services and indexed local reads from 2.4.0. It includes Linux/macOS archives and
 Linux amd64/arm64 container images. Follow the [upgrade guide](docs/upgrade-goomni.md)
 for the schema-9 migration and any consumer changes when upgrading from GoBale.
 Existing accounts and accepted work are preserved when you reuse the original
@@ -147,15 +150,15 @@ Old and pending durable data is preserved during schema upgrades.
 
 ### Binary
 
-Download the archive for your platform from [v2.4.1](https://github.com/mimalef70/goomni/releases/tag/v2.4.1).
+Download the archive for your platform from [v2.4.2](https://github.com/mimalef70/goomni/releases/tag/v2.4.2).
 For example, on Linux amd64:
 
 ```sh
 mkdir goomni && cd goomni
-curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.4.1/goomni_2.4.1_linux_amd64.tar.gz
-curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.4.1/SHA256SUMS
-grep '  goomni_2.4.1_linux_amd64.tar.gz$' SHA256SUMS | sha256sum --check -
-tar -xzf goomni_2.4.1_linux_amd64.tar.gz
+curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.4.2/goomni_2.4.2_linux_amd64.tar.gz
+curl --fail --location --remote-name https://github.com/mimalef70/goomni/releases/download/v2.4.2/SHA256SUMS
+grep '  goomni_2.4.2_linux_amd64.tar.gz$' SHA256SUMS | sha256sum --check -
+tar -xzf goomni_2.4.2_linux_amd64.tar.gz
 ./goomni init --bale-web-client
 ./goomni rest
 ```
@@ -179,11 +182,11 @@ interactive helper in another terminal:
 ### Docker
 
 Download the release's `docker-compose.yml`, or use the copy in its archive.
-The default image is pinned to `docker.io/mimalef70/goomni:v2.4.1`;
-`ghcr.io/mimalef70/goomni:v2.4.1` contains the same build. For a **new** installation:
+The default image is pinned to `docker.io/mimalef70/goomni:v2.4.2`;
+`ghcr.io/mimalef70/goomni:v2.4.2` contains the same build. For a **new** installation:
 
 ```sh
-export APP_IMAGE='docker.io/mimalef70/goomni:v2.4.1'
+export APP_IMAGE='docker.io/mimalef70/goomni:v2.4.2'
 docker pull "$APP_IMAGE"
 docker run --rm --user "$(id -u):$(id -g)" \
   --volume "$PWD:/config" --workdir /config \
@@ -255,7 +258,7 @@ configuration changes require recreation, not merely `docker restart`.
 
 ## Connect your application
 
-These examples target **GoOmni 2.4.1** and use `curl` plus `jq`. First connect
+These examples target **GoOmni 2.4.2** and use `curl` plus `jq`. First connect
 an account named `support` through the panel or CLI. Run the following in the
 initialized directory; load only your own trusted `.env`:
 
