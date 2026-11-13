@@ -14919,6 +14919,399 @@ paths:
             - poll_id
             - selection_index
             additionalProperties: false
+        - operation: rubino.comment.add
+          method: POST
+          path: /operations/rubino.comment.add
+          mode: mutation
+          description: Add a comment to a Rubino post from the account profile
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              post_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              text:
+                type: string
+                minLength: 1
+                maxLength: 2200
+                additionalProperties: false
+            required:
+            - post_id
+            - post_profile_id
+            - text
+            additionalProperties: false
+        - operation: rubino.comment.replies
+          method: POST
+          path: /operations/rubino.comment.replies
+          mode: read
+          description: Read replies to one Rubino comment
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              comment_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              limit:
+                type: integer
+                minimum: 1
+                maximum: 50
+                additionalProperties: false
+              max_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            required:
+            - post_id
+            - post_profile_id
+            - comment_id
+            additionalProperties: false
+        - operation: rubino.comment.reply
+          method: POST
+          path: /operations/rubino.comment.reply
+          mode: mutation
+          description: Reply in the thread of one Rubino comment from the account profile
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              comment_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              text:
+                type: string
+                minLength: 1
+                maxLength: 2200
+                additionalProperties: false
+            required:
+            - post_id
+            - post_profile_id
+            - comment_id
+            - text
+            additionalProperties: false
+        - operation: rubino.comments
+          method: POST
+          path: /operations/rubino.comments
+          mode: read
+          description: Read comments on a Rubino post, newest first
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              limit:
+                type: integer
+                minimum: 1
+                maximum: 50
+                additionalProperties: false
+              max_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              post_profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            required:
+            - post_id
+            - post_profile_id
+            additionalProperties: false
+        - operation: rubino.notifications
+          method: POST
+          path: /operations/rubino.notifications
+          mode: read
+          description: Read the account profile's Rubino activity (comments, replies, likes, follows), newest first
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              limit:
+                type: integer
+                minimum: 1
+                maximum: 50
+                additionalProperties: false
+              max_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            additionalProperties: false
+        - operation: rubino.posts
+          method: POST
+          path: /operations/rubino.posts
+          mode: read
+          description: List posts of the account's Rubino profile, newest first
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              limit:
+                type: integer
+                minimum: 1
+                maximum: 50
+                additionalProperties: false
+              max_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            additionalProperties: false
+        - operation: rubino.profile.chat
+          method: POST
+          path: /operations/rubino.profile.chat
+          mode: read
+          description: Resolve a Rubino profile to its Rubika messenger user peer for a direct reply; fails when
+            the profile does not accept messages
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              target_profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            required:
+            - target_profile_id
+            additionalProperties: false
+        - operation: rubino.profiles
+          method: POST
+          path: /operations/rubino.profiles
+          mode: read
+          description: List the account's Rubino profiles (pages); the default profile acts for other Rubino operations
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            additionalProperties: false
+            properties: {}
+        - operation: rubino.stories
+          method: POST
+          path: /operations/rubino.stories
+          mode: read
+          description: List the account profile's own active Rubino stories
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            additionalProperties: false
+        - operation: rubino.story
+          method: POST
+          path: /operations/rubino.story
+          mode: read
+          description: Read Rubino stories by opaque IDs; media is exposed only through registered references
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+              story_ids:
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  pattern: ^[A-Za-z0-9_-]+$
+                  additionalProperties: false
+                minItems: 1
+                maxItems: 10
+                additionalProperties: false
+              story_profile_id:
+                type: string
+                minLength: 1
+                maxLength: 64
+                pattern: ^[A-Za-z0-9_-]+$
+                additionalProperties: false
+            required:
+            - story_profile_id
+            - story_ids
+            additionalProperties: false
         - operation: search.global
           method: POST
           path: /operations/search.global
@@ -60312,6 +60705,16 @@ paths:
           - report.messages
           - report.peer
           - report.story
+          - rubino.comment.add
+          - rubino.comment.replies
+          - rubino.comment.reply
+          - rubino.comments
+          - rubino.notifications
+          - rubino.posts
+          - rubino.profile.chat
+          - rubino.profiles
+          - rubino.stories
+          - rubino.story
           - search.global
           - search.messages
           - send.contact
@@ -68988,6 +69391,248 @@ paths:
                 required:
                 - poll_id
                 - selection_index
+                additionalProperties: false
+              - type: object
+                properties:
+                  post_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  text:
+                    type: string
+                    minLength: 1
+                    maxLength: 2200
+                    additionalProperties: false
+                required:
+                - post_id
+                - post_profile_id
+                - text
+                additionalProperties: false
+              - type: object
+                properties:
+                  comment_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 50
+                    additionalProperties: false
+                  max_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                required:
+                - post_id
+                - post_profile_id
+                - comment_id
+                additionalProperties: false
+              - type: object
+                properties:
+                  comment_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  text:
+                    type: string
+                    minLength: 1
+                    maxLength: 2200
+                    additionalProperties: false
+                required:
+                - post_id
+                - post_profile_id
+                - comment_id
+                - text
+                additionalProperties: false
+              - type: object
+                properties:
+                  limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 50
+                    additionalProperties: false
+                  max_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  post_profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                required:
+                - post_id
+                - post_profile_id
+                additionalProperties: false
+              - type: object
+                properties:
+                  limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 50
+                    additionalProperties: false
+                  max_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                additionalProperties: false
+              - type: object
+                properties:
+                  limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 50
+                    additionalProperties: false
+                  max_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                additionalProperties: false
+              - type: object
+                properties:
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  target_profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                required:
+                - target_profile_id
+                additionalProperties: false
+              - type: object
+                additionalProperties: false
+                properties: {}
+              - type: object
+                properties:
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                additionalProperties: false
+              - type: object
+                properties:
+                  profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                  story_ids:
+                    type: array
+                    items:
+                      type: string
+                      minLength: 1
+                      maxLength: 64
+                      pattern: ^[A-Za-z0-9_-]+$
+                      additionalProperties: false
+                    minItems: 1
+                    maxItems: 10
+                    additionalProperties: false
+                  story_profile_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                    pattern: ^[A-Za-z0-9_-]+$
+                    additionalProperties: false
+                required:
+                - story_profile_id
+                - story_ids
                 additionalProperties: false
               - type: object
                 properties:

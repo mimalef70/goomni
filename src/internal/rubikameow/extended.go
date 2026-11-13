@@ -55,6 +55,9 @@ func (c *Client) extendedCall(ctx context.Context, name string, raw json.RawMess
 	if result, handled, err := c.avatarMutation(ctx, name, raw, rid); handled {
 		return result, true, err
 	}
+	if result, handled, err := c.rubinoCall(ctx, name, raw, rid); handled {
+		return result, true, err
+	}
 	if result, handled, err := c.communicationCall(ctx, name, raw, rid); handled {
 		return result, true, err
 	}
@@ -394,6 +397,12 @@ func publicExtended(o object) object {
 }
 
 func projectExtendedMessage(message object, msg *domains.Message) (object, bool, error) {
+	if raw, present := message["rubino_story_data"]; present {
+		return projectRubinoStory(raw, msg), true, nil
+	}
+	if raw, present := message["rubino_post_data"]; present {
+		return projectRubinoPostShare(raw, msg), true, nil
+	}
 	// sendMessage accepts message_contact, but received ContactMessage records
 	// use contact_message. Keep the observed receive layout distinct from writes.
 	if raw, present := message["contact_message"]; present {
@@ -442,4 +451,69 @@ func projectExtendedMessage(message object, msg *domains.Message) (object, bool,
 		msg.Supported = false
 	}
 	return nil, false, nil
+}
+
+// maxStoryReplyText bounds story reply text; Rubika text messages are far shorter.
+const maxStoryReplyText = 8192
+
+// projectRubinoStory projects a received RubinoStory record. Observed live on
+// 2026-11-12: a story reply carries no message "text"; the typed reply is in
+// rubino_story_data.reply_text with rubino_story_data.type "Reply". Story and
+// profile IDs are opaque. A malformed record stays explicit and unsupported
+// rather than failing the frame, so one odd update cannot stall the peer.
+func projectRubinoStory(raw any, msg *domains.Message) object {
+	msg.Kind, msg.Supported = "story", false
+	story := asObject(raw)
+	if story == nil {
+		return object{"rubino_story": object{"valid": false}}
+	}
+	out := object{}
+	for _, key := range []string{"story_id", "story_profile_id"} {
+		value, present := story[key]
+		if !present {
+			continue
+		}
+		id, ok := value.(string)
+		if !ok || !domains.ValidOpaqueID(id) {
+			return object{"rubino_story": object{"valid": false}}
+		}
+		out[key] = id
+	}
+	storyType, _ := story["type"].(string)
+	if len(storyType) > 64 {
+		return object{"rubino_story": object{"valid": false}}
+	}
+	if storyType != "" {
+		out["type"] = storyType
+	}
+	if storyType == "Reply" {
+		text, ok := story["reply_text"].(string)
+		if !ok || len(text) > maxStoryReplyText {
+			return object{"rubino_story": object{"valid": false}}
+		}
+		if msg.Body == "" {
+			msg.Body = text
+		}
+		msg.Kind, msg.Supported = "story_reply", true
+	}
+	return object{"rubino_story": out}
+}
+
+// projectRubinoPostShare projects a forwarded Rubino post (type "RubinoPost").
+// The reviewed web client resolves rubino_post_data {post_id, post_profile_id}
+// through Rubino; any accompanying text is sent as a separate message.
+func projectRubinoPostShare(raw any, msg *domains.Message) object {
+	post := asObject(raw)
+	out := object{}
+	for _, key := range []string{"post_id", "post_profile_id"} {
+		if id, ok := post[key].(string); ok && validRubinoID(id) {
+			out[key] = id
+		}
+	}
+	if len(out) != 2 {
+		msg.Kind, msg.Supported = "rubino_post", false
+		return object{"rubino_post": object{"valid": false}}
+	}
+	msg.Kind, msg.Supported = "rubino_post", true
+	return object{"rubino_post": out}
 }

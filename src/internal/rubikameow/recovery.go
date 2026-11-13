@@ -97,6 +97,7 @@ func (c *Client) Connect(context.Context, *domains.Session, domains.Sink) error 
 	return domains.E("BATCH_SINK_REQUIRED", "Rubika requires a durable batch sink", 500)
 }
 func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink domains.BatchSink) (retErr error) {
+	sink = c.withStoryMedia(sink)
 	defer func() {
 		if retErr != nil {
 			auth, code := "", "CONNECTION_FAILED"
@@ -217,6 +218,11 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 		defer conn.CloseNow()
 		defer cancel()
 		var workers sync.WaitGroup
+		workers.Add(1)
+		go func() {
+			defer workers.Done()
+			c.pollRubino(runCtx, sink)
+		}()
 		workers.Add(1)
 		go func() {
 			defer workers.Done()
@@ -889,6 +895,7 @@ func (c *Client) projectMessage(guid string, update object) (domains.Event, erro
 		for key, value := range extra {
 			payload[key] = value
 		}
+		payload["text"] = msg.Body
 		payload["kind"] = msg.Kind
 		payload["supported"] = msg.Supported
 	}

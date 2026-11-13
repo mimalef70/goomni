@@ -20,6 +20,7 @@ import (
 
 type Config struct {
 	DiscoveryEndpoint, APIEndpoint, SocketEndpoint string
+	RubinoEndpoint                                 string
 	HTTPClient                                     *http.Client
 	ConnectionID                                   string
 	PersistSession                                 domains.SessionPersister
@@ -39,6 +40,7 @@ type authChallenge struct {
 	Phone, Hash, Tmp string
 }
 type Client struct {
+	rubinoProfile       string
 	senderContactsAfter time.Time
 	names               sendernames.Cache
 	startedAt           int64

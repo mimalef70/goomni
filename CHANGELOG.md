@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased
+
+Rubika story replies and Rubino comments. Observed live on 2026-11-12 with two
+operator-controlled accounts.
+
+- Project received `RubinoStory` replies: the typed text is
+  `rubino_story_data.reply_text` (the message `text` is absent), so these were
+  previously delivered as empty unsupported messages. They now arrive as
+  `kind: story_reply` with the body and a `rubino_story` reference
+  (`story_id`, `story_profile_id`, `type`). Malformed story records stay explicit
+  and unsupported instead of failing the frame.
+- Attach the replied story's image (picture file, or the video's snapshot) to
+  story-reply events as ordinary downloadable media. Lookup is best effort and
+  bounded; only provider media hosts are fetched and URLs never reach public JSON.
+- Project forwarded Rubino posts (`RubinoPost`, `rubino_post_data`) as
+  `kind: rubino_post` with a `rubino_post` reference, enriched best effort with
+  the post caption, page username and image as downloadable media.
+- Add Rubino operations through the account session: `rubino.profiles`,
+  `rubino.posts`, `rubino.stories`, `rubino.story`, `rubino.notifications`,
+  `rubino.comments`, `rubino.comment.replies`, `rubino.profile.chat` (profile to
+  messenger peer for a direct reply), and the mutations `rubino.comment.add` and
+  `rubino.comment.reply` (request ID used as the provider `rnd`).
+- Emit `rubino.comment` (new comments and thread replies, with text and the
+  commenter's messenger peer when reachable), `rubino.mention` and
+  `rubino.activity` events from bounded Rubino activity polling. The first poll
+  records a baseline without replaying history; events and the `rubino.activity`
+  checkpoint are persisted atomically.
+
 ## 2.4.1 — 2026-10-13
 
 Correct Eitaa and Rubika recovery boundaries, isolate unavailable Rubika peers,

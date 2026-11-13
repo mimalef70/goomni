@@ -154,7 +154,8 @@ func extendedOperations() []domains.OperationContract {
 	p["phone"] = domains.FieldSchema{Type: "string", MinLength: 6, MaxLength: 16, Pattern: `^\+?[1-9][0-9]{5,14}$`}
 	p["user_id"] = idField()
 	add("send.contact", "mutation", p, "peer", "first_name", "phone")
-	return append(out, communicationOperations()...)
+	out = append(out, communicationOperations()...)
+	return append(out, rubinoOperations()...)
 }
 func normalizeExtended(name string, raw json.RawMessage) error {
 	var p extendedRequest
@@ -213,6 +214,9 @@ func normalizeExtended(name string, raw json.RawMessage) error {
 		if strings.TrimSpace(s) == "" {
 			return domains.E("INVALID_REQUEST", "poll options must not be empty", 400)
 		}
+	}
+	if err := normalizeRubino(name, raw); err != nil {
+		return err
 	}
 	return normalizeCommunication(name, raw)
 }

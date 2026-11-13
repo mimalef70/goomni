@@ -323,6 +323,9 @@ func (c *Client) Download(ctx context.Context, ref domains.ProviderMedia) (io.Re
 	if ref.Provider != domains.ProviderRubika || ref.Version != 1 || len(ref.Data) > 4096 || json.Unmarshal(ref.Data, &private) != nil {
 		return nil, protocolError()
 	}
+	if private.Version == storyMediaVersion {
+		return c.downloadStoryMedia(ctx, ref)
+	}
 	c.mu.RLock()
 	account, auth := c.session.UserID, c.session.Auth
 	c.mu.RUnlock()
