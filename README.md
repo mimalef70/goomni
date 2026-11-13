@@ -204,7 +204,7 @@ See the [complete Docker upgrade steps](docs/upgrade-goomni.md#docker-installati
 
 ### Build from source
 
-Use Go **1.26.9**, Node **24.12+**, Python **3.11+**, Make and a C compiler.
+Use Go **1.26.11**, Node **24.12+**, Python **3.11+**, Make and a C compiler.
 Node is needed only to build the embedded panel; the service runs as one Go binary.
 
 ```sh

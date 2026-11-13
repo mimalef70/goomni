@@ -627,7 +627,7 @@ burst, ten read/search requests/s and one 1 MiB upload every ten seconds.
 Production worker counts and the 500 ms poll interval are retained.
 
 ```sh
-# Build the separate local runtime image first; host Go 1.26.9 compiles the tests.
+# Build the separate local runtime image first; host Go 1.26.11 compiles the tests.
 docker build --file docker/golang.Dockerfile --tag goomni:dev .
 # Uses only synthetic identities and isolated Docker volumes, no messenger network.
 python3 scripts/start_soak.py --providers bale,eitaa,rubika --accounts 300 --duration 10m --warmup 0s --max-disk-gib 1 --image goomni:dev --wait

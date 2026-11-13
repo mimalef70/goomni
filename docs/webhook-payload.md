@@ -495,7 +495,7 @@ Configure these environment variables privately:
 | `WEBHOOK_ACCOUNT_ID` | The authenticated provider `account_id` (`device_id` in events) |
 
 All four are required. From a source checkout matching the gateway contract,
-with Go 1.26.9 installed, run:
+with Go 1.26.11 installed, run:
 
 ```sh
 cd src

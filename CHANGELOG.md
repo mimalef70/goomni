@@ -22,6 +22,11 @@ operator-controlled accounts.
   `rubino.comments`, `rubino.comment.replies`, `rubino.profile.chat` (profile to
   messenger peer for a direct reply), and the mutations `rubino.comment.add` and
   `rubino.comment.reply` (request ID used as the provider `rnd`).
+- Security: build with Go 1.26.11 (net/http GO-2026-6859, crypto/x509
+  GO-2026-6809), update github.com/andybalholm/brotli to v1.2.7 (GO-2026-6888)
+  and github.com/klauspost/compress to v1.20.2 (GO-2026-6865), and update the
+  administrative UI's locked undici and zod versions for high-severity advisories.
+  Moderate npm advisories without a non-breaking fix remain.
 - Emit `rubino.comment` (new comments and thread replies, with text and the
   commenter's messenger peer when reachable), `rubino.mention` and
   `rubino.activity` events from bounded Rubino activity polling. The first poll
