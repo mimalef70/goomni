@@ -3,6 +3,7 @@ package rubikameow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -10,6 +11,14 @@ import (
 )
 
 func TestConversationDiscoveredDuringOutageDrainsAllPagesAcrossRestart(t *testing.T) {
+	for _, directOnly := range []bool{false, true} {
+		t.Run(fmt.Sprintf("direct_only_%t", directOnly), func(t *testing.T) {
+			testConversationOutageBackfill(t, directOnly)
+		})
+	}
+}
+
+func testConversationOutageBackfill(t *testing.T, directOnly bool) {
 	message := func(n int) object {
 		return object{"message_id": strconv.Itoa(n), "time": 900 + n, "type": "Text", "text": "synthetic", "author_object_guid": "u0peer"}
 	}
@@ -68,6 +77,7 @@ func TestConversationDiscoveredDuringOutageDrainsAllPagesAcrossRestart(t *testin
 	}
 	client := func() *Client {
 		c, _ := newRPCFixture(t, fixture)
+		c.cfg.DirectMessagesOnly = directOnly
 		c.cfg.LoadCheckpoint = func(context.Context, string) (string, error) { return raw, nil }
 		c.startedAt = 1000
 		c.names.Remember("u0self", "u0peer", "Peer")

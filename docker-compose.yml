@@ -5,7 +5,7 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
-    image: ${APP_IMAGE:-docker.io/mimalef70/goomni:v2.4.2}
+    image: ${APP_IMAGE:-docker.io/mimalef70/goomni:v2.4.3}
     build:
       context: .
       dockerfile: docker/golang.Dockerfile
@@ -43,6 +43,7 @@ services:
       EITAA_API_HASH: ${EITAA_API_HASH:-8da85b0d5bfe62527e5b244c209159c3}
       EITAA_POLL_INTERVAL: ${EITAA_POLL_INTERVAL:-5s}
       RUBIKA_ENABLED: ${RUBIKA_ENABLED:-false}
+      RUBIKA_DIRECT_MESSAGES_ONLY: ${RUBIKA_DIRECT_MESSAGES_ONLY:-false}
       RUBIKA_DISCOVERY_ENDPOINT: ${RUBIKA_DISCOVERY_ENDPOINT:-https://getdcmess.iranlms.ir/}
       RUBIKA_API_ENDPOINT: ${RUBIKA_API_ENDPOINT:-}
       RUBIKA_SOCKET_ENDPOINT: ${RUBIKA_SOCKET_ENDPOINT:-}

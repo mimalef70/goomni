@@ -18,6 +18,40 @@ func providerDevice(t *testing.T, s *Store, alias string, provider domains.Provi
 	return d
 }
 
+func TestCheckpointPagesAreBoundedAndConnectionScoped(t *testing.T) {
+	ctx := context.Background()
+	s, _ := testStore(t)
+	d := providerDevice(t, s, "direct", domains.ProviderRubika)
+	other := providerDevice(t, s, "other", domains.ProviderRubika)
+	for _, device := range []domains.Device{d, other} {
+		batch := domains.EventBatch{}
+		for i := 0; i < 105; i++ {
+			batch.Checkpoints = append(batch.Checkpoints, domains.CheckpointTransition{Scope: fmt.Sprintf("rubika.messages:u0%03d", i), Next: device.ID})
+		}
+		batch.Checkpoints = append(batch.Checkpoints, domains.CheckpointTransition{Scope: "rubika.messages:c0channel", Next: "excluded"})
+		_, err := s.AppendBatch(ctx, device.ConnectionID, batch, nil)
+		require.NoError(t, err)
+	}
+	first, err := s.ScopedCheckpointPage(ctx, d.ConnectionID, "rubika.messages:u0", "")
+	require.NoError(t, err)
+	require.Len(t, first, 100)
+	after := ""
+	for scope, value := range first {
+		require.Equal(t, d.ID, value)
+		after = max(after, scope)
+	}
+	second, err := s.ScopedCheckpointPage(ctx, d.ConnectionID, "rubika.messages:u0", after)
+	require.NoError(t, err)
+	require.Len(t, second, 5)
+	for scope, value := range second {
+		require.NotContains(t, first, scope)
+		require.Equal(t, d.ID, value)
+	}
+	require.NoError(t, s.DeleteDevice(ctx, d.ConnectionID))
+	_, err = s.ScopedCheckpointPage(ctx, d.ConnectionID, "rubika.messages:u0", "")
+	require.Error(t, err)
+}
+
 func TestProviderBatchesAcceptDuplicateAndEmptyPagesWithIndependentCursors(t *testing.T) {
 	ctx := context.Background()
 	s, _ := testStore(t)

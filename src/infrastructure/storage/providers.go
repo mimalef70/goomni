@@ -156,6 +156,31 @@ func (s *Store) ScopedCheckpoint(ctx context.Context, conn, scope string) (strin
 	return value, err
 }
 
+// ScopedCheckpointPage supports bounded inspection during provider scope
+// changes. Prefix matching is literal; rows never cross connection lifetimes.
+func (s *Store) ScopedCheckpointPage(ctx context.Context, conn, prefix, after string) (map[string]string, error) {
+	if err := validateCheckpointScope(prefix); err != nil {
+		return nil, err
+	}
+	if err := s.active(ctx, conn); err != nil {
+		return nil, err
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT scope,value FROM provider_checkpoints WHERE connection_id=? AND scope>=? AND scope<? AND scope>? ORDER BY scope LIMIT 100`, conn, prefix, prefix+"\uffff", after)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	page := make(map[string]string)
+	for rows.Next() {
+		var scope, value string
+		if err := rows.Scan(&scope, &value); err != nil {
+			return nil, err
+		}
+		page[scope] = value
+	}
+	return page, rows.Err()
+}
+
 func checkpointValueTx(ctx context.Context, tx *sql.Tx, conn, scope string) (string, error) {
 	var value string
 	err := tx.QueryRowContext(ctx, `SELECT value FROM provider_checkpoints WHERE connection_id=? AND scope=?`, conn, scope).Scan(&value)

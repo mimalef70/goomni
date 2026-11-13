@@ -66,6 +66,7 @@ func NewCommand() *cobra.Command {
 	flags.String("eitaa-api-hash", "8da85b0d5bfe62527e5b244c209159c3", "Eitaa public web application hash")
 	flags.Duration("eitaa-poll-interval", 5*time.Second, "Eitaa bounded polling interval")
 	flags.Bool("rubika-enabled", false, "Enable the native Rubika adapter (live verification pending)")
+	flags.Bool("rubika-direct-messages-only", false, "Limit Rubika live updates and recovery to user direct messages after first attachment")
 	flags.String("rubika-discovery-endpoint", "https://getdcmess.iranlms.ir/", "Rubika data-center discovery endpoint")
 	flags.String("rubika-api-endpoint", "", "Override the discovered Rubika API endpoint")
 	flags.String("rubika-socket-endpoint", "", "Override the discovered Rubika WebSocket endpoint")
@@ -79,7 +80,7 @@ func NewCommand() *cobra.Command {
 	flags.Int("media-workers", 4, "Maximum concurrent media transfers")
 	flags.Int("queue-limit", 1000, "Maximum queued, in-flight and unknown sends across accounts")
 	flags.Int("connection-queue-limit", 100, "Maximum queued, in-flight and unknown sends per connection")
-	bindings := map[string]string{"rubika-enabled": "RUBIKA_ENABLED", "rubika-discovery-endpoint": "RUBIKA_DISCOVERY_ENDPOINT", "rubika-api-endpoint": "RUBIKA_API_ENDPOINT", "rubika-socket-endpoint": "RUBIKA_SOCKET_ENDPOINT", "eitaa-enabled": "EITAA_ENABLED", "eitaa-endpoint": "EITAA_ENDPOINT", "eitaa-upload-endpoint": "EITAA_UPLOAD_ENDPOINT", "eitaa-download-endpoint": "EITAA_DOWNLOAD_ENDPOINT", "eitaa-api-id": "EITAA_API_ID", "eitaa-api-hash": "EITAA_API_HASH", "eitaa-poll-interval": "EITAA_POLL_INTERVAL", "ui-enabled": "APP_UI_ENABLED", "ui-public-origin": "APP_UI_PUBLIC_ORIGIN", "host": "APP_HOST", "port": "APP_PORT", "basic-auth": "APP_BASIC_AUTH", "base-path": "APP_BASE_PATH", "database": "APP_DATABASE", "media-root": "APP_MEDIA_ROOT", "master-key": "APP_MASTER_KEY", "master-key-file": "APP_MASTER_KEY_FILE", "grpc-endpoint": "BALE_GRPC_ENDPOINT", "ws-endpoint": "BALE_WS_ENDPOINT", "bale-app-id": "BALE_APP_ID", "bale-api-key": "BALE_API_KEY", "bale-api-version": "BALE_API_VERSION", "webhook": "APP_WEBHOOK", "webhook-secret": "APP_WEBHOOK_SECRET", "webhook-device-merge-global": "APP_WEBHOOK_DEVICE_MERGE_GLOBAL", "max-media-bytes": "APP_MAX_MEDIA_BYTES", "send-workers": "APP_SEND_WORKERS", "webhook-workers": "APP_WEBHOOK_WORKERS", "reconnect-workers": "APP_RECONNECT_WORKERS", "media-workers": "APP_MEDIA_WORKERS", "queue-limit": "APP_QUEUE_LIMIT", "connection-queue-limit": "APP_CONNECTION_QUEUE_LIMIT"}
+	bindings := map[string]string{"rubika-enabled": "RUBIKA_ENABLED", "rubika-direct-messages-only": "RUBIKA_DIRECT_MESSAGES_ONLY", "rubika-discovery-endpoint": "RUBIKA_DISCOVERY_ENDPOINT", "rubika-api-endpoint": "RUBIKA_API_ENDPOINT", "rubika-socket-endpoint": "RUBIKA_SOCKET_ENDPOINT", "eitaa-enabled": "EITAA_ENABLED", "eitaa-endpoint": "EITAA_ENDPOINT", "eitaa-upload-endpoint": "EITAA_UPLOAD_ENDPOINT", "eitaa-download-endpoint": "EITAA_DOWNLOAD_ENDPOINT", "eitaa-api-id": "EITAA_API_ID", "eitaa-api-hash": "EITAA_API_HASH", "eitaa-poll-interval": "EITAA_POLL_INTERVAL", "ui-enabled": "APP_UI_ENABLED", "ui-public-origin": "APP_UI_PUBLIC_ORIGIN", "host": "APP_HOST", "port": "APP_PORT", "basic-auth": "APP_BASIC_AUTH", "base-path": "APP_BASE_PATH", "database": "APP_DATABASE", "media-root": "APP_MEDIA_ROOT", "master-key": "APP_MASTER_KEY", "master-key-file": "APP_MASTER_KEY_FILE", "grpc-endpoint": "BALE_GRPC_ENDPOINT", "ws-endpoint": "BALE_WS_ENDPOINT", "bale-app-id": "BALE_APP_ID", "bale-api-key": "BALE_API_KEY", "bale-api-version": "BALE_API_VERSION", "webhook": "APP_WEBHOOK", "webhook-secret": "APP_WEBHOOK_SECRET", "webhook-device-merge-global": "APP_WEBHOOK_DEVICE_MERGE_GLOBAL", "max-media-bytes": "APP_MAX_MEDIA_BYTES", "send-workers": "APP_SEND_WORKERS", "webhook-workers": "APP_WEBHOOK_WORKERS", "reconnect-workers": "APP_RECONNECT_WORKERS", "media-workers": "APP_MEDIA_WORKERS", "queue-limit": "APP_QUEUE_LIMIT", "connection-queue-limit": "APP_CONNECTION_QUEUE_LIMIT"}
 	for flag, env := range bindings {
 		_ = v.BindPFlag(flag, flags.Lookup(flag))
 		_ = v.BindEnv(flag, env)
@@ -221,6 +222,10 @@ func run(parent context.Context, cfg config.Settings) error {
 	}
 	rubikaFactory := func(d domains.Device) domains.Client {
 		native, err := rubikameow.New(rubikameow.Config{DiscoveryEndpoint: cfg.RubikaDiscoveryEndpoint, APIEndpoint: cfg.RubikaAPIEndpoint, SocketEndpoint: cfg.RubikaSocketEndpoint, ConnectionID: d.ConnectionID, MaxMediaBytes: cfg.MaxMediaBytes,
+			DirectMessagesOnly: cfg.RubikaDirectMessagesOnly,
+			LoadCheckpointPage: func(ctx context.Context, prefix, after string) (map[string]string, error) {
+				return st.ScopedCheckpointPage(ctx, d.ConnectionID, prefix, after)
+			},
 			LoadCheckpoint: func(ctx context.Context, scope string) (string, error) {
 				return st.ScopedCheckpoint(ctx, d.ConnectionID, scope)
 			},

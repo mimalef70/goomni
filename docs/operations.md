@@ -42,6 +42,7 @@ command-line arguments, logs and public issues.
 | `EITAA_API_HASH` | `--eitaa-api-hash` | Reviewed public web application hash | Matching public client identity; not an account session |
 | `EITAA_POLL_INTERVAL` | `--eitaa-poll-interval` | `5s` | Account/channel difference polling, 1s–5m |
 | `RUBIKA_ENABLED` | `--rubika-enabled` | `false` | Opt in to the native Rubika adapter; live acceptance pending |
+| `RUBIKA_DIRECT_MESSAGES_ONLY` | `--rubika-direct-messages-only` | `false` | Limit automatic Rubika updates, recovery and coverage status to user direct messages after first attachment; applies to all Rubika connections in this process |
 | `RUBIKA_DISCOVERY_ENDPOINT` | `--rubika-discovery-endpoint` | `https://getdcmess.iranlms.ir/` | Data-center discovery endpoint |
 | `RUBIKA_API_ENDPOINT` | `--rubika-api-endpoint` | empty | Optional override of the discovered API endpoint |
 | `RUBIKA_SOCKET_ENDPOINT` | `--rubika-socket-endpoint` | empty | Optional override of the discovered update WebSocket endpoint |
@@ -194,6 +195,29 @@ events older than that boundary are omitted before name enrichment and durable
 webhook acceptance, for both incoming and own messages. Their native history APIs
 remain separate. Existing checkpoints without a recorded boundary retain their
 prior coverage; consumers should also retain their own activation boundary.
+
+For direct-message integrations, enable `RUBIKA_DIRECT_MESSAGES_ONLY=true` and
+restart with a build that supports this option. Group, channel, bot and service
+peers are excluded before automatic message reads and projection. Rubino activity
+polling is excluded too; direct story replies remain supported. Unclassified
+socket notifications remain durable diagnostics without degrading direct-message
+status. Unsupported direct-message content and actual account-wide
+authentication/transport failures remain visible. Explicit provider operations,
+including native history reads and sends, keep their existing scope.
+
+This mode uses the separate `rubika.direct.chats` account checkpoint. On first
+activation it inherits the original first-attachment time, account cursor and
+pending user work, and reuses durable user message checkpoints. Existing retry
+and gap state belonging only to groups/channels does not affect direct-message
+status. Stored user gaps (including peers absent from the current chat listing)
+and account-wide gaps remain visible. The original account checkpoint is retained.
+Switching modes or restarting does not set a new activation time. Pre-boundary
+message content is filtered before projection, enrichment and webhook delivery;
+minimal ID/time reads may still locate a newly discovered user's activation
+boundary. New-message recovery continues from accepted watermarks across outages,
+including conversations first discovered after the outage. Checkpoints from
+before activation-time tracking retain their existing coverage; this option
+cannot reconstruct a missing original attachment timestamp.
 
 Rubika maintains independent mutation and new-message cursors. Every newly
 resolved conversation first locates its activation boundary using the latest

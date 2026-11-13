@@ -16,6 +16,18 @@ func configFixture() *viper.Viper {
 	v.Set("max-media-bytes", 64<<20)
 	return v
 }
+
+func TestRubikaDirectMessagesOnlyConfiguration(t *testing.T) {
+	v := configFixture()
+	s, err := Load(v)
+	require.NoError(t, err)
+	require.False(t, s.RubikaDirectMessagesOnly)
+	t.Setenv("RUBIKA_DIRECT_MESSAGES_ONLY", "true")
+	require.NoError(t, v.BindEnv("rubika-direct-messages-only", "RUBIKA_DIRECT_MESSAGES_ONLY"))
+	s, err = Load(v)
+	require.NoError(t, err)
+	require.True(t, s.RubikaDirectMessagesOnly)
+}
 func TestConfigRejectsUnsafeValues(t *testing.T) {
 	for _, tt := range []struct {
 		k string

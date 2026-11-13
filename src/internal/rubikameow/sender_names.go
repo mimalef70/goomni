@@ -15,6 +15,9 @@ func (c *Client) enrichSink(sink domains.BatchSink) domains.BatchSink {
 		c.mu.RUnlock()
 		events := make([]domains.Event, 0, len(batch.Events))
 		for _, event := range batch.Events {
+			if c.cfg.DirectMessagesOnly && event.Type != "connection.recovery" && event.Type != "protocol.unsupported_update" && event.Peer.Type != "user" {
+				continue
+			}
 			if event.Type == "message" && startedAt > 0 && event.Time.Unix() < startedAt {
 				continue
 			}

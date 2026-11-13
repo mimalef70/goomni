@@ -159,24 +159,9 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 	if asObject(profile["user"]).str("user_guid") != ps.UserID {
 		return domains.E("ACCOUNT_CHANGED", "Rubika session changed account", 409)
 	}
-	raw, e := c.cfg.LoadCheckpoint(ctx, accountScope)
+	raw, cp, e := c.loadRecoveryCheckpoint(ctx, ps.UserID, sink)
 	if e != nil {
 		return e
-	}
-	cp, e := parseCheckpoint(raw, ps.UserID)
-	if e == nil && cp.Peer != "" {
-		e = domains.E("INVALID_CHECKPOINT", "account checkpoint contains a peer scope", 500)
-	}
-	if e != nil {
-		return e
-	}
-	if raw == "" {
-		cp.StartedAt = time.Now().UTC().Unix()
-		next := checkpointJSON(cp)
-		if e = sink(ctx, domains.EventBatch{Checkpoints: []domains.CheckpointTransition{{Scope: accountScope, Expected: raw, Next: next}}}); e != nil {
-			return e
-		}
-		raw = next
 	}
 	c.mu.Lock()
 	c.startedAt = cp.StartedAt
@@ -218,11 +203,13 @@ func (c *Client) ConnectBatch(ctx context.Context, s *domains.Session, sink doma
 		defer conn.CloseNow()
 		defer cancel()
 		var workers sync.WaitGroup
-		workers.Add(1)
-		go func() {
-			defer workers.Done()
-			c.pollRubino(runCtx, sink)
-		}()
+		if !c.cfg.DirectMessagesOnly {
+			workers.Add(1)
+			go func() {
+				defer workers.Done()
+				c.pollRubino(runCtx, sink)
+			}()
+		}
 		workers.Add(1)
 		go func() {
 			defer workers.Done()
@@ -306,8 +293,8 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 		}
 		defer release()
 	}
+	cp.Pending = c.recoveryPeers(cp.Pending)
 	next := cp
-	next.Pending = append([]pendingChat(nil), cp.Pending...)
 	if len(cp.Pending) > 0 && (!cp.PollChats || len(cp.Pending) > 3000) {
 		// Rotate a peer with another bounded page behind its neighbours. A busy
 		// conversation must not monopolize account recovery after an outage.
@@ -348,7 +335,7 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 		// Account updates must still discover new messages while a peer is
 		// deferred or paging. Reserving 1000 slots bounds the durable queue.
 		next.PollChats = true
-		if e := sink(ctx, domains.EventBatch{Checkpoints: []domains.CheckpointTransition{{Scope: accountScope, Expected: expected, Next: checkpointJSON(next)}}}); e != nil {
+		if e := sink(ctx, domains.EventBatch{Checkpoints: []domains.CheckpointTransition{{Scope: c.accountCheckpointScope(), Expected: expected, Next: checkpointJSON(next)}}}); e != nil {
 			return cp, e
 		}
 		return next, nil
@@ -401,6 +388,9 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 		for _, value := range chats {
 			chat := asObject(value)
 			guid := chat.str("object_guid")
+			if c.excludedPeer(guid) {
+				continue
+			}
 			if !guidPattern.MatchString(guid) {
 				events = append(events, unsupportedPeerEvent(cp.Account, guid, "chat", state))
 				continue
@@ -443,6 +433,9 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 				if !ok {
 					return cp, protocolError()
 				}
+				if c.excludedPeer(guid) {
+					continue
+				}
 				if !guidPattern.MatchString(guid) {
 					events = append(events, unsupportedPeerEvent(cp.Account, guid, "chat_deleted", state))
 					continue
@@ -455,13 +448,16 @@ func (c *Client) recoverPage(ctx context.Context, expected string, cp checkpoint
 	if len(events) > 1000 || len(next.Pending) > 4000 {
 		return cp, protocolError()
 	}
-	if e = sink(ctx, domains.EventBatch{Events: events, Checkpoints: []domains.CheckpointTransition{{Scope: accountScope, Expected: expected, Next: checkpointJSON(next)}}}); e != nil {
+	if e = sink(ctx, domains.EventBatch{Events: events, Checkpoints: []domains.CheckpointTransition{{Scope: c.accountCheckpointScope(), Expected: expected, Next: checkpointJSON(next)}}}); e != nil {
 		return cp, e
 	}
 	c.observeCoverage(events)
 	return next, nil
 }
 func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.BatchSink) (bool, error) {
+	if c.cfg.DirectMessagesOnly && !(protocolRules{}).ValidateUserID(p.GUID) {
+		return false, nil
+	}
 	scope := "rubika.messages:" + p.GUID
 	c.mu.RLock()
 	account := c.session.UserID
@@ -579,6 +575,9 @@ func (c *Client) recoverPeer(ctx context.Context, p pendingChat, sink domains.Ba
 				return false, protocolError()
 			}
 			for _, v := range updates {
+				if c.skipMessageUpdate(p.GUID, asObject(v)) {
+					continue
+				}
 				event, e := c.projectMessage(p.GUID, asObject(v))
 				if e != nil {
 					return false, e
@@ -654,7 +653,12 @@ func (c *Client) recoverNewMessages(ctx context.Context, p pendingChat, cp check
 		if n <= last {
 			continue // An inclusive provider boundary cannot rewind the watermark.
 		}
-		event, err := c.projectMessage(p.GUID, object{"object_guid": p.GUID, "action": "New", "message_id": id, "message": message})
+		update := object{"object_guid": p.GUID, "action": "New", "message_id": id, "message": message}
+		if c.skipMessageUpdate(p.GUID, update) {
+			maxID = max(maxID, n)
+			continue
+		}
+		event, err := c.projectMessage(p.GUID, update)
 		if err != nil {
 			return err
 		}
@@ -727,12 +731,17 @@ func (c *Client) acceptFrame(ctx context.Context, raw, key []byte, sink domains.
 	}
 	events := []domains.Event{}
 	updates, ok := frame["message_updates"].([]any)
+	excluded := false
 	if ok {
 		if len(updates) > 1000 {
 			return protocolError()
 		}
 		for _, v := range updates {
 			o := asObject(v)
+			if c.skipMessageUpdate(o.str("object_guid"), o) {
+				excluded = true
+				continue
+			}
 			if guid := o.str("object_guid"); !guidPattern.MatchString(guid) {
 				events = append(events, unsupportedPeerEvent(account, guid, "message", string(raw)))
 				continue
@@ -746,6 +755,10 @@ func (c *Client) acceptFrame(ctx context.Context, raw, key []byte, sink domains.
 	}
 	for _, chat := range asObjects(frame["chat_updates"]) {
 		guid := chat.str("object_guid")
+		if c.excludedPeer(guid) {
+			excluded = true
+			continue
+		}
 		if !guidPattern.MatchString(guid) {
 			events = append(events, unsupportedPeerEvent(account, guid, "chat", chat.str("timestamp")))
 			continue
@@ -754,6 +767,9 @@ func (c *Client) acceptFrame(ctx context.Context, raw, key []byte, sink domains.
 		events = append(events, domains.Event{Provider: domains.ProviderRubika, ID: eventHash("chat_stream|" + guid + "|" + chat.str("timestamp") + "|" + string(payload)), Type: "chat.updated", Peer: peerFromGUID(guid), Direction: "unknown", Time: time.Now().UTC(), Payload: payload})
 	}
 	if len(events) == 0 {
+		if excluded {
+			return nil
+		}
 		data := json.RawMessage(`{"supported":false}`)
 		events = append(events, domains.Event{Provider: domains.ProviderRubika, ID: eventHash("unsupported|" + string(raw)), Type: "protocol.unsupported_update", Direction: "unknown", Time: time.Now().UTC(), Payload: data})
 	}
@@ -918,6 +934,9 @@ func (c *Client) observeCoverage(events []domains.Event) {
 	startedAt := c.startedAt
 	c.mu.RUnlock()
 	for _, event := range events {
+		if c.cfg.DirectMessagesOnly && event.Peer.Type != "user" {
+			continue
+		}
 		if event.Type == "message" && startedAt > 0 && event.Time.Unix() < startedAt {
 			continue
 		}
@@ -936,6 +955,7 @@ func (c *Client) observeCoverage(events []domains.Event) {
 	}
 }
 func (c *Client) setRecoveryStatus(cp checkpoint) {
+	cp.Pending = c.recoveryPeers(cp.Pending)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.status.Recovery = "current"

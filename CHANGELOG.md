@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.4.3 — 2026-11-13
+
+Keep Rubika direct-message integrations independent of group and channel recovery
+failures while preserving messages received during connection outages.
+
+- Add `RUBIKA_DIRECT_MESSAGES_ONLY=true` (`--rubika-direct-messages-only`) to
+  restrict automatic Rubika message updates, recovery and coverage status to user
+  direct messages. The default remains full account coverage; the option applies
+  to all Rubika connections in the gateway process.
+- Exclude group, channel, bot and service peers before automatic message reads
+  and projection. Disable Rubino activity polling in this mode; direct story
+  replies and explicit provider operations retain their existing behavior.
+- Preserve the first-attachment boundary, accepted user message watermarks and
+  pending direct-message work when enabling this mode on existing connections.
+  A separate account checkpoint excludes group-only retry/gap state while keeping
+  stored user gaps and account-wide authentication, transport and recovery errors.
+- Filter known pre-attachment message content before decoding, enrichment and
+  webhook delivery. Keep unclassified updates as durable diagnostics without
+  degrading direct-message status; unsupported direct-message content remains a
+  coverage warning.
+
+### Verification and remaining limits
+
+- Synthetic tests cover group/channel isolation, old-content filtering, scoped
+  checkpoint migration, retained user gaps, storage failures, restarts and
+  paginated outage recovery. Normal, purego, race, contract and fuzz checks passed.
+- This release does not establish new live-account acceptance. Eitaa and Rubika
+  remain opt-in; arbitrary multi-day recovery, exhaustive history and live-account
+  capacity remain unverified. Minimal ID/time reads may still locate a newly
+  discovered direct conversation's activation boundary. Checkpoints predating
+  activation-time tracking retain their existing coverage. Unknown sends remain
+  unknown without automatic resend.
+
 ## 2.4.2 — 2026-11-13
 
 Rubika story replies and Rubino comments. Observed live on 2026-11-12 with two

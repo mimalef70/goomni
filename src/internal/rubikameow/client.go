@@ -19,12 +19,14 @@ import (
 )
 
 type Config struct {
+	DirectMessagesOnly                             bool
 	DiscoveryEndpoint, APIEndpoint, SocketEndpoint string
 	RubinoEndpoint                                 string
 	HTTPClient                                     *http.Client
 	ConnectionID                                   string
 	PersistSession                                 domains.SessionPersister
 	LoadCheckpoint                                 func(context.Context, string) (string, error)
+	LoadCheckpointPage                             func(context.Context, string, string) (map[string]string, error)
 	PollPermit                                     func(context.Context) (func(), error)
 	MediaSource                                    domains.MediaSource
 	MaxMediaBytes                                  int64

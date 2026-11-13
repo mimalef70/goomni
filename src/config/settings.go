@@ -11,9 +11,10 @@ import (
 	"time"
 )
 
-const AppVersion = "2.4.2"
+const AppVersion = "2.4.3"
 
 type Settings struct {
+	RubikaDirectMessagesOnly                                                                      bool
 	RubikaEnabled                                                                                 bool
 	RubikaDiscoveryEndpoint, RubikaAPIEndpoint, RubikaSocketEndpoint                              string
 	EitaaEnabled                                                                                  bool
@@ -39,6 +40,7 @@ type Settings struct {
 func Load(v *viper.Viper) (Settings, error) {
 	s := Settings{Host: v.GetString("host"), Port: v.GetInt("port"), BasicAuth: v.GetString("basic-auth"), BasePath: v.GetString("base-path"), Database: v.GetString("database"), MediaRoot: v.GetString("media-root"), GRPCEndpoint: v.GetString("grpc-endpoint"), WebSocketEndpoint: v.GetString("ws-endpoint"), Origin: "https://web.bale.ai", APIKey: v.GetString("bale-api-key"), AppID: v.GetUint32("bale-app-id"), APIVersion: v.GetUint32("bale-api-version"), DeviceTitle: "GoOmni", WebhookSecret: v.GetString("webhook-secret"), WebhookMergeGlobal: v.GetBool("webhook-device-merge-global"), MaxMediaBytes: v.GetInt64("max-media-bytes"), SendWait: 40 * time.Second}
 	s.RubikaEnabled = v.GetBool("rubika-enabled")
+	s.RubikaDirectMessagesOnly = v.GetBool("rubika-direct-messages-only")
 	s.RubikaDiscoveryEndpoint = v.GetString("rubika-discovery-endpoint")
 	s.RubikaAPIEndpoint = v.GetString("rubika-api-endpoint")
 	s.RubikaSocketEndpoint = v.GetString("rubika-socket-endpoint")
