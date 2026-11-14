@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.4.4 — 2026-11-14
+
+Distinguish Eitaa and Rubika service notifications from ordinary user messages
+in the common webhook projection.
+
+- Project Eitaa `messageService` records as `kind: service`. The reviewed
+  `messageActionContactSignUp` additionally exposes the provider action and a
+  `contact_registered` action. Zero-ID migration notices retain `chat.migrated`.
+- Project Rubika native `type: Event` records as `kind: service`, retaining only
+  reviewed action names. Unknown action subtypes remain explicit and unsupported;
+  unrelated fields cannot turn a service notification into user media or a story.
+- Document consumer handling: exclude identified service messages before chat
+  ingestion or automatic replies. The envelope may still use `message` or
+  `message.edited`; `supported: false` alone does not identify activity and must
+  not discard ordinary or unclassified user text/media.
+- Preserve existing ordinary-message projection and accepted signed webhook
+  bytes. Add literal protobuf/TL and native-object regression fixtures for all
+  three providers, including Bale's existing service support and normal user
+  text with the same words as a notification.
+
+### Verification and remaining limits
+
+- The provider layouts were cross-checked against public first-party Web bundles.
+  Synthetic tests cover new/edit projections, nested Bale content, unknown service
+  actions, private-field exclusion and ordinary user messages.
+- No new live signup-notification acceptance is claimed. Read-only Rubika checks
+  returned posts and story replies, not service Events; Eitaa's identity read
+  required session renewal. Eitaa and Rubika remain opt-in, and existing recovery,
+  historical-import and live-account capacity limits remain. Unknown sends stay
+  unknown without automatic resend.
+
 ## 2.4.3 — 2026-11-13
 
 Keep Rubika direct-message integrations independent of group and channel recovery
