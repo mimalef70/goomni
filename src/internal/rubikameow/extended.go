@@ -397,6 +397,23 @@ func publicExtended(o object) object {
 }
 
 func projectExtendedMessage(message object, msg *domains.Message) (object, bool, error) {
+	if message.str("type") == "Event" {
+		msg.Kind, msg.Supported = "service", false
+		out := object{"provider_type": "Event"}
+		// Only action names observed in the official Web renderer are public.
+		// Unknown subtypes remain service messages, without raw event_data.
+		action := asObject(message["event_data"]).str("type")
+		switch action {
+		case "GroupCreated", "ChannelCreated", "TitleUpdate", "PhotoUpdate", "RemovePhoto",
+			"JoinedGroupByLink", "AddedGroupMembers", "LeaveGroup", "RemoveGroupMembers",
+			"PinnedMessageUpdated", "CreateGroupVoiceChat", "InviteGroupVoiceChat",
+			"CreateGroupVoiceChatChannel", "StopGroupVoiceChat", "JoinedGroupByRequest",
+			"messageActionScreenshotTaken", "messageActionCustomAction":
+			out["provider_action"] = action
+			msg.Supported = true
+		}
+		return out, true, nil
+	}
 	if raw, present := message["rubino_story_data"]; present {
 		return projectRubinoStory(raw, msg), true, nil
 	}

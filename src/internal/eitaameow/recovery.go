@@ -372,11 +372,18 @@ func (c *Client) projectMessage(m object, kind string) (domains.Event, error) {
 	if kind == "message.edited" {
 		msg.OriginalMessageID = id
 	}
-	if media := asObject(m["media"]); media != nil && media.str("_") != "messageMediaEmpty" {
+	media := asObject(m["media"])
+	if m.str("_") == "messageService" {
+		msg.Kind = "service"
+		msg.Body = "[Service message]"
+		// Service constructors cannot attach user media or inherit its kind.
+		media = nil
+	}
+	if media != nil && media.str("_") != "messageMediaEmpty" {
 		msg.Kind = "unsupported"
 		msg.Supported = false
 	}
-	privateMedia, publicMedia := c.projectMedia(asObject(m["media"]))
+	privateMedia, publicMedia := c.projectMedia(media)
 	if publicMedia != nil {
 		msg.Media = publicMedia
 		msg.Kind = publicMedia.Type
@@ -385,9 +392,13 @@ func (c *Client) projectMessage(m object, kind string) (domains.Event, error) {
 	if reply := asObject(m["reply_to"]); reply.num("reply_to_msg_id") > 0 {
 		msg.RepliedToID = strconv.FormatInt(reply.num("reply_to_msg_id"), 10)
 	}
-	extra, err := structuredContent(asObject(m["media"]), msg)
+	extra, err := structuredContent(media, msg)
 	if err != nil {
 		return domains.Event{}, err
+	}
+	if msg.Kind == "service" && asObject(m["action"]).str("_") == "messageActionContactSignUp" {
+		msg.Supported = true
+		extra = object{"provider_action": "messageActionContactSignUp", "actions": []object{{"type": "contact_registered"}}}
 	}
 	content := object{"text": msg.Body, "supported": msg.Supported, "kind": msg.Kind}
 	for key, value := range extra {

@@ -888,7 +888,7 @@ func (c *Client) projectMessage(guid string, update object) (domains.Event, erro
 	if action == "Edit" {
 		msg.OriginalMessageID = id
 	}
-	if message["file_inline"] != nil {
+	if message["file_inline"] != nil && message.str("type") != "Event" {
 		ref, public, err := c.projectMedia(asObject(message["file_inline"]))
 		if err != nil {
 			return domains.Event{}, err

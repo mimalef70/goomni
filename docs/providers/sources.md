@@ -263,3 +263,34 @@ bytes. Its semantics are unreviewed; it is never used as a token or public data.
 The official worker treats `INVALID_LOGIN` as a bounded token-renewal request.
 Native renewal persists replacements before activation and never repeats an
 uncertain mutation.
+
+## Service notification evidence (2026-11-14)
+
+Public first-party JavaScript was inspected as text, without executing the
+provider implementation or copying it into the adapter:
+
+| Artifact | SHA-256 | Observation |
+| --- | --- | --- |
+| [Bale index](https://web.bale.ai/static/js/index.002e15f0d2.js) | `6ae0e71ecd4a6dd8659ca9091686a69c714d292c9aa5742e9d7a7d708ab4fed6` | Message `serviceMessage` field 11; extension `serviceExContactRegistered` field 9. |
+| [Eitaa worker](https://web.eitaa.com/mtproto.worker-B0MIEYlz.js) | `255cd0b32916027a1c50cfeaf6e79ce9b64d260dcf2fe845bea37c3a9a782606` | `messageService` constructor 721967202; `messageActionContactSignUp` constructor -202219658. |
+| [Eitaa index](https://web.eitaa.com/index-W-ir8e57.js) | `d2465f5d9cf87ac6f9311a71533c18c6b01688ac0a9a969ad214b9fac1c8df23` | Contact-signup action maps to the peer-joined notification renderer. |
+| [Rubika Web](https://web.rubika.ir/main-es2015.6421623571994c9dd619.js) | `47b302b9166ed8c9138f9d959e9107c53dcb78c9447f8281715f657b68080acb` | System-message renderer selects native `type: "Event"` and `event_data.type`. |
+
+Independent literal protobuf/TL fixtures cover Bale/Eitaa service decoding and
+serialized webhook kinds. Native-object fixtures cover Rubika service new/edit
+messages, unknown subtypes and exclusion of private/unrelated fields. Normal
+text with identical notification words remains ordinary text. These are source
+observations and synthetic regression tests, not live signup acceptance. The
+exact native subtype of a real Rubika contact-registration notification remains
+unverified; the implementation does not invent one.
+
+Read-only live diagnostics on the same date matched the supplied
+operator-controlled account in Bale and Rubika. Eight previously unsupported
+Rubika records were fetched from the provider: one `RubinoPost` and seven
+`RubinoStory` replies. All eight projected successfully through the current
+adapter, but none was an `Event`; they do not establish signup-notice acceptance.
+No definite Bale contact-signup sample was found in the searched stored events.
+Eitaa's direct own-profile read returned `SESSION_REFRESH_REQUIRED`; its saved
+session had no phone field available for comparison. No token renewal, new
+login, message send, reconnect or running-service change was performed. Live
+signup-notice acceptance therefore remains unverified for all three providers.

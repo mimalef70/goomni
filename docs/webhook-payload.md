@@ -518,6 +518,36 @@ multi-account routing, application authorization, retention or a business worker
 See the [consumer integration contract](consumer-integration.md) for those
 application responsibilities.
 
+### Service notifications and automatic replies
+
+All three adapters classify system/service messages as `payload.kind: "service"`.
+The envelope event can still be `message` or `message.edited`; its name alone
+must not trigger a conversational reply. Consumers should exclude service
+messages before creating contacts, importing operator messages, applying chat
+edits or scheduling automatic responses. `supported:true` means the content
+variant is understood, not that a user wrote a message to the assistant.
+The `supported` flag describes content decoding; it does not identify service
+notifications. Preserve existing text/media handling for other kinds, including
+`supported:false`, when no service classification is available.
+
+Bale retains `content.actions`, including `contact_registered`. Eitaa's
+`messageService` constructor is a service message; the reviewed
+`messageActionContactSignUp` additionally exposes
+`content.provider_action: "messageActionContactSignUp"` and an
+`actions` entry with `type: "contact_registered"`. Its zero-ID migration notice
+keeps the separate `chat.migrated` contract below.
+
+Rubika's native `type: "Event"` becomes `kind: "service"`, with
+`content.provider_type: "Event"`. Only reviewed action names from
+`event_data.type` appear as `content.provider_action`; unknown action metadata
+is omitted and remains `supported:false`. No signup-specific Rubika subtype is
+claimed. Service records cannot acquire user media or a different kind from
+unrelated fields. Classify the actual message, not its quoted message or words
+such as “joined”. Existing accepted webhook bodies retain their original bytes.
+Older Rubika projections can retain `kind: "text"` with `supported:false` for
+both service notifications and real user content. These flags alone cannot
+safely distinguish activity during retry/replay.
+
 ### Eitaa migration notices
 
 An Eitaa channel-side `messageActionChannelMigrateFrom` service notice with a
