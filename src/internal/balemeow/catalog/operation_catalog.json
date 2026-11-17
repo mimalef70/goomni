@@ -2399,6 +2399,44 @@
     }
   },
   {
+    "operation": "message.protected.verify.start",
+    "mode": "ephemeral",
+    "method": "POST",
+    "path": "/message/protected/verify/start",
+    "description": "message.protected.verify.start",
+    "verification": "official-schema-and-offline-tests; live verification tracked separately",
+    "request": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "operation": "message.protected.verify.submit",
+    "mode": "ephemeral",
+    "method": "POST",
+    "path": "/message/protected/verify/submit",
+    "description": "message.protected.verify.submit",
+    "verification": "official-schema-and-offline-tests; live verification tracked separately",
+    "request": {
+      "type": "object",
+      "properties": {
+        "verification_code": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 9,
+          "pattern": "^[0-9]{4,9}$",
+          "writeOnly": true,
+          "description": "The SMS verification code the account owner received, for this one request. Body only; never stored, logged or retried."
+        }
+      },
+      "required": [
+        "verification_code"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "operation": "folders.list",
     "mode": "read",
     "method": "GET",

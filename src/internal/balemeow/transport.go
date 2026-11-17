@@ -43,12 +43,12 @@ func (c *Client) rpcWith(ctx context.Context, service, method string, payload pr
 	}
 	conn.nextIndex++
 	index := conn.nextIndex
-	pending := &pendingRPC{result: make(chan rpcReply, 1), status: opts.status}
+	pending := &pendingRPC{result: make(chan rpcReply, 1), status: opts.status, keepSession: opts.keepSession}
 	conn.pending[index] = pending
 	conn.mu.Unlock()
 	defer func() {
 		conn.mu.Lock()
-		if _, open := conn.pending[index]; open && pending.status != nil && len(conn.lateScoped) < c.opts.MaxPending {
+		if _, open := conn.pending[index]; open && pending.keepSession && len(conn.lateScoped) < c.opts.MaxPending {
 			if conn.lateScoped == nil {
 				conn.lateScoped = map[int64]struct{}{}
 			}
@@ -139,13 +139,13 @@ func (c *Client) readLoop(conn *connection) {
 		}
 		if r := packet.Response; r != nil {
 			reply := rpcReply{payload: r.Payload}
-			scoped := false
+			keepSession := false
 			conn.mu.Lock()
 			if pending := conn.pending[r.Index]; pending != nil {
 				delete(conn.pending, r.Index)
-				scoped = pending.status != nil
+				keepSession = pending.keepSession
 				if r.Error != nil && r.Error.Code != 0 {
-					if scoped {
+					if pending.status != nil {
 						reply.err = pending.status(r.Error.Code)
 					} else {
 						reply.err = providerError(r.Error.Code, r.Error.Message)
@@ -154,12 +154,12 @@ func (c *Client) readLoop(conn *connection) {
 				pending.result <- reply
 			} else if _, late := conn.lateScoped[r.Index]; late {
 				delete(conn.lateScoped, r.Index)
-				scoped = true
+				keepSession = true
 			}
 			conn.mu.Unlock()
 			// A scoped credential check reports a rejected PIN as UNAUTHENTICATED;
 			// it must not log out the account. Other code 16 replies still revoke.
-			if r.Error != nil && r.Error.Code == 16 && !scoped {
+			if r.Error != nil && r.Error.Code == 16 && !keepSession {
 				c.fail(conn, "SESSION_REVOKED", true)
 				return
 			}

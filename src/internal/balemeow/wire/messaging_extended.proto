@@ -29,3 +29,12 @@ message RamzCheckPasswordRequest { string password = 1; int32 services_type = 2;
 message RamzCheckPasswordResponse { string token = 1; }
 message FetchProtectedMessageRequest { Peer peer = 1; MessagePosition message_id = 2; }
 message FetchProtectedMessageResponse { HistoryItem history = 1; }
+
+// Ramz SMS verification (official web client 2026-11-17, module 82787,
+// ForgetPassword.tsx / send_otp route). When CheckPassword returns
+// PERMISSION_DENIED (status 7), the client sends an empty SendOTP to deliver an
+// SMS code, then ValidateOTP authorizes the account session so a later
+// CheckPassword succeeds. services_type BOT (1) matches the protected-message
+// unlock. otp is an int32, mirroring the client's Number(code) conversion.
+message RamzValidateOTPRequest { int32 otp = 1; int32 services_type = 2; }
+message RamzValidateOTPResponse { bool otp_valid = 1; }

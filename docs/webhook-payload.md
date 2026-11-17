@@ -579,17 +579,64 @@ Use the event's `message_id` for `message_id`. For `date`, convert the event's
 or history's millisecond-precision RFC 3339 timestamp to Unix milliseconds as a
 decimal string. Each request performs exactly one
 provider PIN check and is never retried. Handle `PROTECTED_PIN_REJECTED`,
-`PROTECTED_PIN_ATTEMPTS_LIMITED`, `PROTECTED_PIN_VERIFICATION_REQUIRED` (complete
-Ramz verification in an official Bale client), `PROTECTED_MESSAGE_UNAVAILABLE`
+`PROTECTED_PIN_ATTEMPTS_LIMITED`, `PROTECTED_PIN_VERIFICATION_REQUIRED` (see SMS
+verification below), `PROTECTED_MESSAGE_UNAVAILABLE`
 (expired, deleted or missing), `PROTECTED_MESSAGE_UNSUPPORTED`,
 `PROTECTED_UNLOCK_REJECTED`, `PROTECTED_UNLOCK_INCOMPLETE` (timeout, not
 retried) and the usual connection errors. Do not loop over PINs.
 
-Treat both the PIN and the returned content as secrets. Never put a PIN in a
-URL (query PINs are rejected), logs, analytics or configuration. Do not persist
-or forward unlocked OTPs, and call the gateway only over TLS when it is remote.
-Recognition and unlock are verified only against the official Web client's
-schema and synthetic tests, not against a live bank message. See
+#### SMS verification (status 7)
+
+Some accounts must complete a one-time SMS verification before a protected
+message can be unlocked. When `message.protected.unlock` returns
+`PROTECTED_PIN_VERIFICATION_REQUIRED`, run the two verification steps and then
+retry the unlock with the PIN:
+
+```http
+POST /message/protected/verify/start
+Authorization: Basic <credentials>
+X-Device-Id: <device_id>
+X-Device-Instance: <instance_token>
+```
+
+```json
+{"code":"SUCCESS","message":"Success","results":{"verification_sent":true}}
+```
+
+The provider sends an SMS code to the account owner's phone. Submit that code:
+
+```http
+POST /message/protected/verify/submit
+Authorization: Basic <credentials>
+X-Device-Id: <device_id>
+X-Device-Instance: <instance_token>
+Content-Type: application/json
+
+{"verification_code":"<SMS code>"}
+```
+
+```json
+{"code":"SUCCESS","message":"Success","results":{"verified":true}}
+```
+
+`verification_sent` only confirms the request was accepted, not that the SMS
+arrived. On `{"verified": true}` the account session is authorized; retry
+`POST /message/protected/unlock` with the PIN. The SMS code is used once and is
+never stored, logged or retried. Verification authorizes the connected account's
+own session only; a different `X-Device-Id` / `X-Device-Instance` is a different
+account and must verify separately. Handle `PROTECTED_VERIFICATION_REJECTED`
+(wrong code, not retried), `PROTECTED_VERIFICATION_RATE_LIMITED` (a code was
+already sent, or the provider attempt limit was reached),
+`PROTECTED_VERIFICATION_INCOMPLETE` (timeout, not retried) and the usual
+connection errors. Do not loop over codes; request a new code instead, and
+respect the provider's resend interval.
+
+Treat the PIN, the SMS code and the returned content as secrets. Never put a PIN
+or SMS code in a URL (query values are rejected), logs, analytics or
+configuration. Do not persist or forward unlocked OTPs, and call the gateway
+only over TLS when it is remote. Recognition, unlock and verification are
+verified only against the official Web client's schema and synthetic tests, not
+against a live bank message or live SMS delivery. See
 [provider sources](providers/sources.md#protected-message-evidence-2026-11-17).
 
 ### Eitaa migration notices

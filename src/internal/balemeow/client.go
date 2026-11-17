@@ -69,15 +69,19 @@ type rpcReply struct {
 }
 type pendingRPC struct {
 	result chan rpcReply
-	// status maps provider status codes for calls whose UNAUTHENTICATED reply
-	// is a credential-check result rather than a revoked account session.
+	// status, when set, maps provider status codes to reviewed errors instead of
+	// the generic provider error.
 	status func(code int32) error
+	// keepSession marks a credential check whose UNAUTHENTICATED reply is a
+	// per-request decision, not a revoked account session.
+	keepSession bool
 }
 
 // rpcOptions are reviewed per-call additions; the zero value is an ordinary call.
 type rpcOptions struct {
-	metadata [][2]string
-	status   func(code int32) error
+	metadata    [][2]string
+	status      func(code int32) error
+	keepSession bool
 }
 type connection struct {
 	account             string
@@ -705,6 +709,10 @@ func (c *Client) Call(ctx context.Context, operation string, raw json.RawMessage
 		return c.history(ctx, raw)
 	case "message.protected.unlock":
 		return c.unlockProtectedMessage(ctx, raw)
+	case "message.protected.verify.start":
+		return c.startProtectedVerification(ctx, raw)
+	case "message.protected.verify.submit":
+		return c.submitProtectedVerification(ctx, raw)
 	case "chat.list", "chats":
 		return c.dialogs(ctx, raw)
 	case "message.read":

@@ -98,7 +98,11 @@ source, binaries or containers, together with the native reference notices in
   `protected_message`/`locked`, never its inner message. Unlock is one
   `Ramz/CheckPassword` (services_type BOT) plus one `FetchProtectedMessage` with
   `bale_ramz_token` metadata; never store, retry or reuse the PIN or token.
-  Their scoped UNAUTHENTICATED reply is a PIN decision, not session revocation.
+  Only the PIN check keeps the session on an UNAUTHENTICATED reply (a PIN
+  decision, not revocation). A status-7 PIN check needs SMS verification: one
+  empty `Ramz/SendOTP` then `Ramz/ValidateOTP` (int32 code, services_type BOT)
+  authorizes the session. SendOTP/ValidateOTP are non-retried mutations whose
+  UNAUTHENTICATED reply still revokes; never store, retry or reuse the SMS code.
 - State notifications can recur legitimately. Use actual route/time/sequence
   provenance; undated diff-page positions cannot invent per-update sequence IDs.
 - Receipt field 3 is `readDate`/`receivedDate`, not a range end. The reviewed web
