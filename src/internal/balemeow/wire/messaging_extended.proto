@@ -18,3 +18,14 @@ message FolderCreateResponse { int32 folder_id = 1; int32 index = 2; repeated Pe
 message FolderDeleteRequest { int32 folder_id = 1; }
 message FolderEditRequest { int32 folder_id = 1; string name = 2; repeated Peer added_peers = 3; repeated Peer deleted_peers = 4; }
 message FolderEditResponse { repeated Peer unread_peers = 1; }
+
+// Official web client observed 2026-11-17 (modules 18913/82787, ProtectedMessage.tsx).
+// The account owner's Ramz PIN is exchanged for a short-lived token with
+// services_type BOT (1); the token travels only as bale_ramz_token request
+// metadata of one FetchProtectedMessage call. message_id is MessageId
+// {date, rid, seq}. The returned history.message is a ProtectedMessage whose
+// inner message is the unlocked content. Peer is restricted to private users.
+message RamzCheckPasswordRequest { string password = 1; int32 services_type = 2; }
+message RamzCheckPasswordResponse { string token = 1; }
+message FetchProtectedMessageRequest { Peer peer = 1; MessagePosition message_id = 2; }
+message FetchProtectedMessageResponse { HistoryItem history = 1; }

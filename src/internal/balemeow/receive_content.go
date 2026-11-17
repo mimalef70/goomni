@@ -26,6 +26,10 @@ func contentBody(m *wire.Message, depth int) map[string]any {
 		return b
 	}
 	switch {
+	case m.Protected != nil:
+		// The wrapped content stays locked. Only the explicit, PIN-verified
+		// message.protected.unlock operation returns it, and never into events.
+		b = map[string]any{"kind": "protected_message", "locked": true}
 	case m.Json != nil:
 		b = jsonContentBody(m.Json.RawJson)
 	case m.Text != nil:

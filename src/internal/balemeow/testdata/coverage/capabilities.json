@@ -2,7 +2,7 @@
   "schema_version": 1,
   "snapshot_date": "2026-10-10",
   "scope": "GoBale implementation and recorded validation snapshot. Native operation IDs are not endpoint counts or a compatibility percentage. docs/openapi.yaml is the complete public API contract.",
-  "verification": "2026-10-06: offline Go tests, race, purego and vet passed at the original snapshot. Dated 2026-10-07 notes below add synthetic regression evidence only. Implemented status proves code exists, not live interoperability. Only explicit dated observations and AGENTS.md describe live coverage; unmentioned capabilities remain live-unverified. Route observations retain their original scope and do not generalize to new options. 2026-10-08: make check (default/purego/vet/contracts), race, fuzz and vuln passed for the consumer-message/media/status/webhook changes; the added evidence is entirely synthetic/offline and does not extend native live acceptance. 2026-10-09: after receipt timestamp correction and the Go 1.26.9/x/net v0.60.0 security update, make check, race, fuzz and both default/purego vulnerability checks passed. This adds independent literal-wire and persisted-body regression evidence, plus static observations of the official web client; no new live Bale acceptance is claimed. 2026-10-09 HTTP alignment: full default/purego, vet/contracts, race, five parser fuzz targets and both vulnerability scans passed; final strict-field changes also passed the full check suite and focused REST race tests. These tests use synthetic accounts and do not add live-provider evidence. 2026-10-10: controlled two-account PeykBridge tests exercised Bale settings, recipient-side media downloads, test-group/channel workflows and one-time scheduled forwarding. Actual SIGKILL recovery exposed a missing-route discovery defect; after correction the outage message reached one durable recipient event and one signed webhook. Existing gap warnings remain visible. This is short-outage evidence, not exhaustive history or capacity acceptance. Detailed response-only and end-to-end scopes are recorded in docs/providers/acceptance.md and live-20261010.json.",
+  "verification": "2026-10-06: offline Go tests, race, purego and vet passed at the original snapshot. Dated 2026-10-07 notes below add synthetic regression evidence only. Implemented status proves code exists, not live interoperability. Only explicit dated observations and AGENTS.md describe live coverage; unmentioned capabilities remain live-unverified. Route observations retain their original scope and do not generalize to new options. 2026-10-08: make check (default/purego/vet/contracts), race, fuzz and vuln passed for the consumer-message/media/status/webhook changes; the added evidence is entirely synthetic/offline and does not extend native live acceptance. 2026-10-09: after receipt timestamp correction and the Go 1.26.9/x/net v0.60.0 security update, make check, race, fuzz and both default/purego vulnerability checks passed. This adds independent literal-wire and persisted-body regression evidence, plus static observations of the official web client; no new live Bale acceptance is claimed. 2026-10-09 HTTP alignment: full default/purego, vet/contracts, race, five parser fuzz targets and both vulnerability scans passed; final strict-field changes also passed the full check suite and focused REST race tests. These tests use synthetic accounts and do not add live-provider evidence. 2026-10-10: controlled two-account PeykBridge tests exercised Bale settings, recipient-side media downloads, test-group/channel workflows and one-time scheduled forwarding. Actual SIGKILL recovery exposed a missing-route discovery defect; after correction the outage message reached one durable recipient event and one signed webhook. Existing gap warnings remain visible. This is short-outage evidence, not exhaustive history or capacity acceptance. Detailed response-only and end-to-end scopes are recorded in docs/providers/acceptance.md and live-20261010.json. 2026-11-17: Bale protected-message recognition (Message field 27) and the explicit message.protected.unlock operation were added from static observation of the official web client (docs/providers/sources.md). Evidence is literal-wire fixtures and fake-provider tests only; no live protected message, PIN check or unlock was exercised.",
   "statuses": {
     "implemented": "Reviewed implementation exists; no live coverage is implied.",
     "implemented_with_limits": "Reviewed implementation exists with explicit limits or unresolved behavior.",
@@ -527,6 +527,14 @@
       "implementation": [
         "src/internal/balemeow/client.go",
         "src/internal/balemeow/messaging_extended.go"
+      ]
+    },
+    {
+      "operation": "message.protected.unlock",
+      "status": "implemented_with_limits",
+      "implementation": [
+        "src/internal/balemeow/client.go",
+        "src/internal/balemeow/protected_messages.go"
       ]
     },
     {
@@ -1727,6 +1735,11 @@
         "src/domains/event_json.go"
       ],
       "note": "2026-10-09: synthetic HTTP tests verify public push_name with unchanged canonical account.name journal arguments, direct results.message_id only after acknowledgement, retained send_id/state for pending and unknown work, caption/ptt parsing, schedule creation acknowledgement fields and ordinary multipart inputs. Unsupported fields, duplicate/invalid UTF-8 metadata, caller hashes and oversized metadata are rejected. Native Bale IDs, instance guards, idempotency, receipt semantics, history semantics and media validation remain authoritative. This is shared-field alignment, not complete GOWA protocol/API equivalence or live Bale acceptance."
+    },
+    {
+      "capability": "protected_message_content",
+      "status": "intentional_boundary",
+      "note": "PIN-protected Bale messages stay locked in events, webhooks and history. Unlocked content is returned only by the explicit per-request PIN operation; PINs and provider tokens are never stored, logged, retried or reused."
     }
   ]
 }

@@ -584,6 +584,7 @@ native_summaries={
  'message.unpin':'Unpin a message',
  'message.unpin_all':'Unpin all conversation messages',
  'message.pins':'List pinned messages',
+ 'message.protected.unlock':'Unlock a PIN-protected message',
  'message.reactions':'Get message reactions',
  'message.views':'Get message view counts',
  'message.views.increment':'Increment message view counts',
@@ -707,6 +708,7 @@ tag_notes={
  'Service': '''Administrative Basic authentication grants access to every configured account; tenant authorization belongs in the consuming application. Only /health in the Basic API is unauthenticated. The optional embedded UI has a public static shell and separate browser session login. /ready measures service readiness, not successful recovery for every account. /app/providers reports runtime availability and ordinary send kinds, explicit text-limit units, mentions/replies and media format notes. /app/capabilities requires an explicit provider and lists its extension contracts only; core login, device, text/media, history and webhook routes are documented separately. Named /operations calls are a whitelist with typed input, never an arbitrary provider RPC proxy. Check per-operation verification and the README release status before relying on a feature.''',
 }
 operation_notes={
+ 'message.protected.unlock': 'Explicitly reads one PIN-protected private-chat message (payload kind protected_message). The account owner supplies the six-digit Ramz PIN in the JSON body for this request only; query-string PINs are rejected. GoOmni performs one provider PIN check and one fetch, never retries either, and never stores, logs or reuses the PIN or provider token. Unlocked content is returned only in this authenticated no-store response; it is not added to events, history, webhooks or operation logs. PROTECTED_PIN_REJECTED, PROTECTED_PIN_ATTEMPTS_LIMITED and PROTECTED_PIN_VERIFICATION_REQUIRED report provider decisions; PROTECTED_MESSAGE_UNAVAILABLE covers expired, deleted or missing content. Requires remote access over TLS. Live acceptance is pending.',
  'group.permissions.set': 'A patch requires at least one explicit boolean. Empty, null and unknown permissions are rejected; replace requires all 20 fields, including false values. Concurrent external client changes cannot be protected by a provider compare-and-swap.',
  'group.default_permissions.set': 'A patch requires at least one explicit boolean. Empty, null and unknown permissions are rejected; replace requires all 20 fields, including false values. History sharing is configured independently.',
  'group.join': 'Accepts a raw invitation token or an exact http(s)://ble.ir/join/TOKEN link, not arbitrary URLs.',

@@ -548,6 +548,50 @@ Older Rubika projections can retain `kind: "text"` with `supported:false` for
 both service notifications and real user content. These flags alone cannot
 safely distinguish activity during retry/replay.
 
+### Bale PIN-protected messages
+
+Some Bale bot messages, such as bank one-time-password notifications, arrive
+as a native protected wrapper. They are projected as
+`content: {"kind": "protected_message", "locked": true}` with
+`payload.kind: "protected_message"`, `payload.body: "[Protected message]"` and
+`supported: true`. The wrapped content is never included in events, webhooks,
+retries, replays or history, and no body is invented. Recognition depends on
+the native message type, not on sender names or peer IDs. Reading the content
+requires the explicit `POST /message/protected/unlock` operation. The account
+owner supplies the six-digit PIN in the request body, and the content is
+returned only in that no-store response:
+
+```http
+POST /message/protected/unlock
+Authorization: Basic <credentials>
+X-Device-Id: <device_id>
+X-Device-Instance: <instance_token>
+Content-Type: application/json
+
+{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","date":"<message_date_ms>","pin":"<six-digit PIN>"}
+```
+
+```json
+{"code":"SUCCESS","message":"Success","results":{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","date":"<message_date_ms>","sender_id":"<bot_user_id>","locked":false,"content":{"kind":"text","message":"<provider text, unmodified>"}}}
+```
+
+Use the event's `message_id` for `message_id`. For `date`, convert the event's
+or history's millisecond-precision RFC 3339 timestamp to Unix milliseconds as a
+decimal string. Each request performs exactly one
+provider PIN check and is never retried. Handle `PROTECTED_PIN_REJECTED`,
+`PROTECTED_PIN_ATTEMPTS_LIMITED`, `PROTECTED_PIN_VERIFICATION_REQUIRED` (complete
+Ramz verification in an official Bale client), `PROTECTED_MESSAGE_UNAVAILABLE`
+(expired, deleted or missing), `PROTECTED_MESSAGE_UNSUPPORTED`,
+`PROTECTED_UNLOCK_REJECTED`, `PROTECTED_UNLOCK_INCOMPLETE` (timeout, not
+retried) and the usual connection errors. Do not loop over PINs.
+
+Treat both the PIN and the returned content as secrets. Never put a PIN in a
+URL (query PINs are rejected), logs, analytics or configuration. Do not persist
+or forward unlocked OTPs, and call the gateway only over TLS when it is remote.
+Recognition and unlock are verified only against the official Web client's
+schema and synthetic tests, not against a live bank message. See
+[provider sources](providers/sources.md#protected-message-evidence-2026-11-17).
+
 ### Eitaa migration notices
 
 An Eitaa channel-side `messageActionChannelMigrateFrom` service notice with a

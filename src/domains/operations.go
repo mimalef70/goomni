@@ -27,6 +27,7 @@ type FieldSchema struct {
 	Pattern              string                 `json:"pattern,omitempty"`
 	Format               string                 `json:"format,omitempty"`
 	Nullable             bool                   `json:"nullable,omitempty"`
+	WriteOnly            bool                   `json:"writeOnly,omitempty"` // body only; secrets are never accepted in a query
 	Description          string                 `json:"description,omitempty"`
 	AdditionalProperties bool                   `json:"additionalProperties"`
 }

@@ -2336,6 +2336,69 @@
     }
   },
   {
+    "operation": "message.protected.unlock",
+    "mode": "ephemeral",
+    "method": "POST",
+    "path": "/message/protected/unlock",
+    "description": "message.protected.unlock",
+    "verification": "official-schema-and-offline-tests; live verification tracked separately",
+    "request": {
+      "type": "object",
+      "properties": {
+        "peer": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "maxLength": 4,
+              "enum": [
+                "user"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "maxLength": 10,
+              "pattern": "^[0-9]+$",
+              "format": "uint32-string"
+            }
+          },
+          "required": [
+            "type",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "message_id": {
+          "type": "string",
+          "maxLength": 20,
+          "pattern": "^-?[0-9]+$",
+          "format": "int64-string"
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 19,
+          "pattern": "^[0-9]+$",
+          "format": "positive-int64-string"
+        },
+        "pin": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 6,
+          "pattern": "^[0-9]{6}$",
+          "writeOnly": true,
+          "description": "The account owner's six-digit Ramz PIN for this one request. Body only; never stored, logged or retried."
+        }
+      },
+      "required": [
+        "peer",
+        "message_id",
+        "date",
+        "pin"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "operation": "folders.list",
     "mode": "read",
     "method": "GET",

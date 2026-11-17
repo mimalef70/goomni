@@ -67,7 +67,18 @@ type rpcReply struct {
 	payload []byte
 	err     error
 }
-type pendingRPC struct{ result chan rpcReply }
+type pendingRPC struct {
+	result chan rpcReply
+	// status maps provider status codes for calls whose UNAUTHENTICATED reply
+	// is a credential-check result rather than a revoked account session.
+	status func(code int32) error
+}
+
+// rpcOptions are reviewed per-call additions; the zero value is an ordinary call.
+type rpcOptions struct {
+	metadata [][2]string
+	status   func(code int32) error
+}
 type connection struct {
 	account             string
 	token               string
@@ -88,6 +99,7 @@ type connection struct {
 	done                chan struct{}
 	mu                  sync.Mutex
 	pending             map[int64]*pendingRPC
+	lateScoped          map[int64]struct{} // timed-out credential checks; a late reply is not revocation
 	nextIndex           int64
 	pingID              int64
 	pingAt              time.Time
@@ -691,6 +703,8 @@ func (c *Client) Call(ctx context.Context, operation string, raw json.RawMessage
 		return c.groupCall(ctx, operation, raw)
 	case "chat.history", "chat.messages":
 		return c.history(ctx, raw)
+	case "message.protected.unlock":
+		return c.unlockProtectedMessage(ctx, raw)
 	case "chat.list", "chats":
 		return c.dialogs(ctx, raw)
 	case "message.read":

@@ -739,6 +739,204 @@ func (x *FolderEditResponse) GetUnreadPeers() []*Peer {
 	return nil
 }
 
+// Official web client observed 2026-11-17 (modules 18913/82787, ProtectedMessage.tsx).
+// The account owner's Ramz PIN is exchanged for a short-lived token with
+// services_type BOT (1); the token travels only as bale_ramz_token request
+// metadata of one FetchProtectedMessage call. message_id is MessageId
+// {date, rid, seq}. The returned history.message is a ProtectedMessage whose
+// inner message is the unlocked content. Peer is restricted to private users.
+type RamzCheckPasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Password      string                 `protobuf:"bytes,1,opt,name=password,proto3" json:"password,omitempty"`
+	ServicesType  int32                  `protobuf:"varint,2,opt,name=services_type,json=servicesType,proto3" json:"services_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RamzCheckPasswordRequest) Reset() {
+	*x = RamzCheckPasswordRequest{}
+	mi := &file_wire_messaging_extended_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RamzCheckPasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RamzCheckPasswordRequest) ProtoMessage() {}
+
+func (x *RamzCheckPasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_messaging_extended_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RamzCheckPasswordRequest.ProtoReflect.Descriptor instead.
+func (*RamzCheckPasswordRequest) Descriptor() ([]byte, []int) {
+	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RamzCheckPasswordRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *RamzCheckPasswordRequest) GetServicesType() int32 {
+	if x != nil {
+		return x.ServicesType
+	}
+	return 0
+}
+
+type RamzCheckPasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RamzCheckPasswordResponse) Reset() {
+	*x = RamzCheckPasswordResponse{}
+	mi := &file_wire_messaging_extended_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RamzCheckPasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RamzCheckPasswordResponse) ProtoMessage() {}
+
+func (x *RamzCheckPasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_messaging_extended_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RamzCheckPasswordResponse.ProtoReflect.Descriptor instead.
+func (*RamzCheckPasswordResponse) Descriptor() ([]byte, []int) {
+	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *RamzCheckPasswordResponse) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type FetchProtectedMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Peer          *Peer                  `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
+	MessageId     *MessagePosition       `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FetchProtectedMessageRequest) Reset() {
+	*x = FetchProtectedMessageRequest{}
+	mi := &file_wire_messaging_extended_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FetchProtectedMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FetchProtectedMessageRequest) ProtoMessage() {}
+
+func (x *FetchProtectedMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_messaging_extended_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FetchProtectedMessageRequest.ProtoReflect.Descriptor instead.
+func (*FetchProtectedMessageRequest) Descriptor() ([]byte, []int) {
+	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *FetchProtectedMessageRequest) GetPeer() *Peer {
+	if x != nil {
+		return x.Peer
+	}
+	return nil
+}
+
+func (x *FetchProtectedMessageRequest) GetMessageId() *MessagePosition {
+	if x != nil {
+		return x.MessageId
+	}
+	return nil
+}
+
+type FetchProtectedMessageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	History       *HistoryItem           `protobuf:"bytes,1,opt,name=history,proto3" json:"history,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FetchProtectedMessageResponse) Reset() {
+	*x = FetchProtectedMessageResponse{}
+	mi := &file_wire_messaging_extended_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FetchProtectedMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FetchProtectedMessageResponse) ProtoMessage() {}
+
+func (x *FetchProtectedMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_messaging_extended_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FetchProtectedMessageResponse.ProtoReflect.Descriptor instead.
+func (*FetchProtectedMessageResponse) Descriptor() ([]byte, []int) {
+	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *FetchProtectedMessageResponse) GetHistory() *HistoryItem {
+	if x != nil {
+		return x.History
+	}
+	return nil
+}
+
 var File_wire_messaging_extended_proto protoreflect.FileDescriptor
 
 const file_wire_messaging_extended_proto_rawDesc = "" +
@@ -790,7 +988,18 @@ const file_wire_messaging_extended_proto_rawDesc = "" +
 	"addedPeers\x12@\n" +
 	"\rdeleted_peers\x18\x04 \x03(\v2\x1b.gobale.bale.reference.PeerR\fdeletedPeers\"T\n" +
 	"\x12FolderEditResponse\x12>\n" +
-	"\funread_peers\x18\x01 \x03(\v2\x1b.gobale.bale.reference.PeerR\vunreadPeersB8Z6github.com/mimalef70/goomni/src/internal/balemeow/wireb\x06proto3"
+	"\funread_peers\x18\x01 \x03(\v2\x1b.gobale.bale.reference.PeerR\vunreadPeers\"[\n" +
+	"\x18RamzCheckPasswordRequest\x12\x1a\n" +
+	"\bpassword\x18\x01 \x01(\tR\bpassword\x12#\n" +
+	"\rservices_type\x18\x02 \x01(\x05R\fservicesType\"1\n" +
+	"\x19RamzCheckPasswordResponse\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\x96\x01\n" +
+	"\x1cFetchProtectedMessageRequest\x12/\n" +
+	"\x04peer\x18\x01 \x01(\v2\x1b.gobale.bale.reference.PeerR\x04peer\x12E\n" +
+	"\n" +
+	"message_id\x18\x02 \x01(\v2&.gobale.bale.reference.MessagePositionR\tmessageId\"]\n" +
+	"\x1dFetchProtectedMessageResponse\x12<\n" +
+	"\ahistory\x18\x01 \x01(\v2\".gobale.bale.reference.HistoryItemR\ahistoryB8Z6github.com/mimalef70/goomni/src/internal/balemeow/wireb\x06proto3"
 
 var (
 	file_wire_messaging_extended_proto_rawDescOnce sync.Once
@@ -804,47 +1013,54 @@ func file_wire_messaging_extended_proto_rawDescGZIP() []byte {
 	return file_wire_messaging_extended_proto_rawDescData
 }
 
-var file_wire_messaging_extended_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_wire_messaging_extended_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_wire_messaging_extended_proto_goTypes = []any{
-	(*ChatPeerRequest)(nil),      // 0: gobale.bale.reference.ChatPeerRequest
-	(*ChatPinRequest)(nil),       // 1: gobale.bale.reference.ChatPinRequest
-	(*ChatUnpinRequest)(nil),     // 2: gobale.bale.reference.ChatUnpinRequest
-	(*ChatPinsResponse)(nil),     // 3: gobale.bale.reference.ChatPinsResponse
-	(*FolderListRequest)(nil),    // 4: gobale.bale.reference.FolderListRequest
-	(*ChatFolder)(nil),           // 5: gobale.bale.reference.ChatFolder
-	(*FolderUnreadPeer)(nil),     // 6: gobale.bale.reference.FolderUnreadPeer
-	(*FolderListResponse)(nil),   // 7: gobale.bale.reference.FolderListResponse
-	(*FolderCreateRequest)(nil),  // 8: gobale.bale.reference.FolderCreateRequest
-	(*FolderCreateResponse)(nil), // 9: gobale.bale.reference.FolderCreateResponse
-	(*FolderDeleteRequest)(nil),  // 10: gobale.bale.reference.FolderDeleteRequest
-	(*FolderEditRequest)(nil),    // 11: gobale.bale.reference.FolderEditRequest
-	(*FolderEditResponse)(nil),   // 12: gobale.bale.reference.FolderEditResponse
-	(*Peer)(nil),                 // 13: gobale.bale.reference.Peer
-	(*MessagePosition)(nil),      // 14: gobale.bale.reference.MessagePosition
-	(*HistoryItem)(nil),          // 15: gobale.bale.reference.HistoryItem
+	(*ChatPeerRequest)(nil),               // 0: gobale.bale.reference.ChatPeerRequest
+	(*ChatPinRequest)(nil),                // 1: gobale.bale.reference.ChatPinRequest
+	(*ChatUnpinRequest)(nil),              // 2: gobale.bale.reference.ChatUnpinRequest
+	(*ChatPinsResponse)(nil),              // 3: gobale.bale.reference.ChatPinsResponse
+	(*FolderListRequest)(nil),             // 4: gobale.bale.reference.FolderListRequest
+	(*ChatFolder)(nil),                    // 5: gobale.bale.reference.ChatFolder
+	(*FolderUnreadPeer)(nil),              // 6: gobale.bale.reference.FolderUnreadPeer
+	(*FolderListResponse)(nil),            // 7: gobale.bale.reference.FolderListResponse
+	(*FolderCreateRequest)(nil),           // 8: gobale.bale.reference.FolderCreateRequest
+	(*FolderCreateResponse)(nil),          // 9: gobale.bale.reference.FolderCreateResponse
+	(*FolderDeleteRequest)(nil),           // 10: gobale.bale.reference.FolderDeleteRequest
+	(*FolderEditRequest)(nil),             // 11: gobale.bale.reference.FolderEditRequest
+	(*FolderEditResponse)(nil),            // 12: gobale.bale.reference.FolderEditResponse
+	(*RamzCheckPasswordRequest)(nil),      // 13: gobale.bale.reference.RamzCheckPasswordRequest
+	(*RamzCheckPasswordResponse)(nil),     // 14: gobale.bale.reference.RamzCheckPasswordResponse
+	(*FetchProtectedMessageRequest)(nil),  // 15: gobale.bale.reference.FetchProtectedMessageRequest
+	(*FetchProtectedMessageResponse)(nil), // 16: gobale.bale.reference.FetchProtectedMessageResponse
+	(*Peer)(nil),                          // 17: gobale.bale.reference.Peer
+	(*MessagePosition)(nil),               // 18: gobale.bale.reference.MessagePosition
+	(*HistoryItem)(nil),                   // 19: gobale.bale.reference.HistoryItem
 }
 var file_wire_messaging_extended_proto_depIdxs = []int32{
-	13, // 0: gobale.bale.reference.ChatPeerRequest.peer:type_name -> gobale.bale.reference.Peer
-	13, // 1: gobale.bale.reference.ChatPinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
-	14, // 2: gobale.bale.reference.ChatPinRequest.message:type_name -> gobale.bale.reference.MessagePosition
-	13, // 3: gobale.bale.reference.ChatUnpinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
-	14, // 4: gobale.bale.reference.ChatUnpinRequest.messages:type_name -> gobale.bale.reference.MessagePosition
-	15, // 5: gobale.bale.reference.ChatPinsResponse.messages:type_name -> gobale.bale.reference.HistoryItem
-	13, // 6: gobale.bale.reference.ChatFolder.peers:type_name -> gobale.bale.reference.Peer
-	13, // 7: gobale.bale.reference.ChatFolder.unread_peers:type_name -> gobale.bale.reference.Peer
-	13, // 8: gobale.bale.reference.FolderUnreadPeer.peer:type_name -> gobale.bale.reference.Peer
+	17, // 0: gobale.bale.reference.ChatPeerRequest.peer:type_name -> gobale.bale.reference.Peer
+	17, // 1: gobale.bale.reference.ChatPinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
+	18, // 2: gobale.bale.reference.ChatPinRequest.message:type_name -> gobale.bale.reference.MessagePosition
+	17, // 3: gobale.bale.reference.ChatUnpinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
+	18, // 4: gobale.bale.reference.ChatUnpinRequest.messages:type_name -> gobale.bale.reference.MessagePosition
+	19, // 5: gobale.bale.reference.ChatPinsResponse.messages:type_name -> gobale.bale.reference.HistoryItem
+	17, // 6: gobale.bale.reference.ChatFolder.peers:type_name -> gobale.bale.reference.Peer
+	17, // 7: gobale.bale.reference.ChatFolder.unread_peers:type_name -> gobale.bale.reference.Peer
+	17, // 8: gobale.bale.reference.FolderUnreadPeer.peer:type_name -> gobale.bale.reference.Peer
 	5,  // 9: gobale.bale.reference.FolderListResponse.folders:type_name -> gobale.bale.reference.ChatFolder
 	6,  // 10: gobale.bale.reference.FolderListResponse.unread_peers:type_name -> gobale.bale.reference.FolderUnreadPeer
-	13, // 11: gobale.bale.reference.FolderCreateRequest.peers:type_name -> gobale.bale.reference.Peer
-	13, // 12: gobale.bale.reference.FolderCreateResponse.unread_peers:type_name -> gobale.bale.reference.Peer
-	13, // 13: gobale.bale.reference.FolderEditRequest.added_peers:type_name -> gobale.bale.reference.Peer
-	13, // 14: gobale.bale.reference.FolderEditRequest.deleted_peers:type_name -> gobale.bale.reference.Peer
-	13, // 15: gobale.bale.reference.FolderEditResponse.unread_peers:type_name -> gobale.bale.reference.Peer
-	16, // [16:16] is the sub-list for method output_type
-	16, // [16:16] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	17, // 11: gobale.bale.reference.FolderCreateRequest.peers:type_name -> gobale.bale.reference.Peer
+	17, // 12: gobale.bale.reference.FolderCreateResponse.unread_peers:type_name -> gobale.bale.reference.Peer
+	17, // 13: gobale.bale.reference.FolderEditRequest.added_peers:type_name -> gobale.bale.reference.Peer
+	17, // 14: gobale.bale.reference.FolderEditRequest.deleted_peers:type_name -> gobale.bale.reference.Peer
+	17, // 15: gobale.bale.reference.FolderEditResponse.unread_peers:type_name -> gobale.bale.reference.Peer
+	17, // 16: gobale.bale.reference.FetchProtectedMessageRequest.peer:type_name -> gobale.bale.reference.Peer
+	18, // 17: gobale.bale.reference.FetchProtectedMessageRequest.message_id:type_name -> gobale.bale.reference.MessagePosition
+	19, // 18: gobale.bale.reference.FetchProtectedMessageResponse.history:type_name -> gobale.bale.reference.HistoryItem
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_wire_messaging_extended_proto_init() }
@@ -859,7 +1075,7 @@ func file_wire_messaging_extended_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wire_messaging_extended_proto_rawDesc), len(file_wire_messaging_extended_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

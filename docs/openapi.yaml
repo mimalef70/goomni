@@ -4864,6 +4864,69 @@ paths:
             required:
             - peer
             additionalProperties: false
+        - operation: message.protected.unlock
+          method: POST
+          path: /message/protected/unlock
+          mode: ephemeral
+          description: message.protected.unlock
+          verification: Synthetic checks; live semantic acceptance pending
+          evidence:
+            level: offline_only
+            scope: Registered operation contract with synthetic checks.
+            references:
+            - docs/providers/acceptance.md
+            limitations:
+            - Live semantic acceptance remains pending.
+          schedulable: false
+          request:
+            type: object
+            properties:
+              date:
+                type: string
+                maxLength: 19
+                pattern: ^[0-9]+$
+                format: positive-int64-string
+                additionalProperties: false
+              message_id:
+                type: string
+                maxLength: 20
+                pattern: ^-?[0-9]+$
+                format: int64-string
+                additionalProperties: false
+              peer:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    maxLength: 10
+                    pattern: ^[0-9]+$
+                    format: uint32-string
+                    additionalProperties: false
+                  type:
+                    type: string
+                    enum:
+                    - user
+                    maxLength: 4
+                    additionalProperties: false
+                required:
+                - type
+                - id
+                additionalProperties: false
+              pin:
+                type: string
+                minLength: 6
+                maxLength: 6
+                pattern: ^[0-9]{6}$
+                writeOnly: true
+                description: The account owner's six-digit Ramz PIN for this one request. Body only; never stored,
+                  logged or retried.
+                additionalProperties: false
+            required:
+            - peer
+            - message_id
+            - date
+            - pin
+            additionalProperties: false
         - operation: message.reaction.remove
           method: POST
           path: /message/reaction/remove
@@ -56374,6 +56437,349 @@ paths:
           additionalProperties: false
       tags:
       - Message actions
+  /message/protected/unlock:
+    post:
+      operationId: post_message_protected_unlock
+      summary: Unlock a PIN-protected message
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeResultResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '401':
+          description: Administrative authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '404':
+          description: Device or scoped resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '409':
+          description: State or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '429':
+          description: 'CONNECTION_QUEUE_FULL, QUEUE_FULL or RESOURCE_BUSY: bounded connection, provider or global
+            admission capacity exhausted; no new work was accepted.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '501':
+          description: 'FEATURE_NOT_SUPPORTED: provider capability is unverified or unavailable'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '504':
+          description: 'REQUEST_TIMEOUT: synchronous JSON request deadline exceeded. Durable accepted sends continue
+            independently.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        '413':
+          description: Request exceeds configured body or media limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+        default:
+          description: Other error; code and message describe the failure. Secrets are never returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                - no-store
+              description: Authenticated responses must not be cached; some native results contain short-lived Mini
+                App launch credentials.
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum:
+                - nosniff
+      parameters:
+      - name: X-Device-Id
+        in: header
+        schema:
+          type: string
+        description: Device alias. Supply this header or device_id query explicitly, even with one account. Conflicting
+          path/header/query selectors return 400 DEVICE_SELECTOR_CONFLICT; invalid aliases never fall back. The
+          request stays bound to the selected immutable connection; deletion never redirects it to a reused alias.
+      - name: device_id
+        in: query
+        schema:
+          type: string
+      - name: X-Device-Instance
+        in: header
+        required: true
+        schema:
+          type: string
+        description: Required on all account-scoped machine and browser requests. Missing is 400 DEVICE_INSTANCE_REQUIRED.
+          Must match the selected device instance_id; mismatch is 409 DEVICE_INSTANCE_CHANGED before any provider
+          call. This precondition is not user authorization.
+      description: 'Provider operation message.protected.unlock. The selected immutable connection chooses its request
+        contract, pagination and result projection. Supported providers: bale. See x-goomni-provider-requests and
+        the capability discovery response. message.protected.unlock Verification: Synthetic checks; live semantic
+        acceptance pending. The same schema can be sent as JSON to POST /operations/message.protected.unlock.
+
+
+        Explicitly reads one PIN-protected private-chat message (payload kind protected_message). The account owner
+        supplies the six-digit Ramz PIN in the JSON body for this request only; query-string PINs are rejected.
+        GoOmni performs one provider PIN check and one fetch, never retries either, and never stores, logs or reuses
+        the PIN or provider token. Unlocked content is returned only in this authenticated no-store response; it
+        is not added to events, history, webhooks or operation logs. PROTECTED_PIN_REJECTED, PROTECTED_PIN_ATTEMPTS_LIMITED
+        and PROTECTED_PIN_VERIFICATION_REQUIRED report provider decisions; PROTECTED_MESSAGE_UNAVAILABLE covers
+        expired, deleted or missing content. Requires remote access over TLS. Live acceptance is pending.'
+      x-goomni-operation: message.protected.unlock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - type: object
+                properties:
+                  date:
+                    type: string
+                    maxLength: 19
+                    pattern: ^[0-9]+$
+                    format: positive-int64-string
+                    additionalProperties: false
+                  message_id:
+                    type: string
+                    maxLength: 20
+                    pattern: ^-?[0-9]+$
+                    format: int64-string
+                    additionalProperties: false
+                  peer:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        maxLength: 10
+                        pattern: ^[0-9]+$
+                        format: uint32-string
+                        additionalProperties: false
+                      type:
+                        type: string
+                        enum:
+                        - user
+                        maxLength: 4
+                        additionalProperties: false
+                    required:
+                    - type
+                    - id
+                    additionalProperties: false
+                  pin:
+                    type: string
+                    minLength: 6
+                    maxLength: 6
+                    pattern: ^[0-9]{6}$
+                    writeOnly: true
+                    description: The account owner's six-digit Ramz PIN for this one request. Body only; never stored,
+                      logged or retried.
+                    additionalProperties: false
+                required:
+                - peer
+                - message_id
+                - date
+                - pin
+                additionalProperties: false
+              description: Select the schema for the connection provider; identical provider shapes intentionally
+                overlap.
+      x-goomni-providers:
+      - bale
+      x-goomni-provider-requests:
+        bale:
+          type: object
+          properties:
+            date:
+              type: string
+              maxLength: 19
+              pattern: ^[0-9]+$
+              format: positive-int64-string
+              additionalProperties: false
+            message_id:
+              type: string
+              maxLength: 20
+              pattern: ^-?[0-9]+$
+              format: int64-string
+              additionalProperties: false
+            peer:
+              type: object
+              properties:
+                id:
+                  type: string
+                  maxLength: 10
+                  pattern: ^[0-9]+$
+                  format: uint32-string
+                  additionalProperties: false
+                type:
+                  type: string
+                  enum:
+                  - user
+                  maxLength: 4
+                  additionalProperties: false
+              required:
+              - type
+              - id
+              additionalProperties: false
+            pin:
+              type: string
+              minLength: 6
+              maxLength: 6
+              pattern: ^[0-9]{6}$
+              writeOnly: true
+              description: The account owner's six-digit Ramz PIN for this one request. Body only; never stored,
+                logged or retried.
+              additionalProperties: false
+          required:
+          - peer
+          - message_id
+          - date
+          - pin
+          additionalProperties: false
+      tags:
+      - Message actions
   /message/reaction/remove:
     post:
       operationId: post_message_reaction_remove
@@ -60667,6 +61073,7 @@ paths:
           - message.forward
           - message.pin
           - message.pins
+          - message.protected.unlock
           - message.reaction
           - message.reaction.remove
           - message.reaction.set
@@ -62977,6 +63384,54 @@ paths:
                     additionalProperties: false
                 required:
                 - peer
+                additionalProperties: false
+              - type: object
+                properties:
+                  date:
+                    type: string
+                    maxLength: 19
+                    pattern: ^[0-9]+$
+                    format: positive-int64-string
+                    additionalProperties: false
+                  message_id:
+                    type: string
+                    maxLength: 20
+                    pattern: ^-?[0-9]+$
+                    format: int64-string
+                    additionalProperties: false
+                  peer:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        maxLength: 10
+                        pattern: ^[0-9]+$
+                        format: uint32-string
+                        additionalProperties: false
+                      type:
+                        type: string
+                        enum:
+                        - user
+                        maxLength: 4
+                        additionalProperties: false
+                    required:
+                    - type
+                    - id
+                    additionalProperties: false
+                  pin:
+                    type: string
+                    minLength: 6
+                    maxLength: 6
+                    pattern: ^[0-9]{6}$
+                    writeOnly: true
+                    description: The account owner's six-digit Ramz PIN for this one request. Body only; never stored,
+                      logged or retried.
+                    additionalProperties: false
+                required:
+                - peer
+                - message_id
+                - date
+                - pin
                 additionalProperties: false
               - type: object
                 properties:

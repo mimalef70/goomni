@@ -649,6 +649,10 @@ func (s *Server) provider(operation string) fiber.Handler {
 		}
 		for k, v := range c.Queries() {
 			if k != "device_id" && !(k == "source" && operation == "chat.list") {
+				// URLs reach proxies and access logs; secrets belong in the body.
+				if definition.Request.Properties[k].WriteOnly {
+					return domains.E("INVALID_REQUEST", "secret fields are accepted only in the request body", 400)
+				}
 				if _, ok := payload[k]; !ok {
 					if contract := definition; contract.Request.Properties != nil {
 						field, exists := contract.Request.Properties[k]

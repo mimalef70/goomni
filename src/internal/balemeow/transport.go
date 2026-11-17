@@ -14,6 +14,10 @@ import (
 )
 
 func (c *Client) rpc(ctx context.Context, service, method string, payload proto.Message) ([]byte, error) {
+	return c.rpcWith(ctx, service, method, payload, rpcOptions{})
+}
+
+func (c *Client) rpcWith(ctx context.Context, service, method string, payload proto.Message, opts rpcOptions) ([]byte, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, unavailable()
 	}
@@ -39,11 +43,25 @@ func (c *Client) rpc(ctx context.Context, service, method string, payload proto.
 	}
 	conn.nextIndex++
 	index := conn.nextIndex
-	pending := &pendingRPC{result: make(chan rpcReply, 1)}
+	pending := &pendingRPC{result: make(chan rpcReply, 1), status: opts.status}
 	conn.pending[index] = pending
 	conn.mu.Unlock()
-	defer func() { conn.mu.Lock(); delete(conn.pending, index); conn.mu.Unlock() }()
-	request := &wire.ClientMessage{Request: &wire.Request{Service: service, Method: method, Payload: encoded, Metadata: c.metadata(token), Index: index}}
+	defer func() {
+		conn.mu.Lock()
+		if _, open := conn.pending[index]; open && pending.status != nil && len(conn.lateScoped) < c.opts.MaxPending {
+			if conn.lateScoped == nil {
+				conn.lateScoped = map[int64]struct{}{}
+			}
+			conn.lateScoped[index] = struct{}{}
+		}
+		delete(conn.pending, index)
+		conn.mu.Unlock()
+	}()
+	metadata := c.metadata(token)
+	for _, kv := range opts.metadata {
+		metadata.Items = append(metadata.Items, &wire.MetadataItem{Key: kv[0], Value: &wire.MetadataValue{StringValue: kv[1]}})
+	}
+	request := &wire.ClientMessage{Request: &wire.Request{Service: service, Method: method, Payload: encoded, Metadata: metadata, Index: index}}
 	callCtx, cancel := context.WithTimeout(ctx, c.opts.RequestTimeout)
 	defer cancel()
 	// Once Write is attempted, the outcome is conservatively ambiguous. Neither
@@ -121,16 +139,27 @@ func (c *Client) readLoop(conn *connection) {
 		}
 		if r := packet.Response; r != nil {
 			reply := rpcReply{payload: r.Payload}
-			if r.Error != nil && r.Error.Code != 0 {
-				reply.err = providerError(r.Error.Code, r.Error.Message)
-			}
+			scoped := false
 			conn.mu.Lock()
 			if pending := conn.pending[r.Index]; pending != nil {
 				delete(conn.pending, r.Index)
+				scoped = pending.status != nil
+				if r.Error != nil && r.Error.Code != 0 {
+					if scoped {
+						reply.err = pending.status(r.Error.Code)
+					} else {
+						reply.err = providerError(r.Error.Code, r.Error.Message)
+					}
+				}
 				pending.result <- reply
+			} else if _, late := conn.lateScoped[r.Index]; late {
+				delete(conn.lateScoped, r.Index)
+				scoped = true
 			}
 			conn.mu.Unlock()
-			if r.Error != nil && r.Error.Code == 16 {
+			// A scoped credential check reports a rejected PIN as UNAUTHENTICATED;
+			// it must not log out the account. Other code 16 replies still revoke.
+			if r.Error != nil && r.Error.Code == 16 && !scoped {
 				c.fail(conn, "SESSION_REVOKED", true)
 				return
 			}
