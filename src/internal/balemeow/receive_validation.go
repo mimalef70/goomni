@@ -12,13 +12,18 @@ func validateContent(m *wire.Message, depth int, budget *int) error {
 	}
 	*budget--
 	count := 0
-	for _, v := range []bool{m.Json != nil, m.Text != nil, m.Document != nil, m.Empty != nil, m.Service != nil, m.Sticker != nil, m.Template != nil, m.TemplateResponse != nil, m.Gift != nil, m.Unsupported != nil, m.Poll != nil, m.GoldGift != nil, m.AnimatedSticker != nil} {
+	for _, v := range []bool{m.Json != nil, m.Text != nil, m.Document != nil, m.Empty != nil, m.Service != nil, m.Sticker != nil, m.Template != nil, m.TemplateResponse != nil, m.Gift != nil, m.Unsupported != nil, m.Poll != nil, m.GoldGift != nil, m.AnimatedSticker != nil, m.Protected != nil} {
 		if v {
 			count++
 		}
 	}
 	if count > 1 {
 		return protocolError()
+	}
+	if p := m.Protected; p != nil {
+		if e := validateContent(p.Message, depth+1, budget); e != nil {
+			return e
+		}
 	}
 	if t := m.Text; t != nil && len(t.Mentions) > 4096 {
 		return protocolError()

@@ -31,17 +31,21 @@ import (
 // framing defaults reflect the inspected official web client. Live verification
 // is documented separately from fake-server coverage.
 type Options struct {
-	GRPCEndpoint           string
-	WebSocketEndpoint      string
-	Origin                 string
-	AppID                  uint32
-	APIKey                 string
-	APIVersion             uint32
-	HandshakeAPIVersion    int64
-	DeviceTitle            string
-	HTTPClient             *http.Client
-	LoadCheckpoint         func(context.Context) (string, error)
-	SaveMediaReference     func(context.Context, domains.Peer, string, domains.ProviderMedia) (bool, error)
+	GRPCEndpoint        string
+	WebSocketEndpoint   string
+	Origin              string
+	AppID               uint32
+	APIKey              string
+	APIVersion          uint32
+	HandshakeAPIVersion int64
+	DeviceTitle         string
+	HTTPClient          *http.Client
+	LoadCheckpoint      func(context.Context) (string, error)
+	SaveMediaReference  func(context.Context, domains.Peer, string, domains.ProviderMedia) (bool, error)
+	// ResolveMessageDate returns the stored native millisecond date of a message
+	// by peer and message ID, used to build a protected-message unlock without a
+	// caller-supplied date. A missing message is (0, false, nil).
+	ResolveMessageDate     func(context.Context, domains.Peer, string) (int64, bool, error)
 	RecoveryVerified       bool
 	MediaSource            func(context.Context, string) (io.ReadCloser, MediaInfo, error)
 	MaxMediaBytes          int64
@@ -67,7 +71,22 @@ type rpcReply struct {
 	payload []byte
 	err     error
 }
-type pendingRPC struct{ result chan rpcReply }
+type pendingRPC struct {
+	result chan rpcReply
+	// status, when set, maps provider status codes to reviewed errors instead of
+	// the generic provider error.
+	status func(code int32) error
+	// keepSession marks a credential check whose UNAUTHENTICATED reply is a
+	// per-request decision, not a revoked account session.
+	keepSession bool
+}
+
+// rpcOptions are reviewed per-call additions; the zero value is an ordinary call.
+type rpcOptions struct {
+	metadata    [][2]string
+	status      func(code int32) error
+	keepSession bool
+}
 type connection struct {
 	account             string
 	token               string
@@ -88,6 +107,7 @@ type connection struct {
 	done                chan struct{}
 	mu                  sync.Mutex
 	pending             map[int64]*pendingRPC
+	lateScoped          map[int64]struct{} // timed-out credential checks; a late reply is not revocation
 	nextIndex           int64
 	pingID              int64
 	pingAt              time.Time
@@ -691,6 +711,12 @@ func (c *Client) Call(ctx context.Context, operation string, raw json.RawMessage
 		return c.groupCall(ctx, operation, raw)
 	case "chat.history", "chat.messages":
 		return c.history(ctx, raw)
+	case "message.protected.unlock":
+		return c.unlockProtectedMessage(ctx, raw)
+	case "message.protected.verify.start":
+		return c.startProtectedVerification(ctx, raw)
+	case "message.protected.verify.submit":
+		return c.submitProtectedVerification(ctx, raw)
 	case "chat.list", "chats":
 		return c.dialogs(ctx, raw)
 	case "message.read":

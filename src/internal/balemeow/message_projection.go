@@ -129,6 +129,8 @@ func displayBody(b map[string]any) string {
 		return "[Gift]"
 	case "service":
 		return "[Service message]"
+	case "protected_message":
+		return "[Protected message]"
 	case "text":
 		return "[Empty text message]"
 	case "empty":

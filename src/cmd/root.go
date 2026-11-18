@@ -194,6 +194,9 @@ func run(parent context.Context, cfg config.Settings) error {
 			SaveMediaReference: func(ctx context.Context, peer domains.Peer, messageID string, m domains.ProviderMedia) (bool, error) {
 				return st.SaveProviderMedia(ctx, d.ConnectionID, peer, messageID, m)
 			},
+			ResolveMessageDate: func(ctx context.Context, peer domains.Peer, messageID string) (int64, bool, error) {
+				return st.MessageEventTime(ctx, d.ConnectionID, peer, messageID)
+			},
 			OnDiagnostic: func(d balemeow.Diagnostic) {
 				logrus.WithFields(logrus.Fields{"code": d.Code, "scheme": d.Scheme, "host": d.Host}).Warn("Provider diagnostic")
 			},

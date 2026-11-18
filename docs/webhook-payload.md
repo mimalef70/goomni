@@ -548,6 +548,97 @@ Older Rubika projections can retain `kind: "text"` with `supported:false` for
 both service notifications and real user content. These flags alone cannot
 safely distinguish activity during retry/replay.
 
+### Bale PIN-protected messages
+
+Some Bale bot messages, such as bank one-time-password notifications, arrive
+as a native protected wrapper. They are projected as
+`content: {"kind": "protected_message", "locked": true}` with
+`payload.kind: "protected_message"`, `payload.body: "[Protected message]"` and
+`supported: true`. The wrapped content is never included in events, webhooks,
+retries, replays or history, and no body is invented. Recognition depends on
+the native message type, not on sender names or peer IDs. Reading the content
+requires the explicit `POST /message/protected/unlock` operation. The account
+owner supplies the six-digit PIN in the request body, and the content is
+returned only in that no-store response:
+
+```http
+POST /message/protected/unlock
+Authorization: Basic <credentials>
+X-Device-Id: <device_id>
+X-Device-Instance: <instance_token>
+Content-Type: application/json
+
+{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","pin":"<six-digit PIN>"}
+```
+
+```json
+{"code":"SUCCESS","message":"Success","results":{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","date":"<message_date_ms>","sender_id":"<bot_user_id>","locked":false,"content":{"kind":"text","message":"<provider text, unmodified>"}}}
+```
+
+Use the event's `message_id` for `message_id`. GoOmni resolves the current message timestamp
+from the protected event for the same account, instance and chat. If the event is unavailable, GoOmni checks the latest 100 history entries in that chat. A miss in both sources returns `PROTECTED_MESSAGE_METADATA_NOT_FOUND` before the PIN check.
+Each authorized unlock performs one
+provider PIN check and is never retried. Handle `PROTECTED_PIN_REJECTED`,
+`PROTECTED_PIN_ATTEMPTS_LIMITED`, `PROTECTED_PIN_VERIFICATION_REQUIRED` (see SMS
+verification below), `PROTECTED_MESSAGE_NOT_FOUND` (provider status 5), `PROTECTED_FETCH_EMPTY`,
+`PROTECTED_CONTENT_EMPTY`, `PROTECTED_FETCH_INVALID`, `PROTECTED_IDENTITY_MISMATCH`, `PROTECTED_MESSAGE_UNSUPPORTED`,
+`PROTECTED_UNLOCK_REJECTED`, `PROTECTED_UNLOCK_INCOMPLETE` (timeout, not
+retried) and the usual connection errors. Do not loop over PINs.
+
+#### SMS verification (status 7)
+
+Some accounts must complete a one-time SMS verification before a protected
+message can be unlocked. When `message.protected.unlock` returns
+`PROTECTED_PIN_VERIFICATION_REQUIRED`, run the two verification steps and then
+retry the unlock with the PIN:
+
+```http
+POST /message/protected/verify/start
+Authorization: Basic <credentials>
+X-Device-Id: <device_id>
+X-Device-Instance: <instance_token>
+```
+
+```json
+{"code":"SUCCESS","message":"Success","results":{"verification_sent":true}}
+```
+
+The provider sends an SMS code to the account owner's phone. Submit that code:
+
+```http
+POST /message/protected/verify/submit
+Authorization: Basic <credentials>
+X-Device-Id: <device_id>
+X-Device-Instance: <instance_token>
+Content-Type: application/json
+
+{"verification_code":"<SMS code>"}
+```
+
+```json
+{"code":"SUCCESS","message":"Success","results":{"verified":true}}
+```
+
+`verification_sent` only confirms the request was accepted, not that the SMS
+arrived. On `{"verified": true}` the account session is authorized; retry
+`POST /message/protected/unlock` with the PIN. The SMS code is used once and is
+never stored, logged or retried. Verification authorizes the connected account's
+own session only; a different `X-Device-Id` / `X-Device-Instance` is a different
+account and must verify separately. Handle `PROTECTED_VERIFICATION_REJECTED`
+(wrong code, not retried), `PROTECTED_VERIFICATION_RATE_LIMITED` (a code was
+already sent, or the provider attempt limit was reached),
+`PROTECTED_VERIFICATION_INCOMPLETE` (timeout, not retried) and the usual
+connection errors. Do not loop over codes; request a new code instead, and
+respect the provider's resend interval.
+
+Treat the PIN, the SMS code and the returned content as secrets. Never put a PIN
+or SMS code in a URL (query values are rejected), logs, analytics or
+configuration. Do not persist or forward unlocked OTPs, and call the gateway
+only over TLS when it is remote. Recognition, unlock and verification are
+verified only against the official Web client's schema and synthetic tests, not
+against a live bank message or live SMS delivery. See
+[provider sources](providers/sources.md#protected-message-evidence-2026-11-17).
+
 ### Eitaa migration notices
 
 An Eitaa channel-side `messageActionChannelMigrateFrom` service notice with a

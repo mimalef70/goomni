@@ -94,6 +94,15 @@ source, binaries or containers, together with the native reference notices in
 - Preserve real Unicode without a second unescape pass. Project only reviewed
   fields from nested content; bound depth, button counts, frames and batch sizes.
   Unknown variants remain explicit, not empty successful messages.
+- Bale Message field 27 is a PIN-protected wrapper: project only
+  `protected_message`/`locked`, never its inner message. Unlock is one
+  `Ramz/CheckPassword` (services_type BOT) plus one `FetchProtectedMessage` with
+  `bale_ramz_token` metadata; never store, retry or reuse the PIN or token.
+  Only the PIN check keeps the session on an UNAUTHENTICATED reply (a PIN
+  decision, not revocation). A status-7 PIN check needs SMS verification: one
+  empty `Ramz/SendOTP` then `Ramz/ValidateOTP` (int32 code, services_type BOT)
+  authorizes the session. SendOTP/ValidateOTP are non-retried mutations whose
+  UNAUTHENTICATED reply still revokes; never store, retry or reuse the SMS code.
 - State notifications can recur legitimately. Use actual route/time/sequence
   provenance; undated diff-page positions cannot invent per-update sequence IDs.
 - Receipt field 3 is `readDate`/`receivedDate`, not a range end. The reviewed web

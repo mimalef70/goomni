@@ -114,3 +114,27 @@ func TestHistoricalMessageEnvelopePreservesReplayAndSearch(t *testing.T) {
 		}
 	}
 }
+
+func TestProtectedMessageEventTime(t *testing.T) {
+	ctx := context.Background()
+	s, _ := testStore(t)
+	d := device(t, s, "primary")
+	other := device(t, s, "other")
+	require.NoError(t, s.BindAccount(ctx, d.ConnectionID, "42"))
+	require.NoError(t, s.BindAccount(ctx, other.ConnectionID, "43"))
+	ev := event("987", "")
+	ev.Payload = json.RawMessage(`{"kind":"protected_message","locked":true,"previous_message":{"date":"123"}}`)
+	ev.Message = &domains.Message{ID: ev.MessageID, Kind: "protected_message", Timestamp: ev.Time}
+	_, err := s.AppendEvent(ctx, d.ConnectionID, ev, nil)
+	require.NoError(t, err)
+	ms, ok, err := s.MessageEventTime(ctx, d.ConnectionID, ev.Peer, ev.MessageID)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, ev.Time.UnixMilli(), ms)
+	_, ok, err = s.MessageEventTime(ctx, other.ConnectionID, ev.Peer, ev.MessageID)
+	require.NoError(t, err)
+	require.False(t, ok)
+	_, ok, err = s.MessageEventTime(ctx, d.ConnectionID, domains.Peer{Type: "user", ID: "999"}, ev.MessageID)
+	require.NoError(t, err)
+	require.False(t, ok)
+}

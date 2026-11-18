@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"strings"
 	"time"
 
@@ -577,4 +578,25 @@ func (s *Store) RetryDelivery(ctx context.Context, conn, id string) (domains.Del
 	}
 	replacement.DeviceID = d.ID
 	return replacement, s.commitTx(tx)
+}
+
+// MessageEventTime returns the stored native millisecond timestamp of a message
+// event, scoped to the connection and peer. It is used to resolve the exact
+// provider date for a protected-message unlock without trusting caller input.
+// A missing event is (0, false, nil); it never returns message content.
+func (s *Store) MessageEventTime(ctx context.Context, conn string, peer domains.Peer, messageID string) (int64, bool, error) {
+	var ms int64
+	err := s.db.QueryRowContext(ctx, `SELECT e.event_time FROM events e
+		JOIN devices d ON e.connection_id=d.connection_id
+		WHERE e.connection_id=? AND e.peer_key=? AND e.message_id=? AND e.type='message'
+		AND d.deleted_at IS NULL AND d.account_id<>'' AND json_extract(e.body,'$.device_id')=d.account_id
+		AND coalesce(json_extract(e.body,'$.content.kind'),json_extract(e.body,'$.payload.kind'))='protected_message'
+		LIMIT 1`, conn, peer.Key(), messageID).Scan(&ms)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, false, nil
+	}
+	if err != nil {
+		return 0, false, dbError(err)
+	}
+	return ms, true, nil
 }

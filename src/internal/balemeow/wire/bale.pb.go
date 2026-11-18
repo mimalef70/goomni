@@ -1512,6 +1512,7 @@ type Message struct {
 	Unsupported      *Empty                  `protobuf:"bytes,16,opt,name=unsupported,proto3" json:"unsupported,omitempty"`
 	Gift             *GiftMessage            `protobuf:"bytes,17,opt,name=gift,proto3" json:"gift,omitempty"`
 	AnimatedSticker  *AnimatedStickerMessage `protobuf:"bytes,24,opt,name=animated_sticker,json=animatedSticker,proto3" json:"animated_sticker,omitempty"`
+	Protected        *ProtectedMessage       `protobuf:"bytes,27,opt,name=protected,proto3" json:"protected,omitempty"`
 	GoldGift         *GoldGiftMessage        `protobuf:"bytes,28,opt,name=gold_gift,json=goldGift,proto3" json:"gold_gift,omitempty"`
 	Poll             *PollMessage            `protobuf:"bytes,29,opt,name=poll,proto3" json:"poll,omitempty"`
 	unknownFields    protoimpl.UnknownFields
@@ -1625,6 +1626,13 @@ func (x *Message) GetAnimatedSticker() *AnimatedStickerMessage {
 	return nil
 }
 
+func (x *Message) GetProtected() *ProtectedMessage {
+	if x != nil {
+		return x.Protected
+	}
+	return nil
+}
+
 func (x *Message) GetGoldGift() *GoldGiftMessage {
 	if x != nil {
 		return x.GoldGift
@@ -1635,6 +1643,53 @@ func (x *Message) GetGoldGift() *GoldGiftMessage {
 func (x *Message) GetPoll() *PollMessage {
 	if x != nil {
 		return x.Poll
+	}
+	return nil
+}
+
+// Official web client observed 2026-11-17 (module 77108, ProtectedMessage.tsx):
+// a PIN-protected wrapper. Its inner message is never projected while locked;
+// content is only returned by an explicit FetchProtectedMessage unlock.
+type ProtectedMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProtectedMessage) Reset() {
+	*x = ProtectedMessage{}
+	mi := &file_wire_bale_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProtectedMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProtectedMessage) ProtoMessage() {}
+
+func (x *ProtectedMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_bale_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProtectedMessage.ProtoReflect.Descriptor instead.
+func (*ProtectedMessage) Descriptor() ([]byte, []int) {
+	return file_wire_bale_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ProtectedMessage) GetMessage() *Message {
+	if x != nil {
+		return x.Message
 	}
 	return nil
 }
@@ -1653,7 +1708,7 @@ type SendMessageRequest struct {
 
 func (x *SendMessageRequest) Reset() {
 	*x = SendMessageRequest{}
-	mi := &file_wire_bale_proto_msgTypes[25]
+	mi := &file_wire_bale_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1665,7 +1720,7 @@ func (x *SendMessageRequest) String() string {
 func (*SendMessageRequest) ProtoMessage() {}
 
 func (x *SendMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[25]
+	mi := &file_wire_bale_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1678,7 +1733,7 @@ func (x *SendMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageRequest.ProtoReflect.Descriptor instead.
 func (*SendMessageRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{25}
+	return file_wire_bale_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SendMessageRequest) GetPeer() *Peer {
@@ -1735,7 +1790,7 @@ type SendMessageResponse struct {
 
 func (x *SendMessageResponse) Reset() {
 	*x = SendMessageResponse{}
-	mi := &file_wire_bale_proto_msgTypes[26]
+	mi := &file_wire_bale_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1747,7 +1802,7 @@ func (x *SendMessageResponse) String() string {
 func (*SendMessageResponse) ProtoMessage() {}
 
 func (x *SendMessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[26]
+	mi := &file_wire_bale_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1760,7 +1815,7 @@ func (x *SendMessageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageResponse.ProtoReflect.Descriptor instead.
 func (*SendMessageResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{26}
+	return file_wire_bale_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *SendMessageResponse) GetSequence() int64 {
@@ -1788,7 +1843,7 @@ type UpdateMessageRequest struct {
 
 func (x *UpdateMessageRequest) Reset() {
 	*x = UpdateMessageRequest{}
-	mi := &file_wire_bale_proto_msgTypes[27]
+	mi := &file_wire_bale_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1800,7 +1855,7 @@ func (x *UpdateMessageRequest) String() string {
 func (*UpdateMessageRequest) ProtoMessage() {}
 
 func (x *UpdateMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[27]
+	mi := &file_wire_bale_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1813,7 +1868,7 @@ func (x *UpdateMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessageRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMessageRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{27}
+	return file_wire_bale_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UpdateMessageRequest) GetPeer() *Peer {
@@ -1847,7 +1902,7 @@ type MessageReadRequest struct {
 
 func (x *MessageReadRequest) Reset() {
 	*x = MessageReadRequest{}
-	mi := &file_wire_bale_proto_msgTypes[28]
+	mi := &file_wire_bale_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1859,7 +1914,7 @@ func (x *MessageReadRequest) String() string {
 func (*MessageReadRequest) ProtoMessage() {}
 
 func (x *MessageReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[28]
+	mi := &file_wire_bale_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1872,7 +1927,7 @@ func (x *MessageReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageReadRequest.ProtoReflect.Descriptor instead.
 func (*MessageReadRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{28}
+	return file_wire_bale_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *MessageReadRequest) GetPeer() *Peer {
@@ -1910,7 +1965,7 @@ type UpdateMessage struct {
 
 func (x *UpdateMessage) Reset() {
 	*x = UpdateMessage{}
-	mi := &file_wire_bale_proto_msgTypes[29]
+	mi := &file_wire_bale_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1922,7 +1977,7 @@ func (x *UpdateMessage) String() string {
 func (*UpdateMessage) ProtoMessage() {}
 
 func (x *UpdateMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[29]
+	mi := &file_wire_bale_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1935,7 +1990,7 @@ func (x *UpdateMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessage.ProtoReflect.Descriptor instead.
 func (*UpdateMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{29}
+	return file_wire_bale_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *UpdateMessage) GetPeer() *Peer {
@@ -2042,7 +2097,7 @@ type UpdateMessageEdited struct {
 
 func (x *UpdateMessageEdited) Reset() {
 	*x = UpdateMessageEdited{}
-	mi := &file_wire_bale_proto_msgTypes[30]
+	mi := &file_wire_bale_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2054,7 +2109,7 @@ func (x *UpdateMessageEdited) String() string {
 func (*UpdateMessageEdited) ProtoMessage() {}
 
 func (x *UpdateMessageEdited) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[30]
+	mi := &file_wire_bale_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2067,7 +2122,7 @@ func (x *UpdateMessageEdited) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessageEdited.ProtoReflect.Descriptor instead.
 func (*UpdateMessageEdited) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{30}
+	return file_wire_bale_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *UpdateMessageEdited) GetPeer() *Peer {
@@ -2115,7 +2170,7 @@ type UpdateMessageDeleted struct {
 
 func (x *UpdateMessageDeleted) Reset() {
 	*x = UpdateMessageDeleted{}
-	mi := &file_wire_bale_proto_msgTypes[31]
+	mi := &file_wire_bale_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2127,7 +2182,7 @@ func (x *UpdateMessageDeleted) String() string {
 func (*UpdateMessageDeleted) ProtoMessage() {}
 
 func (x *UpdateMessageDeleted) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[31]
+	mi := &file_wire_bale_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2140,7 +2195,7 @@ func (x *UpdateMessageDeleted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessageDeleted.ProtoReflect.Descriptor instead.
 func (*UpdateMessageDeleted) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{31}
+	return file_wire_bale_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *UpdateMessageDeleted) GetPeer() *Peer {
@@ -2168,7 +2223,7 @@ type UpdateMessageSent struct {
 
 func (x *UpdateMessageSent) Reset() {
 	*x = UpdateMessageSent{}
-	mi := &file_wire_bale_proto_msgTypes[32]
+	mi := &file_wire_bale_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2180,7 +2235,7 @@ func (x *UpdateMessageSent) String() string {
 func (*UpdateMessageSent) ProtoMessage() {}
 
 func (x *UpdateMessageSent) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[32]
+	mi := &file_wire_bale_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2193,7 +2248,7 @@ func (x *UpdateMessageSent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessageSent.ProtoReflect.Descriptor instead.
 func (*UpdateMessageSent) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{32}
+	return file_wire_bale_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *UpdateMessageSent) GetPeer() *Peer {
@@ -2241,7 +2296,7 @@ type UpdateContainer struct {
 
 func (x *UpdateContainer) Reset() {
 	*x = UpdateContainer{}
-	mi := &file_wire_bale_proto_msgTypes[33]
+	mi := &file_wire_bale_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2253,7 +2308,7 @@ func (x *UpdateContainer) String() string {
 func (*UpdateContainer) ProtoMessage() {}
 
 func (x *UpdateContainer) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[33]
+	mi := &file_wire_bale_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2266,7 +2321,7 @@ func (x *UpdateContainer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateContainer.ProtoReflect.Descriptor instead.
 func (*UpdateContainer) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{33}
+	return file_wire_bale_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *UpdateContainer) GetSent() *UpdateMessageSent {
@@ -2391,7 +2446,7 @@ type Int64Value struct {
 
 func (x *Int64Value) Reset() {
 	*x = Int64Value{}
-	mi := &file_wire_bale_proto_msgTypes[34]
+	mi := &file_wire_bale_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2403,7 +2458,7 @@ func (x *Int64Value) String() string {
 func (*Int64Value) ProtoMessage() {}
 
 func (x *Int64Value) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[34]
+	mi := &file_wire_bale_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2416,7 +2471,7 @@ func (x *Int64Value) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Int64Value.ProtoReflect.Descriptor instead.
 func (*Int64Value) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{34}
+	return file_wire_bale_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *Int64Value) GetValue() int64 {
@@ -2437,7 +2492,7 @@ type MessageReference struct {
 
 func (x *MessageReference) Reset() {
 	*x = MessageReference{}
-	mi := &file_wire_bale_proto_msgTypes[35]
+	mi := &file_wire_bale_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2449,7 +2504,7 @@ func (x *MessageReference) String() string {
 func (*MessageReference) ProtoMessage() {}
 
 func (x *MessageReference) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[35]
+	mi := &file_wire_bale_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2462,7 +2517,7 @@ func (x *MessageReference) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageReference.ProtoReflect.Descriptor instead.
 func (*MessageReference) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{35}
+	return file_wire_bale_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *MessageReference) GetPeer() *Peer {
@@ -2499,7 +2554,7 @@ type HistoryRequest struct {
 
 func (x *HistoryRequest) Reset() {
 	*x = HistoryRequest{}
-	mi := &file_wire_bale_proto_msgTypes[36]
+	mi := &file_wire_bale_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2511,7 +2566,7 @@ func (x *HistoryRequest) String() string {
 func (*HistoryRequest) ProtoMessage() {}
 
 func (x *HistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[36]
+	mi := &file_wire_bale_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2524,7 +2579,7 @@ func (x *HistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryRequest.ProtoReflect.Descriptor instead.
 func (*HistoryRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{36}
+	return file_wire_bale_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *HistoryRequest) GetPeer() *Peer {
@@ -2584,7 +2639,7 @@ type HistoryItem struct {
 
 func (x *HistoryItem) Reset() {
 	*x = HistoryItem{}
-	mi := &file_wire_bale_proto_msgTypes[37]
+	mi := &file_wire_bale_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2596,7 +2651,7 @@ func (x *HistoryItem) String() string {
 func (*HistoryItem) ProtoMessage() {}
 
 func (x *HistoryItem) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[37]
+	mi := &file_wire_bale_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2609,7 +2664,7 @@ func (x *HistoryItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryItem.ProtoReflect.Descriptor instead.
 func (*HistoryItem) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{37}
+	return file_wire_bale_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *HistoryItem) GetSenderId() uint32 {
@@ -2723,7 +2778,7 @@ type HistoryResponse struct {
 
 func (x *HistoryResponse) Reset() {
 	*x = HistoryResponse{}
-	mi := &file_wire_bale_proto_msgTypes[38]
+	mi := &file_wire_bale_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2735,7 +2790,7 @@ func (x *HistoryResponse) String() string {
 func (*HistoryResponse) ProtoMessage() {}
 
 func (x *HistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[38]
+	mi := &file_wire_bale_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2748,7 +2803,7 @@ func (x *HistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryResponse.ProtoReflect.Descriptor instead.
 func (*HistoryResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{38}
+	return file_wire_bale_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *HistoryResponse) GetHistory() []*HistoryItem {
@@ -2800,7 +2855,7 @@ type DialogsRequest struct {
 
 func (x *DialogsRequest) Reset() {
 	*x = DialogsRequest{}
-	mi := &file_wire_bale_proto_msgTypes[39]
+	mi := &file_wire_bale_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2812,7 +2867,7 @@ func (x *DialogsRequest) String() string {
 func (*DialogsRequest) ProtoMessage() {}
 
 func (x *DialogsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[39]
+	mi := &file_wire_bale_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2825,7 +2880,7 @@ func (x *DialogsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DialogsRequest.ProtoReflect.Descriptor instead.
 func (*DialogsRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{39}
+	return file_wire_bale_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *DialogsRequest) GetMinDate() int64 {
@@ -2886,7 +2941,7 @@ type Dialog struct {
 
 func (x *Dialog) Reset() {
 	*x = Dialog{}
-	mi := &file_wire_bale_proto_msgTypes[40]
+	mi := &file_wire_bale_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2898,7 +2953,7 @@ func (x *Dialog) String() string {
 func (*Dialog) ProtoMessage() {}
 
 func (x *Dialog) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[40]
+	mi := &file_wire_bale_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2911,7 +2966,7 @@ func (x *Dialog) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Dialog.ProtoReflect.Descriptor instead.
 func (*Dialog) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{40}
+	return file_wire_bale_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *Dialog) GetPeer() *Peer {
@@ -2983,7 +3038,7 @@ type DialogsResponse struct {
 
 func (x *DialogsResponse) Reset() {
 	*x = DialogsResponse{}
-	mi := &file_wire_bale_proto_msgTypes[41]
+	mi := &file_wire_bale_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2995,7 +3050,7 @@ func (x *DialogsResponse) String() string {
 func (*DialogsResponse) ProtoMessage() {}
 
 func (x *DialogsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[41]
+	mi := &file_wire_bale_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3008,7 +3063,7 @@ func (x *DialogsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DialogsResponse.ProtoReflect.Descriptor instead.
 func (*DialogsResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{41}
+	return file_wire_bale_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *DialogsResponse) GetGroups() []*Group {
@@ -3059,7 +3114,7 @@ type StreamUpdate struct {
 
 func (x *StreamUpdate) Reset() {
 	*x = StreamUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[42]
+	mi := &file_wire_bale_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3071,7 +3126,7 @@ func (x *StreamUpdate) String() string {
 func (*StreamUpdate) ProtoMessage() {}
 
 func (x *StreamUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[42]
+	mi := &file_wire_bale_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3084,7 +3139,7 @@ func (x *StreamUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamUpdate.ProtoReflect.Descriptor instead.
 func (*StreamUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{42}
+	return file_wire_bale_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *StreamUpdate) GetUpdate() []byte {
@@ -3131,7 +3186,7 @@ type UpdateBatch struct {
 
 func (x *UpdateBatch) Reset() {
 	*x = UpdateBatch{}
-	mi := &file_wire_bale_proto_msgTypes[43]
+	mi := &file_wire_bale_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3143,7 +3198,7 @@ func (x *UpdateBatch) String() string {
 func (*UpdateBatch) ProtoMessage() {}
 
 func (x *UpdateBatch) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[43]
+	mi := &file_wire_bale_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3156,7 +3211,7 @@ func (x *UpdateBatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateBatch.ProtoReflect.Descriptor instead.
 func (*UpdateBatch) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{43}
+	return file_wire_bale_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *UpdateBatch) GetUpdates() [][]byte {
@@ -3175,7 +3230,7 @@ type Int32Value struct {
 
 func (x *Int32Value) Reset() {
 	*x = Int32Value{}
-	mi := &file_wire_bale_proto_msgTypes[44]
+	mi := &file_wire_bale_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3187,7 +3242,7 @@ func (x *Int32Value) String() string {
 func (*Int32Value) ProtoMessage() {}
 
 func (x *Int32Value) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[44]
+	mi := &file_wire_bale_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3200,7 +3255,7 @@ func (x *Int32Value) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Int32Value.ProtoReflect.Descriptor instead.
 func (*Int32Value) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{44}
+	return file_wire_bale_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *Int32Value) GetValue() int32 {
@@ -3219,7 +3274,7 @@ type SendType struct {
 
 func (x *SendType) Reset() {
 	*x = SendType{}
-	mi := &file_wire_bale_proto_msgTypes[45]
+	mi := &file_wire_bale_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3231,7 +3286,7 @@ func (x *SendType) String() string {
 func (*SendType) ProtoMessage() {}
 
 func (x *SendType) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[45]
+	mi := &file_wire_bale_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3244,7 +3299,7 @@ func (x *SendType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendType.ProtoReflect.Descriptor instead.
 func (*SendType) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{45}
+	return file_wire_bale_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *SendType) GetType() int32 {
@@ -3272,7 +3327,7 @@ type FileUploadRequest struct {
 
 func (x *FileUploadRequest) Reset() {
 	*x = FileUploadRequest{}
-	mi := &file_wire_bale_proto_msgTypes[46]
+	mi := &file_wire_bale_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3284,7 +3339,7 @@ func (x *FileUploadRequest) String() string {
 func (*FileUploadRequest) ProtoMessage() {}
 
 func (x *FileUploadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[46]
+	mi := &file_wire_bale_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3297,7 +3352,7 @@ func (x *FileUploadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileUploadRequest.ProtoReflect.Descriptor instead.
 func (*FileUploadRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{46}
+	return file_wire_bale_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *FileUploadRequest) GetExpectedSize() int32 {
@@ -3383,7 +3438,7 @@ type FileUploadResponse struct {
 
 func (x *FileUploadResponse) Reset() {
 	*x = FileUploadResponse{}
-	mi := &file_wire_bale_proto_msgTypes[47]
+	mi := &file_wire_bale_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3395,7 +3450,7 @@ func (x *FileUploadResponse) String() string {
 func (*FileUploadResponse) ProtoMessage() {}
 
 func (x *FileUploadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[47]
+	mi := &file_wire_bale_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3408,7 +3463,7 @@ func (x *FileUploadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileUploadResponse.ProtoReflect.Descriptor instead.
 func (*FileUploadResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{47}
+	return file_wire_bale_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *FileUploadResponse) GetFileId() int64 {
@@ -3456,7 +3511,7 @@ type FileLocation struct {
 
 func (x *FileLocation) Reset() {
 	*x = FileLocation{}
-	mi := &file_wire_bale_proto_msgTypes[48]
+	mi := &file_wire_bale_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3468,7 +3523,7 @@ func (x *FileLocation) String() string {
 func (*FileLocation) ProtoMessage() {}
 
 func (x *FileLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[48]
+	mi := &file_wire_bale_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3481,7 +3536,7 @@ func (x *FileLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileLocation.ProtoReflect.Descriptor instead.
 func (*FileLocation) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{48}
+	return file_wire_bale_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *FileLocation) GetFileId() int64 {
@@ -3508,7 +3563,7 @@ type FileDownloadRequest struct {
 
 func (x *FileDownloadRequest) Reset() {
 	*x = FileDownloadRequest{}
-	mi := &file_wire_bale_proto_msgTypes[49]
+	mi := &file_wire_bale_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3520,7 +3575,7 @@ func (x *FileDownloadRequest) String() string {
 func (*FileDownloadRequest) ProtoMessage() {}
 
 func (x *FileDownloadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[49]
+	mi := &file_wire_bale_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3533,7 +3588,7 @@ func (x *FileDownloadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileDownloadRequest.ProtoReflect.Descriptor instead.
 func (*FileDownloadRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{49}
+	return file_wire_bale_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *FileDownloadRequest) GetFile() *FileLocation {
@@ -3564,7 +3619,7 @@ type FileURL struct {
 
 func (x *FileURL) Reset() {
 	*x = FileURL{}
-	mi := &file_wire_bale_proto_msgTypes[50]
+	mi := &file_wire_bale_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3576,7 +3631,7 @@ func (x *FileURL) String() string {
 func (*FileURL) ProtoMessage() {}
 
 func (x *FileURL) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[50]
+	mi := &file_wire_bale_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3589,7 +3644,7 @@ func (x *FileURL) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileURL.ProtoReflect.Descriptor instead.
 func (*FileURL) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{50}
+	return file_wire_bale_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *FileURL) GetFileId() int64 {
@@ -3643,7 +3698,7 @@ type FileDownloadResponse struct {
 
 func (x *FileDownloadResponse) Reset() {
 	*x = FileDownloadResponse{}
-	mi := &file_wire_bale_proto_msgTypes[51]
+	mi := &file_wire_bale_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3655,7 +3710,7 @@ func (x *FileDownloadResponse) String() string {
 func (*FileDownloadResponse) ProtoMessage() {}
 
 func (x *FileDownloadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[51]
+	mi := &file_wire_bale_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3668,7 +3723,7 @@ func (x *FileDownloadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileDownloadResponse.ProtoReflect.Descriptor instead.
 func (*FileDownloadResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{51}
+	return file_wire_bale_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *FileDownloadResponse) GetFileUrl() *FileURL {
@@ -3688,7 +3743,7 @@ type Photo struct {
 
 func (x *Photo) Reset() {
 	*x = Photo{}
-	mi := &file_wire_bale_proto_msgTypes[52]
+	mi := &file_wire_bale_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3700,7 +3755,7 @@ func (x *Photo) String() string {
 func (*Photo) ProtoMessage() {}
 
 func (x *Photo) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[52]
+	mi := &file_wire_bale_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3713,7 +3768,7 @@ func (x *Photo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Photo.ProtoReflect.Descriptor instead.
 func (*Photo) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{52}
+	return file_wire_bale_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *Photo) GetWidth() int32 {
@@ -3741,7 +3796,7 @@ type Video struct {
 
 func (x *Video) Reset() {
 	*x = Video{}
-	mi := &file_wire_bale_proto_msgTypes[53]
+	mi := &file_wire_bale_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3753,7 +3808,7 @@ func (x *Video) String() string {
 func (*Video) ProtoMessage() {}
 
 func (x *Video) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[53]
+	mi := &file_wire_bale_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3766,7 +3821,7 @@ func (x *Video) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Video.ProtoReflect.Descriptor instead.
 func (*Video) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{53}
+	return file_wire_bale_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *Video) GetWidth() int32 {
@@ -3803,7 +3858,7 @@ type Audio struct {
 
 func (x *Audio) Reset() {
 	*x = Audio{}
-	mi := &file_wire_bale_proto_msgTypes[54]
+	mi := &file_wire_bale_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3815,7 +3870,7 @@ func (x *Audio) String() string {
 func (*Audio) ProtoMessage() {}
 
 func (x *Audio) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[54]
+	mi := &file_wire_bale_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3828,7 +3883,7 @@ func (x *Audio) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Audio.ProtoReflect.Descriptor instead.
 func (*Audio) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{54}
+	return file_wire_bale_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *Audio) GetDuration() int32 {
@@ -3875,7 +3930,7 @@ type Voice struct {
 
 func (x *Voice) Reset() {
 	*x = Voice{}
-	mi := &file_wire_bale_proto_msgTypes[55]
+	mi := &file_wire_bale_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3887,7 +3942,7 @@ func (x *Voice) String() string {
 func (*Voice) ProtoMessage() {}
 
 func (x *Voice) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[55]
+	mi := &file_wire_bale_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3900,7 +3955,7 @@ func (x *Voice) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Voice.ProtoReflect.Descriptor instead.
 func (*Voice) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{55}
+	return file_wire_bale_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *Voice) GetDuration() int32 {
@@ -3923,7 +3978,7 @@ type DocumentExt struct {
 
 func (x *DocumentExt) Reset() {
 	*x = DocumentExt{}
-	mi := &file_wire_bale_proto_msgTypes[56]
+	mi := &file_wire_bale_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3935,7 +3990,7 @@ func (x *DocumentExt) String() string {
 func (*DocumentExt) ProtoMessage() {}
 
 func (x *DocumentExt) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[56]
+	mi := &file_wire_bale_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3948,7 +4003,7 @@ func (x *DocumentExt) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentExt.ProtoReflect.Descriptor instead.
 func (*DocumentExt) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{56}
+	return file_wire_bale_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *DocumentExt) GetPhoto() *Photo {
@@ -3997,7 +4052,7 @@ type PeerRef struct {
 
 func (x *PeerRef) Reset() {
 	*x = PeerRef{}
-	mi := &file_wire_bale_proto_msgTypes[57]
+	mi := &file_wire_bale_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4009,7 +4064,7 @@ func (x *PeerRef) String() string {
 func (*PeerRef) ProtoMessage() {}
 
 func (x *PeerRef) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[57]
+	mi := &file_wire_bale_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4022,7 +4077,7 @@ func (x *PeerRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PeerRef.ProtoReflect.Descriptor instead.
 func (*PeerRef) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{57}
+	return file_wire_bale_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *PeerRef) GetId() uint32 {
@@ -4048,7 +4103,7 @@ type BytesValue struct {
 
 func (x *BytesValue) Reset() {
 	*x = BytesValue{}
-	mi := &file_wire_bale_proto_msgTypes[58]
+	mi := &file_wire_bale_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4060,7 +4115,7 @@ func (x *BytesValue) String() string {
 func (*BytesValue) ProtoMessage() {}
 
 func (x *BytesValue) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[58]
+	mi := &file_wire_bale_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4073,7 +4128,7 @@ func (x *BytesValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BytesValue.ProtoReflect.Descriptor instead.
 func (*BytesValue) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{58}
+	return file_wire_bale_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *BytesValue) GetValue() []byte {
@@ -4093,7 +4148,7 @@ type GetMyGroupsRequest struct {
 
 func (x *GetMyGroupsRequest) Reset() {
 	*x = GetMyGroupsRequest{}
-	mi := &file_wire_bale_proto_msgTypes[59]
+	mi := &file_wire_bale_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4105,7 +4160,7 @@ func (x *GetMyGroupsRequest) String() string {
 func (*GetMyGroupsRequest) ProtoMessage() {}
 
 func (x *GetMyGroupsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[59]
+	mi := &file_wire_bale_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4118,7 +4173,7 @@ func (x *GetMyGroupsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyGroupsRequest.ProtoReflect.Descriptor instead.
 func (*GetMyGroupsRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{59}
+	return file_wire_bale_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *GetMyGroupsRequest) GetMode() int32 {
@@ -4144,7 +4199,7 @@ type GetMyGroupsResponse struct {
 
 func (x *GetMyGroupsResponse) Reset() {
 	*x = GetMyGroupsResponse{}
-	mi := &file_wire_bale_proto_msgTypes[60]
+	mi := &file_wire_bale_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4156,7 +4211,7 @@ func (x *GetMyGroupsResponse) String() string {
 func (*GetMyGroupsResponse) ProtoMessage() {}
 
 func (x *GetMyGroupsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[60]
+	mi := &file_wire_bale_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4169,7 +4224,7 @@ func (x *GetMyGroupsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyGroupsResponse.ProtoReflect.Descriptor instead.
 func (*GetMyGroupsResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{60}
+	return file_wire_bale_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *GetMyGroupsResponse) GetGroups() []*PeerRef {
@@ -4190,7 +4245,7 @@ type GroupMembersRequest struct {
 
 func (x *GroupMembersRequest) Reset() {
 	*x = GroupMembersRequest{}
-	mi := &file_wire_bale_proto_msgTypes[61]
+	mi := &file_wire_bale_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4202,7 +4257,7 @@ func (x *GroupMembersRequest) String() string {
 func (*GroupMembersRequest) ProtoMessage() {}
 
 func (x *GroupMembersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[61]
+	mi := &file_wire_bale_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4215,7 +4270,7 @@ func (x *GroupMembersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupMembersRequest.ProtoReflect.Descriptor instead.
 func (*GroupMembersRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{61}
+	return file_wire_bale_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *GroupMembersRequest) GetGroup() *PeerRef {
@@ -4251,7 +4306,7 @@ type GroupMember struct {
 
 func (x *GroupMember) Reset() {
 	*x = GroupMember{}
-	mi := &file_wire_bale_proto_msgTypes[62]
+	mi := &file_wire_bale_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4263,7 +4318,7 @@ func (x *GroupMember) String() string {
 func (*GroupMember) ProtoMessage() {}
 
 func (x *GroupMember) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[62]
+	mi := &file_wire_bale_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4276,7 +4331,7 @@ func (x *GroupMember) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupMember.ProtoReflect.Descriptor instead.
 func (*GroupMember) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{62}
+	return file_wire_bale_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *GroupMember) GetUid() uint32 {
@@ -4317,7 +4372,7 @@ type GroupMembersResponse struct {
 
 func (x *GroupMembersResponse) Reset() {
 	*x = GroupMembersResponse{}
-	mi := &file_wire_bale_proto_msgTypes[63]
+	mi := &file_wire_bale_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4329,7 +4384,7 @@ func (x *GroupMembersResponse) String() string {
 func (*GroupMembersResponse) ProtoMessage() {}
 
 func (x *GroupMembersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[63]
+	mi := &file_wire_bale_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4342,7 +4397,7 @@ func (x *GroupMembersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupMembersResponse.ProtoReflect.Descriptor instead.
 func (*GroupMembersResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{63}
+	return file_wire_bale_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GroupMembersResponse) GetMembers() []*GroupMember {
@@ -4372,7 +4427,7 @@ type Group struct {
 
 func (x *Group) Reset() {
 	*x = Group{}
-	mi := &file_wire_bale_proto_msgTypes[64]
+	mi := &file_wire_bale_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4384,7 +4439,7 @@ func (x *Group) String() string {
 func (*Group) ProtoMessage() {}
 
 func (x *Group) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[64]
+	mi := &file_wire_bale_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4397,7 +4452,7 @@ func (x *Group) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Group.ProtoReflect.Descriptor instead.
 func (*Group) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{64}
+	return file_wire_bale_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *Group) GetId() uint32 {
@@ -4447,7 +4502,7 @@ type GroupCreateRequest struct {
 
 func (x *GroupCreateRequest) Reset() {
 	*x = GroupCreateRequest{}
-	mi := &file_wire_bale_proto_msgTypes[65]
+	mi := &file_wire_bale_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4459,7 +4514,7 @@ func (x *GroupCreateRequest) String() string {
 func (*GroupCreateRequest) ProtoMessage() {}
 
 func (x *GroupCreateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[65]
+	mi := &file_wire_bale_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4472,7 +4527,7 @@ func (x *GroupCreateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupCreateRequest.ProtoReflect.Descriptor instead.
 func (*GroupCreateRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{65}
+	return file_wire_bale_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *GroupCreateRequest) GetRid() int64 {
@@ -4515,7 +4570,7 @@ type GroupCreateResponse struct {
 
 func (x *GroupCreateResponse) Reset() {
 	*x = GroupCreateResponse{}
-	mi := &file_wire_bale_proto_msgTypes[66]
+	mi := &file_wire_bale_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4527,7 +4582,7 @@ func (x *GroupCreateResponse) String() string {
 func (*GroupCreateResponse) ProtoMessage() {}
 
 func (x *GroupCreateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[66]
+	mi := &file_wire_bale_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4540,7 +4595,7 @@ func (x *GroupCreateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupCreateResponse.ProtoReflect.Descriptor instead.
 func (*GroupCreateResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{66}
+	return file_wire_bale_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *GroupCreateResponse) GetSequence() int32 {
@@ -4582,7 +4637,7 @@ type GroupInviteRequest struct {
 
 func (x *GroupInviteRequest) Reset() {
 	*x = GroupInviteRequest{}
-	mi := &file_wire_bale_proto_msgTypes[67]
+	mi := &file_wire_bale_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4594,7 +4649,7 @@ func (x *GroupInviteRequest) String() string {
 func (*GroupInviteRequest) ProtoMessage() {}
 
 func (x *GroupInviteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[67]
+	mi := &file_wire_bale_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4607,7 +4662,7 @@ func (x *GroupInviteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupInviteRequest.ProtoReflect.Descriptor instead.
 func (*GroupInviteRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{67}
+	return file_wire_bale_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *GroupInviteRequest) GetGroup() *PeerRef {
@@ -4640,7 +4695,7 @@ type GroupInviteResponse struct {
 
 func (x *GroupInviteResponse) Reset() {
 	*x = GroupInviteResponse{}
-	mi := &file_wire_bale_proto_msgTypes[68]
+	mi := &file_wire_bale_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4652,7 +4707,7 @@ func (x *GroupInviteResponse) String() string {
 func (*GroupInviteResponse) ProtoMessage() {}
 
 func (x *GroupInviteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[68]
+	mi := &file_wire_bale_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4665,7 +4720,7 @@ func (x *GroupInviteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupInviteResponse.ProtoReflect.Descriptor instead.
 func (*GroupInviteResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{68}
+	return file_wire_bale_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *GroupInviteResponse) GetNotAdded() []*PeerRef {
@@ -4686,7 +4741,7 @@ type GroupTitleRequest struct {
 
 func (x *GroupTitleRequest) Reset() {
 	*x = GroupTitleRequest{}
-	mi := &file_wire_bale_proto_msgTypes[69]
+	mi := &file_wire_bale_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4698,7 +4753,7 @@ func (x *GroupTitleRequest) String() string {
 func (*GroupTitleRequest) ProtoMessage() {}
 
 func (x *GroupTitleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[69]
+	mi := &file_wire_bale_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4711,7 +4766,7 @@ func (x *GroupTitleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupTitleRequest.ProtoReflect.Descriptor instead.
 func (*GroupTitleRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{69}
+	return file_wire_bale_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *GroupTitleRequest) GetGroup() *PeerRef {
@@ -4745,7 +4800,7 @@ type ContactsRequest struct {
 
 func (x *ContactsRequest) Reset() {
 	*x = ContactsRequest{}
-	mi := &file_wire_bale_proto_msgTypes[70]
+	mi := &file_wire_bale_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4757,7 +4812,7 @@ func (x *ContactsRequest) String() string {
 func (*ContactsRequest) ProtoMessage() {}
 
 func (x *ContactsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[70]
+	mi := &file_wire_bale_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4770,7 +4825,7 @@ func (x *ContactsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContactsRequest.ProtoReflect.Descriptor instead.
 func (*ContactsRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{70}
+	return file_wire_bale_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *ContactsRequest) GetContactsHash() string {
@@ -4798,7 +4853,7 @@ type ContactsResponse struct {
 
 func (x *ContactsResponse) Reset() {
 	*x = ContactsResponse{}
-	mi := &file_wire_bale_proto_msgTypes[71]
+	mi := &file_wire_bale_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4810,7 +4865,7 @@ func (x *ContactsResponse) String() string {
 func (*ContactsResponse) ProtoMessage() {}
 
 func (x *ContactsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[71]
+	mi := &file_wire_bale_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4823,7 +4878,7 @@ func (x *ContactsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContactsResponse.ProtoReflect.Descriptor instead.
 func (*ContactsResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{71}
+	return file_wire_bale_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *ContactsResponse) GetUsers() []*User {
@@ -4857,7 +4912,7 @@ type ContactsSearchRequest struct {
 
 func (x *ContactsSearchRequest) Reset() {
 	*x = ContactsSearchRequest{}
-	mi := &file_wire_bale_proto_msgTypes[72]
+	mi := &file_wire_bale_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4869,7 +4924,7 @@ func (x *ContactsSearchRequest) String() string {
 func (*ContactsSearchRequest) ProtoMessage() {}
 
 func (x *ContactsSearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[72]
+	mi := &file_wire_bale_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4882,7 +4937,7 @@ func (x *ContactsSearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContactsSearchRequest.ProtoReflect.Descriptor instead.
 func (*ContactsSearchRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{72}
+	return file_wire_bale_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *ContactsSearchRequest) GetRequest() string {
@@ -4911,7 +4966,7 @@ type ContactsSearchResponse struct {
 
 func (x *ContactsSearchResponse) Reset() {
 	*x = ContactsSearchResponse{}
-	mi := &file_wire_bale_proto_msgTypes[73]
+	mi := &file_wire_bale_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4923,7 +4978,7 @@ func (x *ContactsSearchResponse) String() string {
 func (*ContactsSearchResponse) ProtoMessage() {}
 
 func (x *ContactsSearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[73]
+	mi := &file_wire_bale_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4936,7 +4991,7 @@ func (x *ContactsSearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContactsSearchResponse.ProtoReflect.Descriptor instead.
 func (*ContactsSearchResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{73}
+	return file_wire_bale_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *ContactsSearchResponse) GetUsers() []*User {
@@ -4978,7 +5033,7 @@ type RouteState struct {
 
 func (x *RouteState) Reset() {
 	*x = RouteState{}
-	mi := &file_wire_bale_proto_msgTypes[74]
+	mi := &file_wire_bale_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4990,7 +5045,7 @@ func (x *RouteState) String() string {
 func (*RouteState) ProtoMessage() {}
 
 func (x *RouteState) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[74]
+	mi := &file_wire_bale_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5003,7 +5058,7 @@ func (x *RouteState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RouteState.ProtoReflect.Descriptor instead.
 func (*RouteState) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{74}
+	return file_wire_bale_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *RouteState) GetGroup() *PeerRef {
@@ -5030,7 +5085,7 @@ type RoutesRequest struct {
 
 func (x *RoutesRequest) Reset() {
 	*x = RoutesRequest{}
-	mi := &file_wire_bale_proto_msgTypes[75]
+	mi := &file_wire_bale_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5042,7 +5097,7 @@ func (x *RoutesRequest) String() string {
 func (*RoutesRequest) ProtoMessage() {}
 
 func (x *RoutesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[75]
+	mi := &file_wire_bale_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5055,7 +5110,7 @@ func (x *RoutesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoutesRequest.ProtoReflect.Descriptor instead.
 func (*RoutesRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{75}
+	return file_wire_bale_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *RoutesRequest) GetGroups() []*PeerRef {
@@ -5081,7 +5136,7 @@ type RoutesResponse struct {
 
 func (x *RoutesResponse) Reset() {
 	*x = RoutesResponse{}
-	mi := &file_wire_bale_proto_msgTypes[76]
+	mi := &file_wire_bale_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5093,7 +5148,7 @@ func (x *RoutesResponse) String() string {
 func (*RoutesResponse) ProtoMessage() {}
 
 func (x *RoutesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[76]
+	mi := &file_wire_bale_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5106,7 +5161,7 @@ func (x *RoutesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoutesResponse.ProtoReflect.Descriptor instead.
 func (*RoutesResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{76}
+	return file_wire_bale_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *RoutesResponse) GetStates() []*RouteState {
@@ -5126,7 +5181,7 @@ type DiffRequest struct {
 
 func (x *DiffRequest) Reset() {
 	*x = DiffRequest{}
-	mi := &file_wire_bale_proto_msgTypes[77]
+	mi := &file_wire_bale_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5138,7 +5193,7 @@ func (x *DiffRequest) String() string {
 func (*DiffRequest) ProtoMessage() {}
 
 func (x *DiffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[77]
+	mi := &file_wire_bale_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5151,7 +5206,7 @@ func (x *DiffRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiffRequest.ProtoReflect.Descriptor instead.
 func (*DiffRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{77}
+	return file_wire_bale_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *DiffRequest) GetStates() []*RouteState {
@@ -5178,7 +5233,7 @@ type DatedUpdate struct {
 
 func (x *DatedUpdate) Reset() {
 	*x = DatedUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[78]
+	mi := &file_wire_bale_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5190,7 +5245,7 @@ func (x *DatedUpdate) String() string {
 func (*DatedUpdate) ProtoMessage() {}
 
 func (x *DatedUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[78]
+	mi := &file_wire_bale_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5203,7 +5258,7 @@ func (x *DatedUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatedUpdate.ProtoReflect.Descriptor instead.
 func (*DatedUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{78}
+	return file_wire_bale_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *DatedUpdate) GetUpdate() []byte {
@@ -5233,7 +5288,7 @@ type RouteDiff struct {
 
 func (x *RouteDiff) Reset() {
 	*x = RouteDiff{}
-	mi := &file_wire_bale_proto_msgTypes[79]
+	mi := &file_wire_bale_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5245,7 +5300,7 @@ func (x *RouteDiff) String() string {
 func (*RouteDiff) ProtoMessage() {}
 
 func (x *RouteDiff) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[79]
+	mi := &file_wire_bale_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5258,7 +5313,7 @@ func (x *RouteDiff) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RouteDiff.ProtoReflect.Descriptor instead.
 func (*RouteDiff) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{79}
+	return file_wire_bale_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *RouteDiff) GetState() *RouteState {
@@ -5307,7 +5362,7 @@ type DiffResponse struct {
 
 func (x *DiffResponse) Reset() {
 	*x = DiffResponse{}
-	mi := &file_wire_bale_proto_msgTypes[80]
+	mi := &file_wire_bale_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5319,7 +5374,7 @@ func (x *DiffResponse) String() string {
 func (*DiffResponse) ProtoMessage() {}
 
 func (x *DiffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[80]
+	mi := &file_wire_bale_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5332,7 +5387,7 @@ func (x *DiffResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiffResponse.ProtoReflect.Descriptor instead.
 func (*DiffResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{80}
+	return file_wire_bale_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *DiffResponse) GetRoutes() []*RouteDiff {
@@ -5369,7 +5424,7 @@ type ForwardMessagesRequest struct {
 
 func (x *ForwardMessagesRequest) Reset() {
 	*x = ForwardMessagesRequest{}
-	mi := &file_wire_bale_proto_msgTypes[81]
+	mi := &file_wire_bale_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5381,7 +5436,7 @@ func (x *ForwardMessagesRequest) String() string {
 func (*ForwardMessagesRequest) ProtoMessage() {}
 
 func (x *ForwardMessagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[81]
+	mi := &file_wire_bale_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5394,7 +5449,7 @@ func (x *ForwardMessagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ForwardMessagesRequest.ProtoReflect.Descriptor instead.
 func (*ForwardMessagesRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{81}
+	return file_wire_bale_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *ForwardMessagesRequest) GetPeer() *Peer {
@@ -5441,7 +5496,7 @@ type MessageDates struct {
 
 func (x *MessageDates) Reset() {
 	*x = MessageDates{}
-	mi := &file_wire_bale_proto_msgTypes[82]
+	mi := &file_wire_bale_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5453,7 +5508,7 @@ func (x *MessageDates) String() string {
 func (*MessageDates) ProtoMessage() {}
 
 func (x *MessageDates) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[82]
+	mi := &file_wire_bale_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5466,7 +5521,7 @@ func (x *MessageDates) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageDates.ProtoReflect.Descriptor instead.
 func (*MessageDates) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{82}
+	return file_wire_bale_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *MessageDates) GetDates() []int64 {
@@ -5488,7 +5543,7 @@ type DeleteMessageRequest struct {
 
 func (x *DeleteMessageRequest) Reset() {
 	*x = DeleteMessageRequest{}
-	mi := &file_wire_bale_proto_msgTypes[83]
+	mi := &file_wire_bale_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5500,7 +5555,7 @@ func (x *DeleteMessageRequest) String() string {
 func (*DeleteMessageRequest) ProtoMessage() {}
 
 func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[83]
+	mi := &file_wire_bale_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5513,7 +5568,7 @@ func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMessageRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{83}
+	return file_wire_bale_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *DeleteMessageRequest) GetPeer() *Peer {
@@ -5553,7 +5608,7 @@ type GetGroupInfoRequest struct {
 
 func (x *GetGroupInfoRequest) Reset() {
 	*x = GetGroupInfoRequest{}
-	mi := &file_wire_bale_proto_msgTypes[84]
+	mi := &file_wire_bale_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5565,7 +5620,7 @@ func (x *GetGroupInfoRequest) String() string {
 func (*GetGroupInfoRequest) ProtoMessage() {}
 
 func (x *GetGroupInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[84]
+	mi := &file_wire_bale_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5578,7 +5633,7 @@ func (x *GetGroupInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGroupInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetGroupInfoRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{84}
+	return file_wire_bale_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *GetGroupInfoRequest) GetPeer() *PeerRef {
@@ -5606,7 +5661,7 @@ type FullGroup struct {
 
 func (x *FullGroup) Reset() {
 	*x = FullGroup{}
-	mi := &file_wire_bale_proto_msgTypes[85]
+	mi := &file_wire_bale_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5618,7 +5673,7 @@ func (x *FullGroup) String() string {
 func (*FullGroup) ProtoMessage() {}
 
 func (x *FullGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[85]
+	mi := &file_wire_bale_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5631,7 +5686,7 @@ func (x *FullGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FullGroup.ProtoReflect.Descriptor instead.
 func (*FullGroup) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{85}
+	return file_wire_bale_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *FullGroup) GetId() uint32 {
@@ -5713,7 +5768,7 @@ type GetGroupInfoResponse struct {
 
 func (x *GetGroupInfoResponse) Reset() {
 	*x = GetGroupInfoResponse{}
-	mi := &file_wire_bale_proto_msgTypes[86]
+	mi := &file_wire_bale_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5725,7 +5780,7 @@ func (x *GetGroupInfoResponse) String() string {
 func (*GetGroupInfoResponse) ProtoMessage() {}
 
 func (x *GetGroupInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[86]
+	mi := &file_wire_bale_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5738,7 +5793,7 @@ func (x *GetGroupInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGroupInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetGroupInfoResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{86}
+	return file_wire_bale_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *GetGroupInfoResponse) GetGroup() *FullGroup {
@@ -5757,7 +5812,7 @@ type GroupInviteURLResponse struct {
 
 func (x *GroupInviteURLResponse) Reset() {
 	*x = GroupInviteURLResponse{}
-	mi := &file_wire_bale_proto_msgTypes[87]
+	mi := &file_wire_bale_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5769,7 +5824,7 @@ func (x *GroupInviteURLResponse) String() string {
 func (*GroupInviteURLResponse) ProtoMessage() {}
 
 func (x *GroupInviteURLResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[87]
+	mi := &file_wire_bale_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5782,7 +5837,7 @@ func (x *GroupInviteURLResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupInviteURLResponse.ProtoReflect.Descriptor instead.
 func (*GroupInviteURLResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{87}
+	return file_wire_bale_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *GroupInviteURLResponse) GetUrl() string {
@@ -5801,7 +5856,7 @@ type GetUserInfoRequest struct {
 
 func (x *GetUserInfoRequest) Reset() {
 	*x = GetUserInfoRequest{}
-	mi := &file_wire_bale_proto_msgTypes[88]
+	mi := &file_wire_bale_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5813,7 +5868,7 @@ func (x *GetUserInfoRequest) String() string {
 func (*GetUserInfoRequest) ProtoMessage() {}
 
 func (x *GetUserInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[88]
+	mi := &file_wire_bale_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5826,7 +5881,7 @@ func (x *GetUserInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetUserInfoRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{88}
+	return file_wire_bale_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *GetUserInfoRequest) GetPeer() *PeerRef {
@@ -5856,7 +5911,7 @@ type FullUser struct {
 
 func (x *FullUser) Reset() {
 	*x = FullUser{}
-	mi := &file_wire_bale_proto_msgTypes[89]
+	mi := &file_wire_bale_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5868,7 +5923,7 @@ func (x *FullUser) String() string {
 func (*FullUser) ProtoMessage() {}
 
 func (x *FullUser) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[89]
+	mi := &file_wire_bale_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5881,7 +5936,7 @@ func (x *FullUser) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FullUser.ProtoReflect.Descriptor instead.
 func (*FullUser) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{89}
+	return file_wire_bale_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *FullUser) GetId() uint32 {
@@ -5977,7 +6032,7 @@ type GetUserInfoResponse struct {
 
 func (x *GetUserInfoResponse) Reset() {
 	*x = GetUserInfoResponse{}
-	mi := &file_wire_bale_proto_msgTypes[90]
+	mi := &file_wire_bale_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5989,7 +6044,7 @@ func (x *GetUserInfoResponse) String() string {
 func (*GetUserInfoResponse) ProtoMessage() {}
 
 func (x *GetUserInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[90]
+	mi := &file_wire_bale_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6002,7 +6057,7 @@ func (x *GetUserInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetUserInfoResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{90}
+	return file_wire_bale_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *GetUserInfoResponse) GetUser() *FullUser {
@@ -6024,7 +6079,7 @@ type GroupDescriptionRequest struct {
 
 func (x *GroupDescriptionRequest) Reset() {
 	*x = GroupDescriptionRequest{}
-	mi := &file_wire_bale_proto_msgTypes[91]
+	mi := &file_wire_bale_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6036,7 +6091,7 @@ func (x *GroupDescriptionRequest) String() string {
 func (*GroupDescriptionRequest) ProtoMessage() {}
 
 func (x *GroupDescriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[91]
+	mi := &file_wire_bale_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6049,7 +6104,7 @@ func (x *GroupDescriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupDescriptionRequest.ProtoReflect.Descriptor instead.
 func (*GroupDescriptionRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{91}
+	return file_wire_bale_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *GroupDescriptionRequest) GetGroup() *PeerRef {
@@ -6084,7 +6139,7 @@ type GroupRemoveRequest struct {
 
 func (x *GroupRemoveRequest) Reset() {
 	*x = GroupRemoveRequest{}
-	mi := &file_wire_bale_proto_msgTypes[92]
+	mi := &file_wire_bale_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6096,7 +6151,7 @@ func (x *GroupRemoveRequest) String() string {
 func (*GroupRemoveRequest) ProtoMessage() {}
 
 func (x *GroupRemoveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[92]
+	mi := &file_wire_bale_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6109,7 +6164,7 @@ func (x *GroupRemoveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupRemoveRequest.ProtoReflect.Descriptor instead.
 func (*GroupRemoveRequest) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{92}
+	return file_wire_bale_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *GroupRemoveRequest) GetGroup() *PeerRef {
@@ -6145,7 +6200,7 @@ type MessagePosition struct {
 
 func (x *MessagePosition) Reset() {
 	*x = MessagePosition{}
-	mi := &file_wire_bale_proto_msgTypes[93]
+	mi := &file_wire_bale_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6157,7 +6212,7 @@ func (x *MessagePosition) String() string {
 func (*MessagePosition) ProtoMessage() {}
 
 func (x *MessagePosition) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[93]
+	mi := &file_wire_bale_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6170,7 +6225,7 @@ func (x *MessagePosition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessagePosition.ProtoReflect.Descriptor instead.
 func (*MessagePosition) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{93}
+	return file_wire_bale_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *MessagePosition) GetDate() int64 {
@@ -6209,7 +6264,7 @@ type QuotedMessage struct {
 
 func (x *QuotedMessage) Reset() {
 	*x = QuotedMessage{}
-	mi := &file_wire_bale_proto_msgTypes[94]
+	mi := &file_wire_bale_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6221,7 +6276,7 @@ func (x *QuotedMessage) String() string {
 func (*QuotedMessage) ProtoMessage() {}
 
 func (x *QuotedMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[94]
+	mi := &file_wire_bale_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6234,7 +6289,7 @@ func (x *QuotedMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuotedMessage.ProtoReflect.Descriptor instead.
 func (*QuotedMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{94}
+	return file_wire_bale_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *QuotedMessage) GetMessageId() *Int64Value {
@@ -6301,7 +6356,7 @@ type TemplateMessage struct {
 
 func (x *TemplateMessage) Reset() {
 	*x = TemplateMessage{}
-	mi := &file_wire_bale_proto_msgTypes[95]
+	mi := &file_wire_bale_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6313,7 +6368,7 @@ func (x *TemplateMessage) String() string {
 func (*TemplateMessage) ProtoMessage() {}
 
 func (x *TemplateMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[95]
+	mi := &file_wire_bale_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6326,7 +6381,7 @@ func (x *TemplateMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateMessage.ProtoReflect.Descriptor instead.
 func (*TemplateMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{95}
+	return file_wire_bale_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *TemplateMessage) GetMessage() *Message {
@@ -6389,7 +6444,7 @@ type TemplateResponse struct {
 
 func (x *TemplateResponse) Reset() {
 	*x = TemplateResponse{}
-	mi := &file_wire_bale_proto_msgTypes[96]
+	mi := &file_wire_bale_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6401,7 +6456,7 @@ func (x *TemplateResponse) String() string {
 func (*TemplateResponse) ProtoMessage() {}
 
 func (x *TemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[96]
+	mi := &file_wire_bale_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6414,7 +6469,7 @@ func (x *TemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateResponse.ProtoReflect.Descriptor instead.
 func (*TemplateResponse) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{96}
+	return file_wire_bale_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *TemplateResponse) GetResponse() string {
@@ -6449,7 +6504,7 @@ type TemplateButton struct {
 
 func (x *TemplateButton) Reset() {
 	*x = TemplateButton{}
-	mi := &file_wire_bale_proto_msgTypes[97]
+	mi := &file_wire_bale_proto_msgTypes[98]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6461,7 +6516,7 @@ func (x *TemplateButton) String() string {
 func (*TemplateButton) ProtoMessage() {}
 
 func (x *TemplateButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[97]
+	mi := &file_wire_bale_proto_msgTypes[98]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6474,7 +6529,7 @@ func (x *TemplateButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateButton.ProtoReflect.Descriptor instead.
 func (*TemplateButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{97}
+	return file_wire_bale_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *TemplateButton) GetText() string {
@@ -6507,7 +6562,7 @@ type InlineKeyboard struct {
 
 func (x *InlineKeyboard) Reset() {
 	*x = InlineKeyboard{}
-	mi := &file_wire_bale_proto_msgTypes[98]
+	mi := &file_wire_bale_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6519,7 +6574,7 @@ func (x *InlineKeyboard) String() string {
 func (*InlineKeyboard) ProtoMessage() {}
 
 func (x *InlineKeyboard) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[98]
+	mi := &file_wire_bale_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6532,7 +6587,7 @@ func (x *InlineKeyboard) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineKeyboard.ProtoReflect.Descriptor instead.
 func (*InlineKeyboard) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{98}
+	return file_wire_bale_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *InlineKeyboard) GetRows() []*InlineRow {
@@ -6551,7 +6606,7 @@ type InlineRow struct {
 
 func (x *InlineRow) Reset() {
 	*x = InlineRow{}
-	mi := &file_wire_bale_proto_msgTypes[99]
+	mi := &file_wire_bale_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6563,7 +6618,7 @@ func (x *InlineRow) String() string {
 func (*InlineRow) ProtoMessage() {}
 
 func (x *InlineRow) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[99]
+	mi := &file_wire_bale_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6576,7 +6631,7 @@ func (x *InlineRow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineRow.ProtoReflect.Descriptor instead.
 func (*InlineRow) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{99}
+	return file_wire_bale_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *InlineRow) GetButtons() []*InlineButton {
@@ -6606,7 +6661,7 @@ type InlineButton struct {
 
 func (x *InlineButton) Reset() {
 	*x = InlineButton{}
-	mi := &file_wire_bale_proto_msgTypes[100]
+	mi := &file_wire_bale_proto_msgTypes[101]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6618,7 +6673,7 @@ func (x *InlineButton) String() string {
 func (*InlineButton) ProtoMessage() {}
 
 func (x *InlineButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[100]
+	mi := &file_wire_bale_proto_msgTypes[101]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6631,7 +6686,7 @@ func (x *InlineButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineButton.ProtoReflect.Descriptor instead.
 func (*InlineButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{100}
+	return file_wire_bale_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *InlineButton) GetText() string {
@@ -6727,7 +6782,7 @@ type WebAppButton struct {
 
 func (x *WebAppButton) Reset() {
 	*x = WebAppButton{}
-	mi := &file_wire_bale_proto_msgTypes[101]
+	mi := &file_wire_bale_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6739,7 +6794,7 @@ func (x *WebAppButton) String() string {
 func (*WebAppButton) ProtoMessage() {}
 
 func (x *WebAppButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[101]
+	mi := &file_wire_bale_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6752,7 +6807,7 @@ func (x *WebAppButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WebAppButton.ProtoReflect.Descriptor instead.
 func (*WebAppButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{101}
+	return file_wire_bale_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *WebAppButton) GetUrl() string {
@@ -6774,7 +6829,7 @@ type LoginURLButton struct {
 
 func (x *LoginURLButton) Reset() {
 	*x = LoginURLButton{}
-	mi := &file_wire_bale_proto_msgTypes[102]
+	mi := &file_wire_bale_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6786,7 +6841,7 @@ func (x *LoginURLButton) String() string {
 func (*LoginURLButton) ProtoMessage() {}
 
 func (x *LoginURLButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[102]
+	mi := &file_wire_bale_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6799,7 +6854,7 @@ func (x *LoginURLButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginURLButton.ProtoReflect.Descriptor instead.
 func (*LoginURLButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{102}
+	return file_wire_bale_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *LoginURLButton) GetUrl() string {
@@ -6843,7 +6898,7 @@ type SwitchInlineButton struct {
 
 func (x *SwitchInlineButton) Reset() {
 	*x = SwitchInlineButton{}
-	mi := &file_wire_bale_proto_msgTypes[103]
+	mi := &file_wire_bale_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6855,7 +6910,7 @@ func (x *SwitchInlineButton) String() string {
 func (*SwitchInlineButton) ProtoMessage() {}
 
 func (x *SwitchInlineButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[103]
+	mi := &file_wire_bale_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6868,7 +6923,7 @@ func (x *SwitchInlineButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SwitchInlineButton.ProtoReflect.Descriptor instead.
 func (*SwitchInlineButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{103}
+	return file_wire_bale_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *SwitchInlineButton) GetQuery() string {
@@ -6915,7 +6970,7 @@ type CopyTextButton struct {
 
 func (x *CopyTextButton) Reset() {
 	*x = CopyTextButton{}
-	mi := &file_wire_bale_proto_msgTypes[104]
+	mi := &file_wire_bale_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6927,7 +6982,7 @@ func (x *CopyTextButton) String() string {
 func (*CopyTextButton) ProtoMessage() {}
 
 func (x *CopyTextButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[104]
+	mi := &file_wire_bale_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6940,7 +6995,7 @@ func (x *CopyTextButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CopyTextButton.ProtoReflect.Descriptor instead.
 func (*CopyTextButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{104}
+	return file_wire_bale_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *CopyTextButton) GetText() string {
@@ -6959,7 +7014,7 @@ type CustomActionButton struct {
 
 func (x *CustomActionButton) Reset() {
 	*x = CustomActionButton{}
-	mi := &file_wire_bale_proto_msgTypes[105]
+	mi := &file_wire_bale_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6971,7 +7026,7 @@ func (x *CustomActionButton) String() string {
 func (*CustomActionButton) ProtoMessage() {}
 
 func (x *CustomActionButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[105]
+	mi := &file_wire_bale_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6984,7 +7039,7 @@ func (x *CustomActionButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CustomActionButton.ProtoReflect.Descriptor instead.
 func (*CustomActionButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{105}
+	return file_wire_bale_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *CustomActionButton) GetId() string {
@@ -7003,7 +7058,7 @@ type ReplyKeyboard struct {
 
 func (x *ReplyKeyboard) Reset() {
 	*x = ReplyKeyboard{}
-	mi := &file_wire_bale_proto_msgTypes[106]
+	mi := &file_wire_bale_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7015,7 +7070,7 @@ func (x *ReplyKeyboard) String() string {
 func (*ReplyKeyboard) ProtoMessage() {}
 
 func (x *ReplyKeyboard) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[106]
+	mi := &file_wire_bale_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7028,7 +7083,7 @@ func (x *ReplyKeyboard) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyKeyboard.ProtoReflect.Descriptor instead.
 func (*ReplyKeyboard) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{106}
+	return file_wire_bale_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *ReplyKeyboard) GetRows() []*ReplyRow {
@@ -7047,7 +7102,7 @@ type ReplyRow struct {
 
 func (x *ReplyRow) Reset() {
 	*x = ReplyRow{}
-	mi := &file_wire_bale_proto_msgTypes[107]
+	mi := &file_wire_bale_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7059,7 +7114,7 @@ func (x *ReplyRow) String() string {
 func (*ReplyRow) ProtoMessage() {}
 
 func (x *ReplyRow) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[107]
+	mi := &file_wire_bale_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7072,7 +7127,7 @@ func (x *ReplyRow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyRow.ProtoReflect.Descriptor instead.
 func (*ReplyRow) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{107}
+	return file_wire_bale_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *ReplyRow) GetButtons() []*ReplyButton {
@@ -7096,7 +7151,7 @@ type ReplyButton struct {
 
 func (x *ReplyButton) Reset() {
 	*x = ReplyButton{}
-	mi := &file_wire_bale_proto_msgTypes[108]
+	mi := &file_wire_bale_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7108,7 +7163,7 @@ func (x *ReplyButton) String() string {
 func (*ReplyButton) ProtoMessage() {}
 
 func (x *ReplyButton) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[108]
+	mi := &file_wire_bale_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7121,7 +7176,7 @@ func (x *ReplyButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyButton.ProtoReflect.Descriptor instead.
 func (*ReplyButton) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{108}
+	return file_wire_bale_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *ReplyButton) GetText() string {
@@ -7176,7 +7231,7 @@ type KeyboardRemoval struct {
 
 func (x *KeyboardRemoval) Reset() {
 	*x = KeyboardRemoval{}
-	mi := &file_wire_bale_proto_msgTypes[109]
+	mi := &file_wire_bale_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7188,7 +7243,7 @@ func (x *KeyboardRemoval) String() string {
 func (*KeyboardRemoval) ProtoMessage() {}
 
 func (x *KeyboardRemoval) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[109]
+	mi := &file_wire_bale_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7201,7 +7256,7 @@ func (x *KeyboardRemoval) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyboardRemoval.ProtoReflect.Descriptor instead.
 func (*KeyboardRemoval) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{109}
+	return file_wire_bale_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *KeyboardRemoval) GetRemoveKeyboard() bool {
@@ -7234,7 +7289,7 @@ type GiftMessage struct {
 
 func (x *GiftMessage) Reset() {
 	*x = GiftMessage{}
-	mi := &file_wire_bale_proto_msgTypes[110]
+	mi := &file_wire_bale_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7246,7 +7301,7 @@ func (x *GiftMessage) String() string {
 func (*GiftMessage) ProtoMessage() {}
 
 func (x *GiftMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[110]
+	mi := &file_wire_bale_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7259,7 +7314,7 @@ func (x *GiftMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GiftMessage.ProtoReflect.Descriptor instead.
 func (*GiftMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{110}
+	return file_wire_bale_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *GiftMessage) GetCount() int32 {
@@ -7334,7 +7389,7 @@ type StickerMessage struct {
 
 func (x *StickerMessage) Reset() {
 	*x = StickerMessage{}
-	mi := &file_wire_bale_proto_msgTypes[111]
+	mi := &file_wire_bale_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7346,7 +7401,7 @@ func (x *StickerMessage) String() string {
 func (*StickerMessage) ProtoMessage() {}
 
 func (x *StickerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[111]
+	mi := &file_wire_bale_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7359,7 +7414,7 @@ func (x *StickerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StickerMessage.ProtoReflect.Descriptor instead.
 func (*StickerMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{111}
+	return file_wire_bale_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *StickerMessage) GetId() *Int32Value {
@@ -7431,7 +7486,7 @@ type AnimatedStickerMessage struct {
 
 func (x *AnimatedStickerMessage) Reset() {
 	*x = AnimatedStickerMessage{}
-	mi := &file_wire_bale_proto_msgTypes[112]
+	mi := &file_wire_bale_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7443,7 +7498,7 @@ func (x *AnimatedStickerMessage) String() string {
 func (*AnimatedStickerMessage) ProtoMessage() {}
 
 func (x *AnimatedStickerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[112]
+	mi := &file_wire_bale_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7456,7 +7511,7 @@ func (x *AnimatedStickerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnimatedStickerMessage.ProtoReflect.Descriptor instead.
 func (*AnimatedStickerMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{112}
+	return file_wire_bale_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *AnimatedStickerMessage) GetId() *Int32Value {
@@ -7506,7 +7561,7 @@ type StickerImage struct {
 
 func (x *StickerImage) Reset() {
 	*x = StickerImage{}
-	mi := &file_wire_bale_proto_msgTypes[113]
+	mi := &file_wire_bale_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7518,7 +7573,7 @@ func (x *StickerImage) String() string {
 func (*StickerImage) ProtoMessage() {}
 
 func (x *StickerImage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[113]
+	mi := &file_wire_bale_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7531,7 +7586,7 @@ func (x *StickerImage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StickerImage.ProtoReflect.Descriptor instead.
 func (*StickerImage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{113}
+	return file_wire_bale_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *StickerImage) GetFile() *FileLocation {
@@ -7572,7 +7627,7 @@ type ServiceMessage struct {
 
 func (x *ServiceMessage) Reset() {
 	*x = ServiceMessage{}
-	mi := &file_wire_bale_proto_msgTypes[114]
+	mi := &file_wire_bale_proto_msgTypes[115]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7584,7 +7639,7 @@ func (x *ServiceMessage) String() string {
 func (*ServiceMessage) ProtoMessage() {}
 
 func (x *ServiceMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[114]
+	mi := &file_wire_bale_proto_msgTypes[115]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7597,7 +7652,7 @@ func (x *ServiceMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceMessage.ProtoReflect.Descriptor instead.
 func (*ServiceMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{114}
+	return file_wire_bale_proto_rawDescGZIP(), []int{115}
 }
 
 func (x *ServiceMessage) GetText() string {
@@ -7642,7 +7697,7 @@ type ServiceExtensions struct {
 
 func (x *ServiceExtensions) Reset() {
 	*x = ServiceExtensions{}
-	mi := &file_wire_bale_proto_msgTypes[115]
+	mi := &file_wire_bale_proto_msgTypes[116]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7654,7 +7709,7 @@ func (x *ServiceExtensions) String() string {
 func (*ServiceExtensions) ProtoMessage() {}
 
 func (x *ServiceExtensions) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[115]
+	mi := &file_wire_bale_proto_msgTypes[116]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7667,7 +7722,7 @@ func (x *ServiceExtensions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceExtensions.ProtoReflect.Descriptor instead.
 func (*ServiceExtensions) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{115}
+	return file_wire_bale_proto_rawDescGZIP(), []int{116}
 }
 
 func (x *ServiceExtensions) GetOrphaned() *Empty {
@@ -7819,7 +7874,7 @@ type ServiceTextChange struct {
 
 func (x *ServiceTextChange) Reset() {
 	*x = ServiceTextChange{}
-	mi := &file_wire_bale_proto_msgTypes[116]
+	mi := &file_wire_bale_proto_msgTypes[117]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7831,7 +7886,7 @@ func (x *ServiceTextChange) String() string {
 func (*ServiceTextChange) ProtoMessage() {}
 
 func (x *ServiceTextChange) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[116]
+	mi := &file_wire_bale_proto_msgTypes[117]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7844,7 +7899,7 @@ func (x *ServiceTextChange) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceTextChange.ProtoReflect.Descriptor instead.
 func (*ServiceTextChange) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{116}
+	return file_wire_bale_proto_rawDescGZIP(), []int{117}
 }
 
 func (x *ServiceTextChange) GetValue() *StringValue {
@@ -7863,7 +7918,7 @@ type ServiceTitle struct {
 
 func (x *ServiceTitle) Reset() {
 	*x = ServiceTitle{}
-	mi := &file_wire_bale_proto_msgTypes[117]
+	mi := &file_wire_bale_proto_msgTypes[118]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7875,7 +7930,7 @@ func (x *ServiceTitle) String() string {
 func (*ServiceTitle) ProtoMessage() {}
 
 func (x *ServiceTitle) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[117]
+	mi := &file_wire_bale_proto_msgTypes[118]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7888,7 +7943,7 @@ func (x *ServiceTitle) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceTitle.ProtoReflect.Descriptor instead.
 func (*ServiceTitle) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{117}
+	return file_wire_bale_proto_rawDescGZIP(), []int{118}
 }
 
 func (x *ServiceTitle) GetTitle() string {
@@ -7910,7 +7965,7 @@ type ServiceCall struct {
 
 func (x *ServiceCall) Reset() {
 	*x = ServiceCall{}
-	mi := &file_wire_bale_proto_msgTypes[118]
+	mi := &file_wire_bale_proto_msgTypes[119]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7922,7 +7977,7 @@ func (x *ServiceCall) String() string {
 func (*ServiceCall) ProtoMessage() {}
 
 func (x *ServiceCall) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[118]
+	mi := &file_wire_bale_proto_msgTypes[119]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7935,7 +7990,7 @@ func (x *ServiceCall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceCall.ProtoReflect.Descriptor instead.
 func (*ServiceCall) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{118}
+	return file_wire_bale_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *ServiceCall) GetDuration() int32 {
@@ -7977,7 +8032,7 @@ type GiftOpened struct {
 
 func (x *GiftOpened) Reset() {
 	*x = GiftOpened{}
-	mi := &file_wire_bale_proto_msgTypes[119]
+	mi := &file_wire_bale_proto_msgTypes[120]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7989,7 +8044,7 @@ func (x *GiftOpened) String() string {
 func (*GiftOpened) ProtoMessage() {}
 
 func (x *GiftOpened) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[119]
+	mi := &file_wire_bale_proto_msgTypes[120]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8002,7 +8057,7 @@ func (x *GiftOpened) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GiftOpened.ProtoReflect.Descriptor instead.
 func (*GiftOpened) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{119}
+	return file_wire_bale_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *GiftOpened) GetUserId() uint32 {
@@ -8038,7 +8093,7 @@ type GiftOpenedCompact struct {
 
 func (x *GiftOpenedCompact) Reset() {
 	*x = GiftOpenedCompact{}
-	mi := &file_wire_bale_proto_msgTypes[120]
+	mi := &file_wire_bale_proto_msgTypes[121]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8050,7 +8105,7 @@ func (x *GiftOpenedCompact) String() string {
 func (*GiftOpenedCompact) ProtoMessage() {}
 
 func (x *GiftOpenedCompact) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[120]
+	mi := &file_wire_bale_proto_msgTypes[121]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8063,7 +8118,7 @@ func (x *GiftOpenedCompact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GiftOpenedCompact.ProtoReflect.Descriptor instead.
 func (*GiftOpenedCompact) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{120}
+	return file_wire_bale_proto_rawDescGZIP(), []int{121}
 }
 
 func (x *GiftOpenedCompact) GetLastUserId() uint32 {
@@ -8103,7 +8158,7 @@ type ChatPeerUpdate struct {
 
 func (x *ChatPeerUpdate) Reset() {
 	*x = ChatPeerUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[121]
+	mi := &file_wire_bale_proto_msgTypes[122]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8115,7 +8170,7 @@ func (x *ChatPeerUpdate) String() string {
 func (*ChatPeerUpdate) ProtoMessage() {}
 
 func (x *ChatPeerUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[121]
+	mi := &file_wire_bale_proto_msgTypes[122]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8128,7 +8183,7 @@ func (x *ChatPeerUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatPeerUpdate.ProtoReflect.Descriptor instead.
 func (*ChatPeerUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{121}
+	return file_wire_bale_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *ChatPeerUpdate) GetPeer() *Peer {
@@ -8149,7 +8204,7 @@ type MessageReceipt struct {
 
 func (x *MessageReceipt) Reset() {
 	*x = MessageReceipt{}
-	mi := &file_wire_bale_proto_msgTypes[122]
+	mi := &file_wire_bale_proto_msgTypes[123]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8161,7 +8216,7 @@ func (x *MessageReceipt) String() string {
 func (*MessageReceipt) ProtoMessage() {}
 
 func (x *MessageReceipt) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[122]
+	mi := &file_wire_bale_proto_msgTypes[123]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8174,7 +8229,7 @@ func (x *MessageReceipt) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageReceipt.ProtoReflect.Descriptor instead.
 func (*MessageReceipt) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{122}
+	return file_wire_bale_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *MessageReceipt) GetPeer() *Peer {
@@ -8210,7 +8265,7 @@ type ReadByMeUpdate struct {
 
 func (x *ReadByMeUpdate) Reset() {
 	*x = ReadByMeUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[123]
+	mi := &file_wire_bale_proto_msgTypes[124]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8222,7 +8277,7 @@ func (x *ReadByMeUpdate) String() string {
 func (*ReadByMeUpdate) ProtoMessage() {}
 
 func (x *ReadByMeUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[123]
+	mi := &file_wire_bale_proto_msgTypes[124]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8235,7 +8290,7 @@ func (x *ReadByMeUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadByMeUpdate.ProtoReflect.Descriptor instead.
 func (*ReadByMeUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{123}
+	return file_wire_bale_proto_rawDescGZIP(), []int{124}
 }
 
 func (x *ReadByMeUpdate) GetPeer() *Peer {
@@ -8275,7 +8330,7 @@ type UserIDUpdate struct {
 
 func (x *UserIDUpdate) Reset() {
 	*x = UserIDUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[124]
+	mi := &file_wire_bale_proto_msgTypes[125]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8287,7 +8342,7 @@ func (x *UserIDUpdate) String() string {
 func (*UserIDUpdate) ProtoMessage() {}
 
 func (x *UserIDUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[124]
+	mi := &file_wire_bale_proto_msgTypes[125]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8300,7 +8355,7 @@ func (x *UserIDUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserIDUpdate.ProtoReflect.Descriptor instead.
 func (*UserIDUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{124}
+	return file_wire_bale_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *UserIDUpdate) GetUid() uint32 {
@@ -8320,7 +8375,7 @@ type UserTextUpdate struct {
 
 func (x *UserTextUpdate) Reset() {
 	*x = UserTextUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[125]
+	mi := &file_wire_bale_proto_msgTypes[126]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8332,7 +8387,7 @@ func (x *UserTextUpdate) String() string {
 func (*UserTextUpdate) ProtoMessage() {}
 
 func (x *UserTextUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[125]
+	mi := &file_wire_bale_proto_msgTypes[126]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8345,7 +8400,7 @@ func (x *UserTextUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserTextUpdate.ProtoReflect.Descriptor instead.
 func (*UserTextUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{125}
+	return file_wire_bale_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *UserTextUpdate) GetUid() uint32 {
@@ -8372,7 +8427,7 @@ type GroupPinnedUpdate struct {
 
 func (x *GroupPinnedUpdate) Reset() {
 	*x = GroupPinnedUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[126]
+	mi := &file_wire_bale_proto_msgTypes[127]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8384,7 +8439,7 @@ func (x *GroupPinnedUpdate) String() string {
 func (*GroupPinnedUpdate) ProtoMessage() {}
 
 func (x *GroupPinnedUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[126]
+	mi := &file_wire_bale_proto_msgTypes[127]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8397,7 +8452,7 @@ func (x *GroupPinnedUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupPinnedUpdate.ProtoReflect.Descriptor instead.
 func (*GroupPinnedUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{126}
+	return file_wire_bale_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *GroupPinnedUpdate) GetGroupId() uint32 {
@@ -8424,7 +8479,7 @@ type GroupUnpinnedUpdate struct {
 
 func (x *GroupUnpinnedUpdate) Reset() {
 	*x = GroupUnpinnedUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[127]
+	mi := &file_wire_bale_proto_msgTypes[128]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8436,7 +8491,7 @@ func (x *GroupUnpinnedUpdate) String() string {
 func (*GroupUnpinnedUpdate) ProtoMessage() {}
 
 func (x *GroupUnpinnedUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[127]
+	mi := &file_wire_bale_proto_msgTypes[128]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8449,7 +8504,7 @@ func (x *GroupUnpinnedUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupUnpinnedUpdate.ProtoReflect.Descriptor instead.
 func (*GroupUnpinnedUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{127}
+	return file_wire_bale_proto_rawDescGZIP(), []int{128}
 }
 
 func (x *GroupUnpinnedUpdate) GetGroupId() uint32 {
@@ -8476,7 +8531,7 @@ type MultipleMessagesUpdate struct {
 
 func (x *MultipleMessagesUpdate) Reset() {
 	*x = MultipleMessagesUpdate{}
-	mi := &file_wire_bale_proto_msgTypes[128]
+	mi := &file_wire_bale_proto_msgTypes[129]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8488,7 +8543,7 @@ func (x *MultipleMessagesUpdate) String() string {
 func (*MultipleMessagesUpdate) ProtoMessage() {}
 
 func (x *MultipleMessagesUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[128]
+	mi := &file_wire_bale_proto_msgTypes[129]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8501,7 +8556,7 @@ func (x *MultipleMessagesUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MultipleMessagesUpdate.ProtoReflect.Descriptor instead.
 func (*MultipleMessagesUpdate) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{128}
+	return file_wire_bale_proto_rawDescGZIP(), []int{129}
 }
 
 func (x *MultipleMessagesUpdate) GetPeer() *Peer {
@@ -8532,7 +8587,7 @@ type PollMessage struct {
 
 func (x *PollMessage) Reset() {
 	*x = PollMessage{}
-	mi := &file_wire_bale_proto_msgTypes[129]
+	mi := &file_wire_bale_proto_msgTypes[130]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8544,7 +8599,7 @@ func (x *PollMessage) String() string {
 func (*PollMessage) ProtoMessage() {}
 
 func (x *PollMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[129]
+	mi := &file_wire_bale_proto_msgTypes[130]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8557,7 +8612,7 @@ func (x *PollMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PollMessage.ProtoReflect.Descriptor instead.
 func (*PollMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{129}
+	return file_wire_bale_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *PollMessage) GetQuestion() string {
@@ -8612,7 +8667,7 @@ type PollOption struct {
 
 func (x *PollOption) Reset() {
 	*x = PollOption{}
-	mi := &file_wire_bale_proto_msgTypes[130]
+	mi := &file_wire_bale_proto_msgTypes[131]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8624,7 +8679,7 @@ func (x *PollOption) String() string {
 func (*PollOption) ProtoMessage() {}
 
 func (x *PollOption) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[130]
+	mi := &file_wire_bale_proto_msgTypes[131]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8637,7 +8692,7 @@ func (x *PollOption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PollOption.ProtoReflect.Descriptor instead.
 func (*PollOption) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{130}
+	return file_wire_bale_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *PollOption) GetId() int32 {
@@ -8668,7 +8723,7 @@ type PollResult struct {
 
 func (x *PollResult) Reset() {
 	*x = PollResult{}
-	mi := &file_wire_bale_proto_msgTypes[131]
+	mi := &file_wire_bale_proto_msgTypes[132]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8680,7 +8735,7 @@ func (x *PollResult) String() string {
 func (*PollResult) ProtoMessage() {}
 
 func (x *PollResult) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[131]
+	mi := &file_wire_bale_proto_msgTypes[132]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8693,7 +8748,7 @@ func (x *PollResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PollResult.ProtoReflect.Descriptor instead.
 func (*PollResult) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{131}
+	return file_wire_bale_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *PollResult) GetOptionResults() []*PollOptionResult {
@@ -8748,7 +8803,7 @@ type PollOptionResult struct {
 
 func (x *PollOptionResult) Reset() {
 	*x = PollOptionResult{}
-	mi := &file_wire_bale_proto_msgTypes[132]
+	mi := &file_wire_bale_proto_msgTypes[133]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8760,7 +8815,7 @@ func (x *PollOptionResult) String() string {
 func (*PollOptionResult) ProtoMessage() {}
 
 func (x *PollOptionResult) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[132]
+	mi := &file_wire_bale_proto_msgTypes[133]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8773,7 +8828,7 @@ func (x *PollOptionResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PollOptionResult.ProtoReflect.Descriptor instead.
 func (*PollOptionResult) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{132}
+	return file_wire_bale_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *PollOptionResult) GetOptionId() int32 {
@@ -8804,7 +8859,7 @@ type GoldGiftMessage struct {
 
 func (x *GoldGiftMessage) Reset() {
 	*x = GoldGiftMessage{}
-	mi := &file_wire_bale_proto_msgTypes[133]
+	mi := &file_wire_bale_proto_msgTypes[134]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8816,7 +8871,7 @@ func (x *GoldGiftMessage) String() string {
 func (*GoldGiftMessage) ProtoMessage() {}
 
 func (x *GoldGiftMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[133]
+	mi := &file_wire_bale_proto_msgTypes[134]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8829,7 +8884,7 @@ func (x *GoldGiftMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GoldGiftMessage.ProtoReflect.Descriptor instead.
 func (*GoldGiftMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{133}
+	return file_wire_bale_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *GoldGiftMessage) GetId() int64 {
@@ -8877,7 +8932,7 @@ type JSONMessage struct {
 
 func (x *JSONMessage) Reset() {
 	*x = JSONMessage{}
-	mi := &file_wire_bale_proto_msgTypes[134]
+	mi := &file_wire_bale_proto_msgTypes[135]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8889,7 +8944,7 @@ func (x *JSONMessage) String() string {
 func (*JSONMessage) ProtoMessage() {}
 
 func (x *JSONMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_wire_bale_proto_msgTypes[134]
+	mi := &file_wire_bale_proto_msgTypes[135]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8902,7 +8957,7 @@ func (x *JSONMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JSONMessage.ProtoReflect.Descriptor instead.
 func (*JSONMessage) Descriptor() ([]byte, []int) {
-	return file_wire_bale_proto_rawDescGZIP(), []int{134}
+	return file_wire_bale_proto_rawDescGZIP(), []int{135}
 }
 
 func (x *JSONMessage) GetRawJson() string {
@@ -9026,7 +9081,7 @@ const file_wire_bale_proto_rawDesc = "" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1b\n" +
 	"\tmime_type\x18\x05 \x01(\tR\bmimeType\x124\n" +
 	"\x03ext\x18\a \x01(\v2\".gobale.bale.reference.DocumentExtR\x03ext\x12<\n" +
-	"\acaption\x18\b \x01(\v2\".gobale.bale.reference.TextMessageR\acaption\"\xdc\x06\n" +
+	"\acaption\x18\b \x01(\v2\".gobale.bale.reference.TextMessageR\acaption\"\xa3\a\n" +
 	"\aMessage\x12B\n" +
 	"\bdocument\x18\x04 \x01(\v2&.gobale.bale.reference.DocumentMessageR\bdocument\x122\n" +
 	"\x05empty\x18\x05 \x01(\v2\x1c.gobale.bale.reference.EmptyR\x05empty\x126\n" +
@@ -9038,9 +9093,12 @@ const file_wire_bale_proto_rawDesc = "" +
 	"\x04text\x18\x0f \x01(\v2\".gobale.bale.reference.TextMessageR\x04text\x12>\n" +
 	"\vunsupported\x18\x10 \x01(\v2\x1c.gobale.bale.reference.EmptyR\vunsupported\x126\n" +
 	"\x04gift\x18\x11 \x01(\v2\".gobale.bale.reference.GiftMessageR\x04gift\x12X\n" +
-	"\x10animated_sticker\x18\x18 \x01(\v2-.gobale.bale.reference.AnimatedStickerMessageR\x0fanimatedSticker\x12C\n" +
+	"\x10animated_sticker\x18\x18 \x01(\v2-.gobale.bale.reference.AnimatedStickerMessageR\x0fanimatedSticker\x12E\n" +
+	"\tprotected\x18\x1b \x01(\v2'.gobale.bale.reference.ProtectedMessageR\tprotected\x12C\n" +
 	"\tgold_gift\x18\x1c \x01(\v2&.gobale.bale.reference.GoldGiftMessageR\bgoldGift\x126\n" +
-	"\x04poll\x18\x1d \x01(\v2\".gobale.bale.reference.PollMessageR\x04poll\"\xb4\x02\n" +
+	"\x04poll\x18\x1d \x01(\v2\".gobale.bale.reference.PollMessageR\x04poll\"L\n" +
+	"\x10ProtectedMessage\x128\n" +
+	"\amessage\x18\x01 \x01(\v2\x1e.gobale.bale.reference.MessageR\amessage\"\xb4\x02\n" +
 	"\x12SendMessageRequest\x12/\n" +
 	"\x04peer\x18\x01 \x01(\v2\x1b.gobale.bale.reference.PeerR\x04peer\x12\x10\n" +
 	"\x03rid\x18\x02 \x01(\x03R\x03rid\x128\n" +
@@ -9641,7 +9699,7 @@ func file_wire_bale_proto_rawDescGZIP() []byte {
 	return file_wire_bale_proto_rawDescData
 }
 
-var file_wire_bale_proto_msgTypes = make([]protoimpl.MessageInfo, 135)
+var file_wire_bale_proto_msgTypes = make([]protoimpl.MessageInfo, 136)
 var file_wire_bale_proto_goTypes = []any{
 	(*Empty)(nil),                   // 0: gobale.bale.reference.Empty
 	(*StringValue)(nil),             // 1: gobale.bale.reference.StringValue
@@ -9668,116 +9726,117 @@ var file_wire_bale_proto_goTypes = []any{
 	(*TextMessage)(nil),             // 22: gobale.bale.reference.TextMessage
 	(*DocumentMessage)(nil),         // 23: gobale.bale.reference.DocumentMessage
 	(*Message)(nil),                 // 24: gobale.bale.reference.Message
-	(*SendMessageRequest)(nil),      // 25: gobale.bale.reference.SendMessageRequest
-	(*SendMessageResponse)(nil),     // 26: gobale.bale.reference.SendMessageResponse
-	(*UpdateMessageRequest)(nil),    // 27: gobale.bale.reference.UpdateMessageRequest
-	(*MessageReadRequest)(nil),      // 28: gobale.bale.reference.MessageReadRequest
-	(*UpdateMessage)(nil),           // 29: gobale.bale.reference.UpdateMessage
-	(*UpdateMessageEdited)(nil),     // 30: gobale.bale.reference.UpdateMessageEdited
-	(*UpdateMessageDeleted)(nil),    // 31: gobale.bale.reference.UpdateMessageDeleted
-	(*UpdateMessageSent)(nil),       // 32: gobale.bale.reference.UpdateMessageSent
-	(*UpdateContainer)(nil),         // 33: gobale.bale.reference.UpdateContainer
-	(*Int64Value)(nil),              // 34: gobale.bale.reference.Int64Value
-	(*MessageReference)(nil),        // 35: gobale.bale.reference.MessageReference
-	(*HistoryRequest)(nil),          // 36: gobale.bale.reference.HistoryRequest
-	(*HistoryItem)(nil),             // 37: gobale.bale.reference.HistoryItem
-	(*HistoryResponse)(nil),         // 38: gobale.bale.reference.HistoryResponse
-	(*DialogsRequest)(nil),          // 39: gobale.bale.reference.DialogsRequest
-	(*Dialog)(nil),                  // 40: gobale.bale.reference.Dialog
-	(*DialogsResponse)(nil),         // 41: gobale.bale.reference.DialogsResponse
-	(*StreamUpdate)(nil),            // 42: gobale.bale.reference.StreamUpdate
-	(*UpdateBatch)(nil),             // 43: gobale.bale.reference.UpdateBatch
-	(*Int32Value)(nil),              // 44: gobale.bale.reference.Int32Value
-	(*SendType)(nil),                // 45: gobale.bale.reference.SendType
-	(*FileUploadRequest)(nil),       // 46: gobale.bale.reference.FileUploadRequest
-	(*FileUploadResponse)(nil),      // 47: gobale.bale.reference.FileUploadResponse
-	(*FileLocation)(nil),            // 48: gobale.bale.reference.FileLocation
-	(*FileDownloadRequest)(nil),     // 49: gobale.bale.reference.FileDownloadRequest
-	(*FileURL)(nil),                 // 50: gobale.bale.reference.FileURL
-	(*FileDownloadResponse)(nil),    // 51: gobale.bale.reference.FileDownloadResponse
-	(*Photo)(nil),                   // 52: gobale.bale.reference.Photo
-	(*Video)(nil),                   // 53: gobale.bale.reference.Video
-	(*Audio)(nil),                   // 54: gobale.bale.reference.Audio
-	(*Voice)(nil),                   // 55: gobale.bale.reference.Voice
-	(*DocumentExt)(nil),             // 56: gobale.bale.reference.DocumentExt
-	(*PeerRef)(nil),                 // 57: gobale.bale.reference.PeerRef
-	(*BytesValue)(nil),              // 58: gobale.bale.reference.BytesValue
-	(*GetMyGroupsRequest)(nil),      // 59: gobale.bale.reference.GetMyGroupsRequest
-	(*GetMyGroupsResponse)(nil),     // 60: gobale.bale.reference.GetMyGroupsResponse
-	(*GroupMembersRequest)(nil),     // 61: gobale.bale.reference.GroupMembersRequest
-	(*GroupMember)(nil),             // 62: gobale.bale.reference.GroupMember
-	(*GroupMembersResponse)(nil),    // 63: gobale.bale.reference.GroupMembersResponse
-	(*Group)(nil),                   // 64: gobale.bale.reference.Group
-	(*GroupCreateRequest)(nil),      // 65: gobale.bale.reference.GroupCreateRequest
-	(*GroupCreateResponse)(nil),     // 66: gobale.bale.reference.GroupCreateResponse
-	(*GroupInviteRequest)(nil),      // 67: gobale.bale.reference.GroupInviteRequest
-	(*GroupInviteResponse)(nil),     // 68: gobale.bale.reference.GroupInviteResponse
-	(*GroupTitleRequest)(nil),       // 69: gobale.bale.reference.GroupTitleRequest
-	(*ContactsRequest)(nil),         // 70: gobale.bale.reference.ContactsRequest
-	(*ContactsResponse)(nil),        // 71: gobale.bale.reference.ContactsResponse
-	(*ContactsSearchRequest)(nil),   // 72: gobale.bale.reference.ContactsSearchRequest
-	(*ContactsSearchResponse)(nil),  // 73: gobale.bale.reference.ContactsSearchResponse
-	(*RouteState)(nil),              // 74: gobale.bale.reference.RouteState
-	(*RoutesRequest)(nil),           // 75: gobale.bale.reference.RoutesRequest
-	(*RoutesResponse)(nil),          // 76: gobale.bale.reference.RoutesResponse
-	(*DiffRequest)(nil),             // 77: gobale.bale.reference.DiffRequest
-	(*DatedUpdate)(nil),             // 78: gobale.bale.reference.DatedUpdate
-	(*RouteDiff)(nil),               // 79: gobale.bale.reference.RouteDiff
-	(*DiffResponse)(nil),            // 80: gobale.bale.reference.DiffResponse
-	(*ForwardMessagesRequest)(nil),  // 81: gobale.bale.reference.ForwardMessagesRequest
-	(*MessageDates)(nil),            // 82: gobale.bale.reference.MessageDates
-	(*DeleteMessageRequest)(nil),    // 83: gobale.bale.reference.DeleteMessageRequest
-	(*GetGroupInfoRequest)(nil),     // 84: gobale.bale.reference.GetGroupInfoRequest
-	(*FullGroup)(nil),               // 85: gobale.bale.reference.FullGroup
-	(*GetGroupInfoResponse)(nil),    // 86: gobale.bale.reference.GetGroupInfoResponse
-	(*GroupInviteURLResponse)(nil),  // 87: gobale.bale.reference.GroupInviteURLResponse
-	(*GetUserInfoRequest)(nil),      // 88: gobale.bale.reference.GetUserInfoRequest
-	(*FullUser)(nil),                // 89: gobale.bale.reference.FullUser
-	(*GetUserInfoResponse)(nil),     // 90: gobale.bale.reference.GetUserInfoResponse
-	(*GroupDescriptionRequest)(nil), // 91: gobale.bale.reference.GroupDescriptionRequest
-	(*GroupRemoveRequest)(nil),      // 92: gobale.bale.reference.GroupRemoveRequest
-	(*MessagePosition)(nil),         // 93: gobale.bale.reference.MessagePosition
-	(*QuotedMessage)(nil),           // 94: gobale.bale.reference.QuotedMessage
-	(*TemplateMessage)(nil),         // 95: gobale.bale.reference.TemplateMessage
-	(*TemplateResponse)(nil),        // 96: gobale.bale.reference.TemplateResponse
-	(*TemplateButton)(nil),          // 97: gobale.bale.reference.TemplateButton
-	(*InlineKeyboard)(nil),          // 98: gobale.bale.reference.InlineKeyboard
-	(*InlineRow)(nil),               // 99: gobale.bale.reference.InlineRow
-	(*InlineButton)(nil),            // 100: gobale.bale.reference.InlineButton
-	(*WebAppButton)(nil),            // 101: gobale.bale.reference.WebAppButton
-	(*LoginURLButton)(nil),          // 102: gobale.bale.reference.LoginURLButton
-	(*SwitchInlineButton)(nil),      // 103: gobale.bale.reference.SwitchInlineButton
-	(*CopyTextButton)(nil),          // 104: gobale.bale.reference.CopyTextButton
-	(*CustomActionButton)(nil),      // 105: gobale.bale.reference.CustomActionButton
-	(*ReplyKeyboard)(nil),           // 106: gobale.bale.reference.ReplyKeyboard
-	(*ReplyRow)(nil),                // 107: gobale.bale.reference.ReplyRow
-	(*ReplyButton)(nil),             // 108: gobale.bale.reference.ReplyButton
-	(*KeyboardRemoval)(nil),         // 109: gobale.bale.reference.KeyboardRemoval
-	(*GiftMessage)(nil),             // 110: gobale.bale.reference.GiftMessage
-	(*StickerMessage)(nil),          // 111: gobale.bale.reference.StickerMessage
-	(*AnimatedStickerMessage)(nil),  // 112: gobale.bale.reference.AnimatedStickerMessage
-	(*StickerImage)(nil),            // 113: gobale.bale.reference.StickerImage
-	(*ServiceMessage)(nil),          // 114: gobale.bale.reference.ServiceMessage
-	(*ServiceExtensions)(nil),       // 115: gobale.bale.reference.ServiceExtensions
-	(*ServiceTextChange)(nil),       // 116: gobale.bale.reference.ServiceTextChange
-	(*ServiceTitle)(nil),            // 117: gobale.bale.reference.ServiceTitle
-	(*ServiceCall)(nil),             // 118: gobale.bale.reference.ServiceCall
-	(*GiftOpened)(nil),              // 119: gobale.bale.reference.GiftOpened
-	(*GiftOpenedCompact)(nil),       // 120: gobale.bale.reference.GiftOpenedCompact
-	(*ChatPeerUpdate)(nil),          // 121: gobale.bale.reference.ChatPeerUpdate
-	(*MessageReceipt)(nil),          // 122: gobale.bale.reference.MessageReceipt
-	(*ReadByMeUpdate)(nil),          // 123: gobale.bale.reference.ReadByMeUpdate
-	(*UserIDUpdate)(nil),            // 124: gobale.bale.reference.UserIDUpdate
-	(*UserTextUpdate)(nil),          // 125: gobale.bale.reference.UserTextUpdate
-	(*GroupPinnedUpdate)(nil),       // 126: gobale.bale.reference.GroupPinnedUpdate
-	(*GroupUnpinnedUpdate)(nil),     // 127: gobale.bale.reference.GroupUnpinnedUpdate
-	(*MultipleMessagesUpdate)(nil),  // 128: gobale.bale.reference.MultipleMessagesUpdate
-	(*PollMessage)(nil),             // 129: gobale.bale.reference.PollMessage
-	(*PollOption)(nil),              // 130: gobale.bale.reference.PollOption
-	(*PollResult)(nil),              // 131: gobale.bale.reference.PollResult
-	(*PollOptionResult)(nil),        // 132: gobale.bale.reference.PollOptionResult
-	(*GoldGiftMessage)(nil),         // 133: gobale.bale.reference.GoldGiftMessage
-	(*JSONMessage)(nil),             // 134: gobale.bale.reference.JSONMessage
+	(*ProtectedMessage)(nil),        // 25: gobale.bale.reference.ProtectedMessage
+	(*SendMessageRequest)(nil),      // 26: gobale.bale.reference.SendMessageRequest
+	(*SendMessageResponse)(nil),     // 27: gobale.bale.reference.SendMessageResponse
+	(*UpdateMessageRequest)(nil),    // 28: gobale.bale.reference.UpdateMessageRequest
+	(*MessageReadRequest)(nil),      // 29: gobale.bale.reference.MessageReadRequest
+	(*UpdateMessage)(nil),           // 30: gobale.bale.reference.UpdateMessage
+	(*UpdateMessageEdited)(nil),     // 31: gobale.bale.reference.UpdateMessageEdited
+	(*UpdateMessageDeleted)(nil),    // 32: gobale.bale.reference.UpdateMessageDeleted
+	(*UpdateMessageSent)(nil),       // 33: gobale.bale.reference.UpdateMessageSent
+	(*UpdateContainer)(nil),         // 34: gobale.bale.reference.UpdateContainer
+	(*Int64Value)(nil),              // 35: gobale.bale.reference.Int64Value
+	(*MessageReference)(nil),        // 36: gobale.bale.reference.MessageReference
+	(*HistoryRequest)(nil),          // 37: gobale.bale.reference.HistoryRequest
+	(*HistoryItem)(nil),             // 38: gobale.bale.reference.HistoryItem
+	(*HistoryResponse)(nil),         // 39: gobale.bale.reference.HistoryResponse
+	(*DialogsRequest)(nil),          // 40: gobale.bale.reference.DialogsRequest
+	(*Dialog)(nil),                  // 41: gobale.bale.reference.Dialog
+	(*DialogsResponse)(nil),         // 42: gobale.bale.reference.DialogsResponse
+	(*StreamUpdate)(nil),            // 43: gobale.bale.reference.StreamUpdate
+	(*UpdateBatch)(nil),             // 44: gobale.bale.reference.UpdateBatch
+	(*Int32Value)(nil),              // 45: gobale.bale.reference.Int32Value
+	(*SendType)(nil),                // 46: gobale.bale.reference.SendType
+	(*FileUploadRequest)(nil),       // 47: gobale.bale.reference.FileUploadRequest
+	(*FileUploadResponse)(nil),      // 48: gobale.bale.reference.FileUploadResponse
+	(*FileLocation)(nil),            // 49: gobale.bale.reference.FileLocation
+	(*FileDownloadRequest)(nil),     // 50: gobale.bale.reference.FileDownloadRequest
+	(*FileURL)(nil),                 // 51: gobale.bale.reference.FileURL
+	(*FileDownloadResponse)(nil),    // 52: gobale.bale.reference.FileDownloadResponse
+	(*Photo)(nil),                   // 53: gobale.bale.reference.Photo
+	(*Video)(nil),                   // 54: gobale.bale.reference.Video
+	(*Audio)(nil),                   // 55: gobale.bale.reference.Audio
+	(*Voice)(nil),                   // 56: gobale.bale.reference.Voice
+	(*DocumentExt)(nil),             // 57: gobale.bale.reference.DocumentExt
+	(*PeerRef)(nil),                 // 58: gobale.bale.reference.PeerRef
+	(*BytesValue)(nil),              // 59: gobale.bale.reference.BytesValue
+	(*GetMyGroupsRequest)(nil),      // 60: gobale.bale.reference.GetMyGroupsRequest
+	(*GetMyGroupsResponse)(nil),     // 61: gobale.bale.reference.GetMyGroupsResponse
+	(*GroupMembersRequest)(nil),     // 62: gobale.bale.reference.GroupMembersRequest
+	(*GroupMember)(nil),             // 63: gobale.bale.reference.GroupMember
+	(*GroupMembersResponse)(nil),    // 64: gobale.bale.reference.GroupMembersResponse
+	(*Group)(nil),                   // 65: gobale.bale.reference.Group
+	(*GroupCreateRequest)(nil),      // 66: gobale.bale.reference.GroupCreateRequest
+	(*GroupCreateResponse)(nil),     // 67: gobale.bale.reference.GroupCreateResponse
+	(*GroupInviteRequest)(nil),      // 68: gobale.bale.reference.GroupInviteRequest
+	(*GroupInviteResponse)(nil),     // 69: gobale.bale.reference.GroupInviteResponse
+	(*GroupTitleRequest)(nil),       // 70: gobale.bale.reference.GroupTitleRequest
+	(*ContactsRequest)(nil),         // 71: gobale.bale.reference.ContactsRequest
+	(*ContactsResponse)(nil),        // 72: gobale.bale.reference.ContactsResponse
+	(*ContactsSearchRequest)(nil),   // 73: gobale.bale.reference.ContactsSearchRequest
+	(*ContactsSearchResponse)(nil),  // 74: gobale.bale.reference.ContactsSearchResponse
+	(*RouteState)(nil),              // 75: gobale.bale.reference.RouteState
+	(*RoutesRequest)(nil),           // 76: gobale.bale.reference.RoutesRequest
+	(*RoutesResponse)(nil),          // 77: gobale.bale.reference.RoutesResponse
+	(*DiffRequest)(nil),             // 78: gobale.bale.reference.DiffRequest
+	(*DatedUpdate)(nil),             // 79: gobale.bale.reference.DatedUpdate
+	(*RouteDiff)(nil),               // 80: gobale.bale.reference.RouteDiff
+	(*DiffResponse)(nil),            // 81: gobale.bale.reference.DiffResponse
+	(*ForwardMessagesRequest)(nil),  // 82: gobale.bale.reference.ForwardMessagesRequest
+	(*MessageDates)(nil),            // 83: gobale.bale.reference.MessageDates
+	(*DeleteMessageRequest)(nil),    // 84: gobale.bale.reference.DeleteMessageRequest
+	(*GetGroupInfoRequest)(nil),     // 85: gobale.bale.reference.GetGroupInfoRequest
+	(*FullGroup)(nil),               // 86: gobale.bale.reference.FullGroup
+	(*GetGroupInfoResponse)(nil),    // 87: gobale.bale.reference.GetGroupInfoResponse
+	(*GroupInviteURLResponse)(nil),  // 88: gobale.bale.reference.GroupInviteURLResponse
+	(*GetUserInfoRequest)(nil),      // 89: gobale.bale.reference.GetUserInfoRequest
+	(*FullUser)(nil),                // 90: gobale.bale.reference.FullUser
+	(*GetUserInfoResponse)(nil),     // 91: gobale.bale.reference.GetUserInfoResponse
+	(*GroupDescriptionRequest)(nil), // 92: gobale.bale.reference.GroupDescriptionRequest
+	(*GroupRemoveRequest)(nil),      // 93: gobale.bale.reference.GroupRemoveRequest
+	(*MessagePosition)(nil),         // 94: gobale.bale.reference.MessagePosition
+	(*QuotedMessage)(nil),           // 95: gobale.bale.reference.QuotedMessage
+	(*TemplateMessage)(nil),         // 96: gobale.bale.reference.TemplateMessage
+	(*TemplateResponse)(nil),        // 97: gobale.bale.reference.TemplateResponse
+	(*TemplateButton)(nil),          // 98: gobale.bale.reference.TemplateButton
+	(*InlineKeyboard)(nil),          // 99: gobale.bale.reference.InlineKeyboard
+	(*InlineRow)(nil),               // 100: gobale.bale.reference.InlineRow
+	(*InlineButton)(nil),            // 101: gobale.bale.reference.InlineButton
+	(*WebAppButton)(nil),            // 102: gobale.bale.reference.WebAppButton
+	(*LoginURLButton)(nil),          // 103: gobale.bale.reference.LoginURLButton
+	(*SwitchInlineButton)(nil),      // 104: gobale.bale.reference.SwitchInlineButton
+	(*CopyTextButton)(nil),          // 105: gobale.bale.reference.CopyTextButton
+	(*CustomActionButton)(nil),      // 106: gobale.bale.reference.CustomActionButton
+	(*ReplyKeyboard)(nil),           // 107: gobale.bale.reference.ReplyKeyboard
+	(*ReplyRow)(nil),                // 108: gobale.bale.reference.ReplyRow
+	(*ReplyButton)(nil),             // 109: gobale.bale.reference.ReplyButton
+	(*KeyboardRemoval)(nil),         // 110: gobale.bale.reference.KeyboardRemoval
+	(*GiftMessage)(nil),             // 111: gobale.bale.reference.GiftMessage
+	(*StickerMessage)(nil),          // 112: gobale.bale.reference.StickerMessage
+	(*AnimatedStickerMessage)(nil),  // 113: gobale.bale.reference.AnimatedStickerMessage
+	(*StickerImage)(nil),            // 114: gobale.bale.reference.StickerImage
+	(*ServiceMessage)(nil),          // 115: gobale.bale.reference.ServiceMessage
+	(*ServiceExtensions)(nil),       // 116: gobale.bale.reference.ServiceExtensions
+	(*ServiceTextChange)(nil),       // 117: gobale.bale.reference.ServiceTextChange
+	(*ServiceTitle)(nil),            // 118: gobale.bale.reference.ServiceTitle
+	(*ServiceCall)(nil),             // 119: gobale.bale.reference.ServiceCall
+	(*GiftOpened)(nil),              // 120: gobale.bale.reference.GiftOpened
+	(*GiftOpenedCompact)(nil),       // 121: gobale.bale.reference.GiftOpenedCompact
+	(*ChatPeerUpdate)(nil),          // 122: gobale.bale.reference.ChatPeerUpdate
+	(*MessageReceipt)(nil),          // 123: gobale.bale.reference.MessageReceipt
+	(*ReadByMeUpdate)(nil),          // 124: gobale.bale.reference.ReadByMeUpdate
+	(*UserIDUpdate)(nil),            // 125: gobale.bale.reference.UserIDUpdate
+	(*UserTextUpdate)(nil),          // 126: gobale.bale.reference.UserTextUpdate
+	(*GroupPinnedUpdate)(nil),       // 127: gobale.bale.reference.GroupPinnedUpdate
+	(*GroupUnpinnedUpdate)(nil),     // 128: gobale.bale.reference.GroupUnpinnedUpdate
+	(*MultipleMessagesUpdate)(nil),  // 129: gobale.bale.reference.MultipleMessagesUpdate
+	(*PollMessage)(nil),             // 130: gobale.bale.reference.PollMessage
+	(*PollOption)(nil),              // 131: gobale.bale.reference.PollOption
+	(*PollResult)(nil),              // 132: gobale.bale.reference.PollResult
+	(*PollOptionResult)(nil),        // 133: gobale.bale.reference.PollOptionResult
+	(*GoldGiftMessage)(nil),         // 134: gobale.bale.reference.GoldGiftMessage
+	(*JSONMessage)(nil),             // 135: gobale.bale.reference.JSONMessage
 }
 var file_wire_bale_proto_depIdxs = []int32{
 	6,   // 0: gobale.bale.reference.MetadataItem.value:type_name -> gobale.bale.reference.MetadataValue
@@ -9793,9 +9852,9 @@ var file_wire_bale_proto_depIdxs = []int32{
 	0,   // 10: gobale.bale.reference.ServerMessage.terminate_session:type_name -> gobale.bale.reference.Empty
 	5,   // 11: gobale.bale.reference.ServerMessage.pong:type_name -> gobale.bale.reference.Ping
 	4,   // 12: gobale.bale.reference.ServerMessage.handshake:type_name -> gobale.bale.reference.HandshakeResponse
-	34,  // 13: gobale.bale.reference.StartPhoneAuthResponse.code_expiration_date:type_name -> gobale.bale.reference.Int64Value
-	34,  // 14: gobale.bale.reference.StartPhoneAuthResponse.next_send_code_wait_time:type_name -> gobale.bale.reference.Int64Value
-	44,  // 15: gobale.bale.reference.StartPhoneAuthResponse.code_timeout:type_name -> gobale.bale.reference.Int32Value
+	35,  // 13: gobale.bale.reference.StartPhoneAuthResponse.code_expiration_date:type_name -> gobale.bale.reference.Int64Value
+	35,  // 14: gobale.bale.reference.StartPhoneAuthResponse.next_send_code_wait_time:type_name -> gobale.bale.reference.Int64Value
+	45,  // 15: gobale.bale.reference.StartPhoneAuthResponse.code_timeout:type_name -> gobale.bale.reference.Int32Value
 	2,   // 16: gobale.bale.reference.ValidateCodeRequest.is_jwt:type_name -> gobale.bale.reference.BoolValue
 	2,   // 17: gobale.bale.reference.ValidatePasswordRequest.is_jwt:type_name -> gobale.bale.reference.BoolValue
 	1,   // 18: gobale.bale.reference.User.local_name:type_name -> gobale.bale.reference.StringValue
@@ -9804,241 +9863,243 @@ var file_wire_bale_proto_depIdxs = []int32{
 	2,   // 21: gobale.bale.reference.User.is_deleted:type_name -> gobale.bale.reference.BoolValue
 	19,  // 22: gobale.bale.reference.AuthResponse.user:type_name -> gobale.bale.reference.User
 	1,   // 23: gobale.bale.reference.AuthResponse.jwt:type_name -> gobale.bale.reference.StringValue
-	56,  // 24: gobale.bale.reference.DocumentMessage.ext:type_name -> gobale.bale.reference.DocumentExt
+	57,  // 24: gobale.bale.reference.DocumentMessage.ext:type_name -> gobale.bale.reference.DocumentExt
 	22,  // 25: gobale.bale.reference.DocumentMessage.caption:type_name -> gobale.bale.reference.TextMessage
 	23,  // 26: gobale.bale.reference.Message.document:type_name -> gobale.bale.reference.DocumentMessage
 	0,   // 27: gobale.bale.reference.Message.empty:type_name -> gobale.bale.reference.Empty
-	134, // 28: gobale.bale.reference.Message.json:type_name -> gobale.bale.reference.JSONMessage
-	114, // 29: gobale.bale.reference.Message.service:type_name -> gobale.bale.reference.ServiceMessage
-	111, // 30: gobale.bale.reference.Message.sticker:type_name -> gobale.bale.reference.StickerMessage
-	95,  // 31: gobale.bale.reference.Message.template:type_name -> gobale.bale.reference.TemplateMessage
-	96,  // 32: gobale.bale.reference.Message.template_response:type_name -> gobale.bale.reference.TemplateResponse
+	135, // 28: gobale.bale.reference.Message.json:type_name -> gobale.bale.reference.JSONMessage
+	115, // 29: gobale.bale.reference.Message.service:type_name -> gobale.bale.reference.ServiceMessage
+	112, // 30: gobale.bale.reference.Message.sticker:type_name -> gobale.bale.reference.StickerMessage
+	96,  // 31: gobale.bale.reference.Message.template:type_name -> gobale.bale.reference.TemplateMessage
+	97,  // 32: gobale.bale.reference.Message.template_response:type_name -> gobale.bale.reference.TemplateResponse
 	22,  // 33: gobale.bale.reference.Message.text:type_name -> gobale.bale.reference.TextMessage
 	0,   // 34: gobale.bale.reference.Message.unsupported:type_name -> gobale.bale.reference.Empty
-	110, // 35: gobale.bale.reference.Message.gift:type_name -> gobale.bale.reference.GiftMessage
-	112, // 36: gobale.bale.reference.Message.animated_sticker:type_name -> gobale.bale.reference.AnimatedStickerMessage
-	133, // 37: gobale.bale.reference.Message.gold_gift:type_name -> gobale.bale.reference.GoldGiftMessage
-	129, // 38: gobale.bale.reference.Message.poll:type_name -> gobale.bale.reference.PollMessage
-	21,  // 39: gobale.bale.reference.SendMessageRequest.peer:type_name -> gobale.bale.reference.Peer
-	24,  // 40: gobale.bale.reference.SendMessageRequest.message:type_name -> gobale.bale.reference.Message
-	35,  // 41: gobale.bale.reference.SendMessageRequest.quoted_message:type_name -> gobale.bale.reference.MessageReference
-	21,  // 42: gobale.bale.reference.SendMessageRequest.ex_peer:type_name -> gobale.bale.reference.Peer
-	21,  // 43: gobale.bale.reference.UpdateMessageRequest.peer:type_name -> gobale.bale.reference.Peer
-	24,  // 44: gobale.bale.reference.UpdateMessageRequest.message:type_name -> gobale.bale.reference.Message
-	21,  // 45: gobale.bale.reference.MessageReadRequest.peer:type_name -> gobale.bale.reference.Peer
-	21,  // 46: gobale.bale.reference.UpdateMessage.peer:type_name -> gobale.bale.reference.Peer
-	24,  // 47: gobale.bale.reference.UpdateMessage.message:type_name -> gobale.bale.reference.Message
-	94,  // 48: gobale.bale.reference.UpdateMessage.quoted_message:type_name -> gobale.bale.reference.QuotedMessage
-	93,  // 49: gobale.bale.reference.UpdateMessage.previous:type_name -> gobale.bale.reference.MessagePosition
-	34,  // 50: gobale.bale.reference.UpdateMessage.grouped_id:type_name -> gobale.bale.reference.Int64Value
-	93,  // 51: gobale.bale.reference.UpdateMessage.thread:type_name -> gobale.bale.reference.MessagePosition
-	21,  // 52: gobale.bale.reference.UpdateMessage.ex_peer:type_name -> gobale.bale.reference.Peer
-	1,   // 53: gobale.bale.reference.UpdateMessage.author_sign:type_name -> gobale.bale.reference.StringValue
-	21,  // 54: gobale.bale.reference.UpdateMessageEdited.peer:type_name -> gobale.bale.reference.Peer
-	24,  // 55: gobale.bale.reference.UpdateMessageEdited.message:type_name -> gobale.bale.reference.Message
-	34,  // 56: gobale.bale.reference.UpdateMessageEdited.date:type_name -> gobale.bale.reference.Int64Value
-	44,  // 57: gobale.bale.reference.UpdateMessageEdited.updater_user_id:type_name -> gobale.bale.reference.Int32Value
-	21,  // 58: gobale.bale.reference.UpdateMessageDeleted.peer:type_name -> gobale.bale.reference.Peer
-	21,  // 59: gobale.bale.reference.UpdateMessageSent.peer:type_name -> gobale.bale.reference.Peer
-	32,  // 60: gobale.bale.reference.UpdateContainer.sent:type_name -> gobale.bale.reference.UpdateMessageSent
-	29,  // 61: gobale.bale.reference.UpdateContainer.message:type_name -> gobale.bale.reference.UpdateMessage
-	30,  // 62: gobale.bale.reference.UpdateContainer.edited:type_name -> gobale.bale.reference.UpdateMessageEdited
-	31,  // 63: gobale.bale.reference.UpdateContainer.deleted:type_name -> gobale.bale.reference.UpdateMessageDeleted
-	121, // 64: gobale.bale.reference.UpdateContainer.chat_cleared:type_name -> gobale.bale.reference.ChatPeerUpdate
-	121, // 65: gobale.bale.reference.UpdateContainer.chat_deleted:type_name -> gobale.bale.reference.ChatPeerUpdate
-	122, // 66: gobale.bale.reference.UpdateContainer.read:type_name -> gobale.bale.reference.MessageReceipt
-	123, // 67: gobale.bale.reference.UpdateContainer.read_by_me:type_name -> gobale.bale.reference.ReadByMeUpdate
-	122, // 68: gobale.bale.reference.UpdateContainer.received:type_name -> gobale.bale.reference.MessageReceipt
-	125, // 69: gobale.bale.reference.UpdateContainer.username_changed:type_name -> gobale.bale.reference.UserTextUpdate
-	125, // 70: gobale.bale.reference.UpdateContainer.about_changed:type_name -> gobale.bale.reference.UserTextUpdate
-	126, // 71: gobale.bale.reference.UpdateContainer.pinned:type_name -> gobale.bale.reference.GroupPinnedUpdate
-	127, // 72: gobale.bale.reference.UpdateContainer.unpinned:type_name -> gobale.bale.reference.GroupUnpinnedUpdate
-	124, // 73: gobale.bale.reference.UpdateContainer.blocked:type_name -> gobale.bale.reference.UserIDUpdate
-	124, // 74: gobale.bale.reference.UpdateContainer.unblocked:type_name -> gobale.bale.reference.UserIDUpdate
-	128, // 75: gobale.bale.reference.UpdateContainer.messages:type_name -> gobale.bale.reference.MultipleMessagesUpdate
-	21,  // 76: gobale.bale.reference.MessageReference.peer:type_name -> gobale.bale.reference.Peer
-	34,  // 77: gobale.bale.reference.MessageReference.date:type_name -> gobale.bale.reference.Int64Value
-	21,  // 78: gobale.bale.reference.HistoryRequest.peer:type_name -> gobale.bale.reference.Peer
-	24,  // 79: gobale.bale.reference.HistoryItem.message:type_name -> gobale.bale.reference.Message
-	94,  // 80: gobale.bale.reference.HistoryItem.quoted_message:type_name -> gobale.bale.reference.QuotedMessage
-	93,  // 81: gobale.bale.reference.HistoryItem.previous:type_name -> gobale.bale.reference.MessagePosition
-	93,  // 82: gobale.bale.reference.HistoryItem.next:type_name -> gobale.bale.reference.MessagePosition
-	34,  // 83: gobale.bale.reference.HistoryItem.edited_at:type_name -> gobale.bale.reference.Int64Value
-	44,  // 84: gobale.bale.reference.HistoryItem.editor_user_id:type_name -> gobale.bale.reference.Int32Value
-	34,  // 85: gobale.bale.reference.HistoryItem.grouped_id:type_name -> gobale.bale.reference.Int64Value
-	2,   // 86: gobale.bale.reference.HistoryItem.has_comment:type_name -> gobale.bale.reference.BoolValue
-	93,  // 87: gobale.bale.reference.HistoryItem.thread:type_name -> gobale.bale.reference.MessagePosition
-	1,   // 88: gobale.bale.reference.HistoryItem.author_sign:type_name -> gobale.bale.reference.StringValue
-	37,  // 89: gobale.bale.reference.HistoryResponse.history:type_name -> gobale.bale.reference.HistoryItem
-	19,  // 90: gobale.bale.reference.HistoryResponse.users:type_name -> gobale.bale.reference.User
-	57,  // 91: gobale.bale.reference.HistoryResponse.user_peers:type_name -> gobale.bale.reference.PeerRef
-	64,  // 92: gobale.bale.reference.HistoryResponse.groups:type_name -> gobale.bale.reference.Group
-	57,  // 93: gobale.bale.reference.HistoryResponse.group_peers:type_name -> gobale.bale.reference.PeerRef
-	21,  // 94: gobale.bale.reference.Dialog.peer:type_name -> gobale.bale.reference.Peer
-	24,  // 95: gobale.bale.reference.Dialog.message:type_name -> gobale.bale.reference.Message
-	64,  // 96: gobale.bale.reference.DialogsResponse.groups:type_name -> gobale.bale.reference.Group
-	19,  // 97: gobale.bale.reference.DialogsResponse.users:type_name -> gobale.bale.reference.User
-	40,  // 98: gobale.bale.reference.DialogsResponse.dialogs:type_name -> gobale.bale.reference.Dialog
-	57,  // 99: gobale.bale.reference.DialogsResponse.user_peers:type_name -> gobale.bale.reference.PeerRef
-	57,  // 100: gobale.bale.reference.DialogsResponse.group_peers:type_name -> gobale.bale.reference.PeerRef
-	43,  // 101: gobale.bale.reference.StreamUpdate.updates:type_name -> gobale.bale.reference.UpdateBatch
-	21,  // 102: gobale.bale.reference.FileUploadRequest.ex_peer:type_name -> gobale.bale.reference.Peer
-	45,  // 103: gobale.bale.reference.FileUploadRequest.send_type:type_name -> gobale.bale.reference.SendType
-	48,  // 104: gobale.bale.reference.FileDownloadRequest.file:type_name -> gobale.bale.reference.FileLocation
-	50,  // 105: gobale.bale.reference.FileDownloadResponse.file_url:type_name -> gobale.bale.reference.FileURL
-	52,  // 106: gobale.bale.reference.DocumentExt.photo:type_name -> gobale.bale.reference.Photo
-	53,  // 107: gobale.bale.reference.DocumentExt.video:type_name -> gobale.bale.reference.Video
-	55,  // 108: gobale.bale.reference.DocumentExt.voice:type_name -> gobale.bale.reference.Voice
-	53,  // 109: gobale.bale.reference.DocumentExt.gif:type_name -> gobale.bale.reference.Video
-	54,  // 110: gobale.bale.reference.DocumentExt.audio:type_name -> gobale.bale.reference.Audio
-	57,  // 111: gobale.bale.reference.GetMyGroupsResponse.groups:type_name -> gobale.bale.reference.PeerRef
-	57,  // 112: gobale.bale.reference.GroupMembersRequest.group:type_name -> gobale.bale.reference.PeerRef
-	58,  // 113: gobale.bale.reference.GroupMembersRequest.next:type_name -> gobale.bale.reference.BytesValue
-	2,   // 114: gobale.bale.reference.GroupMember.is_admin:type_name -> gobale.bale.reference.BoolValue
-	62,  // 115: gobale.bale.reference.GroupMembersResponse.members:type_name -> gobale.bale.reference.GroupMember
-	58,  // 116: gobale.bale.reference.GroupMembersResponse.next:type_name -> gobale.bale.reference.BytesValue
-	44,  // 117: gobale.bale.reference.Group.members_count:type_name -> gobale.bale.reference.Int32Value
-	57,  // 118: gobale.bale.reference.GroupCreateRequest.users:type_name -> gobale.bale.reference.PeerRef
-	64,  // 119: gobale.bale.reference.GroupCreateResponse.group:type_name -> gobale.bale.reference.Group
-	57,  // 120: gobale.bale.reference.GroupCreateResponse.not_added:type_name -> gobale.bale.reference.PeerRef
-	57,  // 121: gobale.bale.reference.GroupInviteRequest.group:type_name -> gobale.bale.reference.PeerRef
-	57,  // 122: gobale.bale.reference.GroupInviteRequest.users:type_name -> gobale.bale.reference.PeerRef
-	57,  // 123: gobale.bale.reference.GroupInviteResponse.not_added:type_name -> gobale.bale.reference.PeerRef
-	57,  // 124: gobale.bale.reference.GroupTitleRequest.group:type_name -> gobale.bale.reference.PeerRef
-	19,  // 125: gobale.bale.reference.ContactsResponse.users:type_name -> gobale.bale.reference.User
-	57,  // 126: gobale.bale.reference.ContactsResponse.peers:type_name -> gobale.bale.reference.PeerRef
-	19,  // 127: gobale.bale.reference.ContactsSearchResponse.users:type_name -> gobale.bale.reference.User
-	57,  // 128: gobale.bale.reference.ContactsSearchResponse.user_peers:type_name -> gobale.bale.reference.PeerRef
-	64,  // 129: gobale.bale.reference.ContactsSearchResponse.groups:type_name -> gobale.bale.reference.Group
-	57,  // 130: gobale.bale.reference.ContactsSearchResponse.group_peers:type_name -> gobale.bale.reference.PeerRef
-	57,  // 131: gobale.bale.reference.RouteState.group:type_name -> gobale.bale.reference.PeerRef
-	57,  // 132: gobale.bale.reference.RoutesRequest.groups:type_name -> gobale.bale.reference.PeerRef
-	74,  // 133: gobale.bale.reference.RoutesResponse.states:type_name -> gobale.bale.reference.RouteState
-	74,  // 134: gobale.bale.reference.DiffRequest.states:type_name -> gobale.bale.reference.RouteState
-	74,  // 135: gobale.bale.reference.RouteDiff.state:type_name -> gobale.bale.reference.RouteState
-	2,   // 136: gobale.bale.reference.RouteDiff.too_long:type_name -> gobale.bale.reference.BoolValue
-	78,  // 137: gobale.bale.reference.RouteDiff.dated_updates:type_name -> gobale.bale.reference.DatedUpdate
-	79,  // 138: gobale.bale.reference.DiffResponse.routes:type_name -> gobale.bale.reference.RouteDiff
-	57,  // 139: gobale.bale.reference.DiffResponse.users:type_name -> gobale.bale.reference.PeerRef
-	57,  // 140: gobale.bale.reference.DiffResponse.groups:type_name -> gobale.bale.reference.PeerRef
-	21,  // 141: gobale.bale.reference.ForwardMessagesRequest.peer:type_name -> gobale.bale.reference.Peer
-	35,  // 142: gobale.bale.reference.ForwardMessagesRequest.forwarded_messages:type_name -> gobale.bale.reference.MessageReference
-	34,  // 143: gobale.bale.reference.ForwardMessagesRequest.grouped_id:type_name -> gobale.bale.reference.Int64Value
-	21,  // 144: gobale.bale.reference.DeleteMessageRequest.peer:type_name -> gobale.bale.reference.Peer
-	82,  // 145: gobale.bale.reference.DeleteMessageRequest.dates:type_name -> gobale.bale.reference.MessageDates
-	2,   // 146: gobale.bale.reference.DeleteMessageRequest.just_mine:type_name -> gobale.bale.reference.BoolValue
-	57,  // 147: gobale.bale.reference.GetGroupInfoRequest.peer:type_name -> gobale.bale.reference.PeerRef
-	2,   // 148: gobale.bale.reference.FullGroup.is_member:type_name -> gobale.bale.reference.BoolValue
-	44,  // 149: gobale.bale.reference.FullGroup.members_count:type_name -> gobale.bale.reference.Int32Value
-	1,   // 150: gobale.bale.reference.FullGroup.nick:type_name -> gobale.bale.reference.StringValue
-	1,   // 151: gobale.bale.reference.FullGroup.about:type_name -> gobale.bale.reference.StringValue
-	85,  // 152: gobale.bale.reference.GetGroupInfoResponse.group:type_name -> gobale.bale.reference.FullGroup
-	57,  // 153: gobale.bale.reference.GetUserInfoRequest.peer:type_name -> gobale.bale.reference.PeerRef
-	1,   // 154: gobale.bale.reference.FullUser.local_name:type_name -> gobale.bale.reference.StringValue
-	1,   // 155: gobale.bale.reference.FullUser.nick:type_name -> gobale.bale.reference.StringValue
-	1,   // 156: gobale.bale.reference.FullUser.about:type_name -> gobale.bale.reference.StringValue
-	2,   // 157: gobale.bale.reference.FullUser.is_bot:type_name -> gobale.bale.reference.BoolValue
-	2,   // 158: gobale.bale.reference.FullUser.is_deleted:type_name -> gobale.bale.reference.BoolValue
-	2,   // 159: gobale.bale.reference.FullUser.is_blocked:type_name -> gobale.bale.reference.BoolValue
-	2,   // 160: gobale.bale.reference.FullUser.is_contact:type_name -> gobale.bale.reference.BoolValue
-	1,   // 161: gobale.bale.reference.FullUser.timezone:type_name -> gobale.bale.reference.StringValue
-	89,  // 162: gobale.bale.reference.GetUserInfoResponse.user:type_name -> gobale.bale.reference.FullUser
-	57,  // 163: gobale.bale.reference.GroupDescriptionRequest.group:type_name -> gobale.bale.reference.PeerRef
-	1,   // 164: gobale.bale.reference.GroupDescriptionRequest.about:type_name -> gobale.bale.reference.StringValue
-	57,  // 165: gobale.bale.reference.GroupRemoveRequest.group:type_name -> gobale.bale.reference.PeerRef
-	57,  // 166: gobale.bale.reference.GroupRemoveRequest.user:type_name -> gobale.bale.reference.PeerRef
-	34,  // 167: gobale.bale.reference.QuotedMessage.message_id:type_name -> gobale.bale.reference.Int64Value
-	44,  // 168: gobale.bale.reference.QuotedMessage.public_group_id:type_name -> gobale.bale.reference.Int32Value
-	24,  // 169: gobale.bale.reference.QuotedMessage.message:type_name -> gobale.bale.reference.Message
-	21,  // 170: gobale.bale.reference.QuotedMessage.peer:type_name -> gobale.bale.reference.Peer
-	1,   // 171: gobale.bale.reference.QuotedMessage.author_sign:type_name -> gobale.bale.reference.StringValue
-	24,  // 172: gobale.bale.reference.TemplateMessage.message:type_name -> gobale.bale.reference.Message
-	97,  // 173: gobale.bale.reference.TemplateMessage.buttons:type_name -> gobale.bale.reference.TemplateButton
-	1,   // 174: gobale.bale.reference.TemplateMessage.response_type:type_name -> gobale.bale.reference.StringValue
-	98,  // 175: gobale.bale.reference.TemplateMessage.inline_keyboard:type_name -> gobale.bale.reference.InlineKeyboard
-	106, // 176: gobale.bale.reference.TemplateMessage.reply_keyboard:type_name -> gobale.bale.reference.ReplyKeyboard
-	109, // 177: gobale.bale.reference.TemplateMessage.remove_keyboard:type_name -> gobale.bale.reference.KeyboardRemoval
-	24,  // 178: gobale.bale.reference.TemplateResponse.message:type_name -> gobale.bale.reference.Message
-	99,  // 179: gobale.bale.reference.InlineKeyboard.rows:type_name -> gobale.bale.reference.InlineRow
-	100, // 180: gobale.bale.reference.InlineRow.buttons:type_name -> gobale.bale.reference.InlineButton
-	1,   // 181: gobale.bale.reference.InlineButton.url:type_name -> gobale.bale.reference.StringValue
-	1,   // 182: gobale.bale.reference.InlineButton.callback_data:type_name -> gobale.bale.reference.StringValue
-	101, // 183: gobale.bale.reference.InlineButton.web_app:type_name -> gobale.bale.reference.WebAppButton
-	102, // 184: gobale.bale.reference.InlineButton.login_url:type_name -> gobale.bale.reference.LoginURLButton
-	1,   // 185: gobale.bale.reference.InlineButton.switch_inline_query:type_name -> gobale.bale.reference.StringValue
-	1,   // 186: gobale.bale.reference.InlineButton.switch_inline_query_current_chat:type_name -> gobale.bale.reference.StringValue
-	103, // 187: gobale.bale.reference.InlineButton.switch_inline_query_chosen_chat:type_name -> gobale.bale.reference.SwitchInlineButton
-	104, // 188: gobale.bale.reference.InlineButton.copy_text:type_name -> gobale.bale.reference.CopyTextButton
-	0,   // 189: gobale.bale.reference.InlineButton.authentication:type_name -> gobale.bale.reference.Empty
-	105, // 190: gobale.bale.reference.InlineButton.custom_action:type_name -> gobale.bale.reference.CustomActionButton
-	2,   // 191: gobale.bale.reference.InlineButton.send_data:type_name -> gobale.bale.reference.BoolValue
-	107, // 192: gobale.bale.reference.ReplyKeyboard.rows:type_name -> gobale.bale.reference.ReplyRow
-	108, // 193: gobale.bale.reference.ReplyRow.buttons:type_name -> gobale.bale.reference.ReplyButton
-	2,   // 194: gobale.bale.reference.ReplyButton.request_contact:type_name -> gobale.bale.reference.BoolValue
-	2,   // 195: gobale.bale.reference.ReplyButton.request_location:type_name -> gobale.bale.reference.BoolValue
-	101, // 196: gobale.bale.reference.ReplyButton.web_app:type_name -> gobale.bale.reference.WebAppButton
-	105, // 197: gobale.bale.reference.ReplyButton.custom_action:type_name -> gobale.bale.reference.CustomActionButton
-	2,   // 198: gobale.bale.reference.ReplyButton.send_message:type_name -> gobale.bale.reference.BoolValue
-	2,   // 199: gobale.bale.reference.KeyboardRemoval.selective:type_name -> gobale.bale.reference.BoolValue
-	1,   // 200: gobale.bale.reference.GiftMessage.wallet_id:type_name -> gobale.bale.reference.StringValue
-	1,   // 201: gobale.bale.reference.GiftMessage.regarding:type_name -> gobale.bale.reference.StringValue
-	44,  // 202: gobale.bale.reference.GiftMessage.cover_id:type_name -> gobale.bale.reference.Int32Value
-	2,   // 203: gobale.bale.reference.GiftMessage.show_total_amount:type_name -> gobale.bale.reference.BoolValue
-	44,  // 204: gobale.bale.reference.StickerMessage.id:type_name -> gobale.bale.reference.Int32Value
-	58,  // 205: gobale.bale.reference.StickerMessage.fast_preview:type_name -> gobale.bale.reference.BytesValue
-	113, // 206: gobale.bale.reference.StickerMessage.image512:type_name -> gobale.bale.reference.StickerImage
-	113, // 207: gobale.bale.reference.StickerMessage.image256:type_name -> gobale.bale.reference.StickerImage
-	44,  // 208: gobale.bale.reference.StickerMessage.collection_id:type_name -> gobale.bale.reference.Int32Value
-	34,  // 209: gobale.bale.reference.StickerMessage.collection_access_hash:type_name -> gobale.bale.reference.Int64Value
-	113, // 210: gobale.bale.reference.StickerMessage.animation:type_name -> gobale.bale.reference.StickerImage
-	44,  // 211: gobale.bale.reference.AnimatedStickerMessage.id:type_name -> gobale.bale.reference.Int32Value
-	58,  // 212: gobale.bale.reference.AnimatedStickerMessage.fast_preview:type_name -> gobale.bale.reference.BytesValue
-	113, // 213: gobale.bale.reference.AnimatedStickerMessage.file_location:type_name -> gobale.bale.reference.StickerImage
-	44,  // 214: gobale.bale.reference.AnimatedStickerMessage.collection_id:type_name -> gobale.bale.reference.Int32Value
-	34,  // 215: gobale.bale.reference.AnimatedStickerMessage.collection_access_hash:type_name -> gobale.bale.reference.Int64Value
-	48,  // 216: gobale.bale.reference.StickerImage.file:type_name -> gobale.bale.reference.FileLocation
-	115, // 217: gobale.bale.reference.ServiceMessage.ext:type_name -> gobale.bale.reference.ServiceExtensions
-	0,   // 218: gobale.bale.reference.ServiceExtensions.orphaned:type_name -> gobale.bale.reference.Empty
-	116, // 219: gobale.bale.reference.ServiceExtensions.about_changed:type_name -> gobale.bale.reference.ServiceTextChange
-	0,   // 220: gobale.bale.reference.ServiceExtensions.avatar_changed:type_name -> gobale.bale.reference.Empty
-	116, // 221: gobale.bale.reference.ServiceExtensions.nickname_changed:type_name -> gobale.bale.reference.ServiceTextChange
-	117, // 222: gobale.bale.reference.ServiceExtensions.title_changed:type_name -> gobale.bale.reference.ServiceTitle
-	116, // 223: gobale.bale.reference.ServiceExtensions.topic_changed:type_name -> gobale.bale.reference.ServiceTextChange
-	0,   // 224: gobale.bale.reference.ServiceExtensions.chat_archived:type_name -> gobale.bale.reference.Empty
-	0,   // 225: gobale.bale.reference.ServiceExtensions.chat_restored:type_name -> gobale.bale.reference.Empty
-	124, // 226: gobale.bale.reference.ServiceExtensions.contact_registered:type_name -> gobale.bale.reference.UserIDUpdate
-	0,   // 227: gobale.bale.reference.ServiceExtensions.group_created:type_name -> gobale.bale.reference.Empty
-	118, // 228: gobale.bale.reference.ServiceExtensions.phone_call:type_name -> gobale.bale.reference.ServiceCall
-	0,   // 229: gobale.bale.reference.ServiceExtensions.missed_call:type_name -> gobale.bale.reference.Empty
-	124, // 230: gobale.bale.reference.ServiceExtensions.user_invited:type_name -> gobale.bale.reference.UserIDUpdate
-	0,   // 231: gobale.bale.reference.ServiceExtensions.user_joined:type_name -> gobale.bale.reference.Empty
-	124, // 232: gobale.bale.reference.ServiceExtensions.user_removed:type_name -> gobale.bale.reference.UserIDUpdate
-	124, // 233: gobale.bale.reference.ServiceExtensions.user_left:type_name -> gobale.bale.reference.UserIDUpdate
-	119, // 234: gobale.bale.reference.ServiceExtensions.gift_opened:type_name -> gobale.bale.reference.GiftOpened
-	120, // 235: gobale.bale.reference.ServiceExtensions.gift_opened_compact:type_name -> gobale.bale.reference.GiftOpenedCompact
-	0,   // 236: gobale.bale.reference.ServiceExtensions.welcome:type_name -> gobale.bale.reference.Empty
-	0,   // 237: gobale.bale.reference.ServiceExtensions.mini_app_data_sent:type_name -> gobale.bale.reference.Empty
-	1,   // 238: gobale.bale.reference.ServiceTextChange.value:type_name -> gobale.bale.reference.StringValue
-	34,  // 239: gobale.bale.reference.ServiceCall.start_date:type_name -> gobale.bale.reference.Int64Value
-	2,   // 240: gobale.bale.reference.ServiceCall.is_video:type_name -> gobale.bale.reference.BoolValue
-	21,  // 241: gobale.bale.reference.ChatPeerUpdate.peer:type_name -> gobale.bale.reference.Peer
-	21,  // 242: gobale.bale.reference.MessageReceipt.peer:type_name -> gobale.bale.reference.Peer
-	21,  // 243: gobale.bale.reference.ReadByMeUpdate.peer:type_name -> gobale.bale.reference.Peer
-	44,  // 244: gobale.bale.reference.ReadByMeUpdate.unread_count:type_name -> gobale.bale.reference.Int32Value
-	34,  // 245: gobale.bale.reference.ReadByMeUpdate.end_date:type_name -> gobale.bale.reference.Int64Value
-	1,   // 246: gobale.bale.reference.UserTextUpdate.value:type_name -> gobale.bale.reference.StringValue
-	37,  // 247: gobale.bale.reference.GroupPinnedUpdate.message:type_name -> gobale.bale.reference.HistoryItem
-	93,  // 248: gobale.bale.reference.GroupUnpinnedUpdate.message:type_name -> gobale.bale.reference.MessagePosition
-	21,  // 249: gobale.bale.reference.MultipleMessagesUpdate.peer:type_name -> gobale.bale.reference.Peer
-	37,  // 250: gobale.bale.reference.MultipleMessagesUpdate.messages:type_name -> gobale.bale.reference.HistoryItem
-	130, // 251: gobale.bale.reference.PollMessage.options:type_name -> gobale.bale.reference.PollOption
-	131, // 252: gobale.bale.reference.PollMessage.result:type_name -> gobale.bale.reference.PollResult
-	132, // 253: gobale.bale.reference.PollResult.option_results:type_name -> gobale.bale.reference.PollOptionResult
-	254, // [254:254] is the sub-list for method output_type
-	254, // [254:254] is the sub-list for method input_type
-	254, // [254:254] is the sub-list for extension type_name
-	254, // [254:254] is the sub-list for extension extendee
-	0,   // [0:254] is the sub-list for field type_name
+	111, // 35: gobale.bale.reference.Message.gift:type_name -> gobale.bale.reference.GiftMessage
+	113, // 36: gobale.bale.reference.Message.animated_sticker:type_name -> gobale.bale.reference.AnimatedStickerMessage
+	25,  // 37: gobale.bale.reference.Message.protected:type_name -> gobale.bale.reference.ProtectedMessage
+	134, // 38: gobale.bale.reference.Message.gold_gift:type_name -> gobale.bale.reference.GoldGiftMessage
+	130, // 39: gobale.bale.reference.Message.poll:type_name -> gobale.bale.reference.PollMessage
+	24,  // 40: gobale.bale.reference.ProtectedMessage.message:type_name -> gobale.bale.reference.Message
+	21,  // 41: gobale.bale.reference.SendMessageRequest.peer:type_name -> gobale.bale.reference.Peer
+	24,  // 42: gobale.bale.reference.SendMessageRequest.message:type_name -> gobale.bale.reference.Message
+	36,  // 43: gobale.bale.reference.SendMessageRequest.quoted_message:type_name -> gobale.bale.reference.MessageReference
+	21,  // 44: gobale.bale.reference.SendMessageRequest.ex_peer:type_name -> gobale.bale.reference.Peer
+	21,  // 45: gobale.bale.reference.UpdateMessageRequest.peer:type_name -> gobale.bale.reference.Peer
+	24,  // 46: gobale.bale.reference.UpdateMessageRequest.message:type_name -> gobale.bale.reference.Message
+	21,  // 47: gobale.bale.reference.MessageReadRequest.peer:type_name -> gobale.bale.reference.Peer
+	21,  // 48: gobale.bale.reference.UpdateMessage.peer:type_name -> gobale.bale.reference.Peer
+	24,  // 49: gobale.bale.reference.UpdateMessage.message:type_name -> gobale.bale.reference.Message
+	95,  // 50: gobale.bale.reference.UpdateMessage.quoted_message:type_name -> gobale.bale.reference.QuotedMessage
+	94,  // 51: gobale.bale.reference.UpdateMessage.previous:type_name -> gobale.bale.reference.MessagePosition
+	35,  // 52: gobale.bale.reference.UpdateMessage.grouped_id:type_name -> gobale.bale.reference.Int64Value
+	94,  // 53: gobale.bale.reference.UpdateMessage.thread:type_name -> gobale.bale.reference.MessagePosition
+	21,  // 54: gobale.bale.reference.UpdateMessage.ex_peer:type_name -> gobale.bale.reference.Peer
+	1,   // 55: gobale.bale.reference.UpdateMessage.author_sign:type_name -> gobale.bale.reference.StringValue
+	21,  // 56: gobale.bale.reference.UpdateMessageEdited.peer:type_name -> gobale.bale.reference.Peer
+	24,  // 57: gobale.bale.reference.UpdateMessageEdited.message:type_name -> gobale.bale.reference.Message
+	35,  // 58: gobale.bale.reference.UpdateMessageEdited.date:type_name -> gobale.bale.reference.Int64Value
+	45,  // 59: gobale.bale.reference.UpdateMessageEdited.updater_user_id:type_name -> gobale.bale.reference.Int32Value
+	21,  // 60: gobale.bale.reference.UpdateMessageDeleted.peer:type_name -> gobale.bale.reference.Peer
+	21,  // 61: gobale.bale.reference.UpdateMessageSent.peer:type_name -> gobale.bale.reference.Peer
+	33,  // 62: gobale.bale.reference.UpdateContainer.sent:type_name -> gobale.bale.reference.UpdateMessageSent
+	30,  // 63: gobale.bale.reference.UpdateContainer.message:type_name -> gobale.bale.reference.UpdateMessage
+	31,  // 64: gobale.bale.reference.UpdateContainer.edited:type_name -> gobale.bale.reference.UpdateMessageEdited
+	32,  // 65: gobale.bale.reference.UpdateContainer.deleted:type_name -> gobale.bale.reference.UpdateMessageDeleted
+	122, // 66: gobale.bale.reference.UpdateContainer.chat_cleared:type_name -> gobale.bale.reference.ChatPeerUpdate
+	122, // 67: gobale.bale.reference.UpdateContainer.chat_deleted:type_name -> gobale.bale.reference.ChatPeerUpdate
+	123, // 68: gobale.bale.reference.UpdateContainer.read:type_name -> gobale.bale.reference.MessageReceipt
+	124, // 69: gobale.bale.reference.UpdateContainer.read_by_me:type_name -> gobale.bale.reference.ReadByMeUpdate
+	123, // 70: gobale.bale.reference.UpdateContainer.received:type_name -> gobale.bale.reference.MessageReceipt
+	126, // 71: gobale.bale.reference.UpdateContainer.username_changed:type_name -> gobale.bale.reference.UserTextUpdate
+	126, // 72: gobale.bale.reference.UpdateContainer.about_changed:type_name -> gobale.bale.reference.UserTextUpdate
+	127, // 73: gobale.bale.reference.UpdateContainer.pinned:type_name -> gobale.bale.reference.GroupPinnedUpdate
+	128, // 74: gobale.bale.reference.UpdateContainer.unpinned:type_name -> gobale.bale.reference.GroupUnpinnedUpdate
+	125, // 75: gobale.bale.reference.UpdateContainer.blocked:type_name -> gobale.bale.reference.UserIDUpdate
+	125, // 76: gobale.bale.reference.UpdateContainer.unblocked:type_name -> gobale.bale.reference.UserIDUpdate
+	129, // 77: gobale.bale.reference.UpdateContainer.messages:type_name -> gobale.bale.reference.MultipleMessagesUpdate
+	21,  // 78: gobale.bale.reference.MessageReference.peer:type_name -> gobale.bale.reference.Peer
+	35,  // 79: gobale.bale.reference.MessageReference.date:type_name -> gobale.bale.reference.Int64Value
+	21,  // 80: gobale.bale.reference.HistoryRequest.peer:type_name -> gobale.bale.reference.Peer
+	24,  // 81: gobale.bale.reference.HistoryItem.message:type_name -> gobale.bale.reference.Message
+	95,  // 82: gobale.bale.reference.HistoryItem.quoted_message:type_name -> gobale.bale.reference.QuotedMessage
+	94,  // 83: gobale.bale.reference.HistoryItem.previous:type_name -> gobale.bale.reference.MessagePosition
+	94,  // 84: gobale.bale.reference.HistoryItem.next:type_name -> gobale.bale.reference.MessagePosition
+	35,  // 85: gobale.bale.reference.HistoryItem.edited_at:type_name -> gobale.bale.reference.Int64Value
+	45,  // 86: gobale.bale.reference.HistoryItem.editor_user_id:type_name -> gobale.bale.reference.Int32Value
+	35,  // 87: gobale.bale.reference.HistoryItem.grouped_id:type_name -> gobale.bale.reference.Int64Value
+	2,   // 88: gobale.bale.reference.HistoryItem.has_comment:type_name -> gobale.bale.reference.BoolValue
+	94,  // 89: gobale.bale.reference.HistoryItem.thread:type_name -> gobale.bale.reference.MessagePosition
+	1,   // 90: gobale.bale.reference.HistoryItem.author_sign:type_name -> gobale.bale.reference.StringValue
+	38,  // 91: gobale.bale.reference.HistoryResponse.history:type_name -> gobale.bale.reference.HistoryItem
+	19,  // 92: gobale.bale.reference.HistoryResponse.users:type_name -> gobale.bale.reference.User
+	58,  // 93: gobale.bale.reference.HistoryResponse.user_peers:type_name -> gobale.bale.reference.PeerRef
+	65,  // 94: gobale.bale.reference.HistoryResponse.groups:type_name -> gobale.bale.reference.Group
+	58,  // 95: gobale.bale.reference.HistoryResponse.group_peers:type_name -> gobale.bale.reference.PeerRef
+	21,  // 96: gobale.bale.reference.Dialog.peer:type_name -> gobale.bale.reference.Peer
+	24,  // 97: gobale.bale.reference.Dialog.message:type_name -> gobale.bale.reference.Message
+	65,  // 98: gobale.bale.reference.DialogsResponse.groups:type_name -> gobale.bale.reference.Group
+	19,  // 99: gobale.bale.reference.DialogsResponse.users:type_name -> gobale.bale.reference.User
+	41,  // 100: gobale.bale.reference.DialogsResponse.dialogs:type_name -> gobale.bale.reference.Dialog
+	58,  // 101: gobale.bale.reference.DialogsResponse.user_peers:type_name -> gobale.bale.reference.PeerRef
+	58,  // 102: gobale.bale.reference.DialogsResponse.group_peers:type_name -> gobale.bale.reference.PeerRef
+	44,  // 103: gobale.bale.reference.StreamUpdate.updates:type_name -> gobale.bale.reference.UpdateBatch
+	21,  // 104: gobale.bale.reference.FileUploadRequest.ex_peer:type_name -> gobale.bale.reference.Peer
+	46,  // 105: gobale.bale.reference.FileUploadRequest.send_type:type_name -> gobale.bale.reference.SendType
+	49,  // 106: gobale.bale.reference.FileDownloadRequest.file:type_name -> gobale.bale.reference.FileLocation
+	51,  // 107: gobale.bale.reference.FileDownloadResponse.file_url:type_name -> gobale.bale.reference.FileURL
+	53,  // 108: gobale.bale.reference.DocumentExt.photo:type_name -> gobale.bale.reference.Photo
+	54,  // 109: gobale.bale.reference.DocumentExt.video:type_name -> gobale.bale.reference.Video
+	56,  // 110: gobale.bale.reference.DocumentExt.voice:type_name -> gobale.bale.reference.Voice
+	54,  // 111: gobale.bale.reference.DocumentExt.gif:type_name -> gobale.bale.reference.Video
+	55,  // 112: gobale.bale.reference.DocumentExt.audio:type_name -> gobale.bale.reference.Audio
+	58,  // 113: gobale.bale.reference.GetMyGroupsResponse.groups:type_name -> gobale.bale.reference.PeerRef
+	58,  // 114: gobale.bale.reference.GroupMembersRequest.group:type_name -> gobale.bale.reference.PeerRef
+	59,  // 115: gobale.bale.reference.GroupMembersRequest.next:type_name -> gobale.bale.reference.BytesValue
+	2,   // 116: gobale.bale.reference.GroupMember.is_admin:type_name -> gobale.bale.reference.BoolValue
+	63,  // 117: gobale.bale.reference.GroupMembersResponse.members:type_name -> gobale.bale.reference.GroupMember
+	59,  // 118: gobale.bale.reference.GroupMembersResponse.next:type_name -> gobale.bale.reference.BytesValue
+	45,  // 119: gobale.bale.reference.Group.members_count:type_name -> gobale.bale.reference.Int32Value
+	58,  // 120: gobale.bale.reference.GroupCreateRequest.users:type_name -> gobale.bale.reference.PeerRef
+	65,  // 121: gobale.bale.reference.GroupCreateResponse.group:type_name -> gobale.bale.reference.Group
+	58,  // 122: gobale.bale.reference.GroupCreateResponse.not_added:type_name -> gobale.bale.reference.PeerRef
+	58,  // 123: gobale.bale.reference.GroupInviteRequest.group:type_name -> gobale.bale.reference.PeerRef
+	58,  // 124: gobale.bale.reference.GroupInviteRequest.users:type_name -> gobale.bale.reference.PeerRef
+	58,  // 125: gobale.bale.reference.GroupInviteResponse.not_added:type_name -> gobale.bale.reference.PeerRef
+	58,  // 126: gobale.bale.reference.GroupTitleRequest.group:type_name -> gobale.bale.reference.PeerRef
+	19,  // 127: gobale.bale.reference.ContactsResponse.users:type_name -> gobale.bale.reference.User
+	58,  // 128: gobale.bale.reference.ContactsResponse.peers:type_name -> gobale.bale.reference.PeerRef
+	19,  // 129: gobale.bale.reference.ContactsSearchResponse.users:type_name -> gobale.bale.reference.User
+	58,  // 130: gobale.bale.reference.ContactsSearchResponse.user_peers:type_name -> gobale.bale.reference.PeerRef
+	65,  // 131: gobale.bale.reference.ContactsSearchResponse.groups:type_name -> gobale.bale.reference.Group
+	58,  // 132: gobale.bale.reference.ContactsSearchResponse.group_peers:type_name -> gobale.bale.reference.PeerRef
+	58,  // 133: gobale.bale.reference.RouteState.group:type_name -> gobale.bale.reference.PeerRef
+	58,  // 134: gobale.bale.reference.RoutesRequest.groups:type_name -> gobale.bale.reference.PeerRef
+	75,  // 135: gobale.bale.reference.RoutesResponse.states:type_name -> gobale.bale.reference.RouteState
+	75,  // 136: gobale.bale.reference.DiffRequest.states:type_name -> gobale.bale.reference.RouteState
+	75,  // 137: gobale.bale.reference.RouteDiff.state:type_name -> gobale.bale.reference.RouteState
+	2,   // 138: gobale.bale.reference.RouteDiff.too_long:type_name -> gobale.bale.reference.BoolValue
+	79,  // 139: gobale.bale.reference.RouteDiff.dated_updates:type_name -> gobale.bale.reference.DatedUpdate
+	80,  // 140: gobale.bale.reference.DiffResponse.routes:type_name -> gobale.bale.reference.RouteDiff
+	58,  // 141: gobale.bale.reference.DiffResponse.users:type_name -> gobale.bale.reference.PeerRef
+	58,  // 142: gobale.bale.reference.DiffResponse.groups:type_name -> gobale.bale.reference.PeerRef
+	21,  // 143: gobale.bale.reference.ForwardMessagesRequest.peer:type_name -> gobale.bale.reference.Peer
+	36,  // 144: gobale.bale.reference.ForwardMessagesRequest.forwarded_messages:type_name -> gobale.bale.reference.MessageReference
+	35,  // 145: gobale.bale.reference.ForwardMessagesRequest.grouped_id:type_name -> gobale.bale.reference.Int64Value
+	21,  // 146: gobale.bale.reference.DeleteMessageRequest.peer:type_name -> gobale.bale.reference.Peer
+	83,  // 147: gobale.bale.reference.DeleteMessageRequest.dates:type_name -> gobale.bale.reference.MessageDates
+	2,   // 148: gobale.bale.reference.DeleteMessageRequest.just_mine:type_name -> gobale.bale.reference.BoolValue
+	58,  // 149: gobale.bale.reference.GetGroupInfoRequest.peer:type_name -> gobale.bale.reference.PeerRef
+	2,   // 150: gobale.bale.reference.FullGroup.is_member:type_name -> gobale.bale.reference.BoolValue
+	45,  // 151: gobale.bale.reference.FullGroup.members_count:type_name -> gobale.bale.reference.Int32Value
+	1,   // 152: gobale.bale.reference.FullGroup.nick:type_name -> gobale.bale.reference.StringValue
+	1,   // 153: gobale.bale.reference.FullGroup.about:type_name -> gobale.bale.reference.StringValue
+	86,  // 154: gobale.bale.reference.GetGroupInfoResponse.group:type_name -> gobale.bale.reference.FullGroup
+	58,  // 155: gobale.bale.reference.GetUserInfoRequest.peer:type_name -> gobale.bale.reference.PeerRef
+	1,   // 156: gobale.bale.reference.FullUser.local_name:type_name -> gobale.bale.reference.StringValue
+	1,   // 157: gobale.bale.reference.FullUser.nick:type_name -> gobale.bale.reference.StringValue
+	1,   // 158: gobale.bale.reference.FullUser.about:type_name -> gobale.bale.reference.StringValue
+	2,   // 159: gobale.bale.reference.FullUser.is_bot:type_name -> gobale.bale.reference.BoolValue
+	2,   // 160: gobale.bale.reference.FullUser.is_deleted:type_name -> gobale.bale.reference.BoolValue
+	2,   // 161: gobale.bale.reference.FullUser.is_blocked:type_name -> gobale.bale.reference.BoolValue
+	2,   // 162: gobale.bale.reference.FullUser.is_contact:type_name -> gobale.bale.reference.BoolValue
+	1,   // 163: gobale.bale.reference.FullUser.timezone:type_name -> gobale.bale.reference.StringValue
+	90,  // 164: gobale.bale.reference.GetUserInfoResponse.user:type_name -> gobale.bale.reference.FullUser
+	58,  // 165: gobale.bale.reference.GroupDescriptionRequest.group:type_name -> gobale.bale.reference.PeerRef
+	1,   // 166: gobale.bale.reference.GroupDescriptionRequest.about:type_name -> gobale.bale.reference.StringValue
+	58,  // 167: gobale.bale.reference.GroupRemoveRequest.group:type_name -> gobale.bale.reference.PeerRef
+	58,  // 168: gobale.bale.reference.GroupRemoveRequest.user:type_name -> gobale.bale.reference.PeerRef
+	35,  // 169: gobale.bale.reference.QuotedMessage.message_id:type_name -> gobale.bale.reference.Int64Value
+	45,  // 170: gobale.bale.reference.QuotedMessage.public_group_id:type_name -> gobale.bale.reference.Int32Value
+	24,  // 171: gobale.bale.reference.QuotedMessage.message:type_name -> gobale.bale.reference.Message
+	21,  // 172: gobale.bale.reference.QuotedMessage.peer:type_name -> gobale.bale.reference.Peer
+	1,   // 173: gobale.bale.reference.QuotedMessage.author_sign:type_name -> gobale.bale.reference.StringValue
+	24,  // 174: gobale.bale.reference.TemplateMessage.message:type_name -> gobale.bale.reference.Message
+	98,  // 175: gobale.bale.reference.TemplateMessage.buttons:type_name -> gobale.bale.reference.TemplateButton
+	1,   // 176: gobale.bale.reference.TemplateMessage.response_type:type_name -> gobale.bale.reference.StringValue
+	99,  // 177: gobale.bale.reference.TemplateMessage.inline_keyboard:type_name -> gobale.bale.reference.InlineKeyboard
+	107, // 178: gobale.bale.reference.TemplateMessage.reply_keyboard:type_name -> gobale.bale.reference.ReplyKeyboard
+	110, // 179: gobale.bale.reference.TemplateMessage.remove_keyboard:type_name -> gobale.bale.reference.KeyboardRemoval
+	24,  // 180: gobale.bale.reference.TemplateResponse.message:type_name -> gobale.bale.reference.Message
+	100, // 181: gobale.bale.reference.InlineKeyboard.rows:type_name -> gobale.bale.reference.InlineRow
+	101, // 182: gobale.bale.reference.InlineRow.buttons:type_name -> gobale.bale.reference.InlineButton
+	1,   // 183: gobale.bale.reference.InlineButton.url:type_name -> gobale.bale.reference.StringValue
+	1,   // 184: gobale.bale.reference.InlineButton.callback_data:type_name -> gobale.bale.reference.StringValue
+	102, // 185: gobale.bale.reference.InlineButton.web_app:type_name -> gobale.bale.reference.WebAppButton
+	103, // 186: gobale.bale.reference.InlineButton.login_url:type_name -> gobale.bale.reference.LoginURLButton
+	1,   // 187: gobale.bale.reference.InlineButton.switch_inline_query:type_name -> gobale.bale.reference.StringValue
+	1,   // 188: gobale.bale.reference.InlineButton.switch_inline_query_current_chat:type_name -> gobale.bale.reference.StringValue
+	104, // 189: gobale.bale.reference.InlineButton.switch_inline_query_chosen_chat:type_name -> gobale.bale.reference.SwitchInlineButton
+	105, // 190: gobale.bale.reference.InlineButton.copy_text:type_name -> gobale.bale.reference.CopyTextButton
+	0,   // 191: gobale.bale.reference.InlineButton.authentication:type_name -> gobale.bale.reference.Empty
+	106, // 192: gobale.bale.reference.InlineButton.custom_action:type_name -> gobale.bale.reference.CustomActionButton
+	2,   // 193: gobale.bale.reference.InlineButton.send_data:type_name -> gobale.bale.reference.BoolValue
+	108, // 194: gobale.bale.reference.ReplyKeyboard.rows:type_name -> gobale.bale.reference.ReplyRow
+	109, // 195: gobale.bale.reference.ReplyRow.buttons:type_name -> gobale.bale.reference.ReplyButton
+	2,   // 196: gobale.bale.reference.ReplyButton.request_contact:type_name -> gobale.bale.reference.BoolValue
+	2,   // 197: gobale.bale.reference.ReplyButton.request_location:type_name -> gobale.bale.reference.BoolValue
+	102, // 198: gobale.bale.reference.ReplyButton.web_app:type_name -> gobale.bale.reference.WebAppButton
+	106, // 199: gobale.bale.reference.ReplyButton.custom_action:type_name -> gobale.bale.reference.CustomActionButton
+	2,   // 200: gobale.bale.reference.ReplyButton.send_message:type_name -> gobale.bale.reference.BoolValue
+	2,   // 201: gobale.bale.reference.KeyboardRemoval.selective:type_name -> gobale.bale.reference.BoolValue
+	1,   // 202: gobale.bale.reference.GiftMessage.wallet_id:type_name -> gobale.bale.reference.StringValue
+	1,   // 203: gobale.bale.reference.GiftMessage.regarding:type_name -> gobale.bale.reference.StringValue
+	45,  // 204: gobale.bale.reference.GiftMessage.cover_id:type_name -> gobale.bale.reference.Int32Value
+	2,   // 205: gobale.bale.reference.GiftMessage.show_total_amount:type_name -> gobale.bale.reference.BoolValue
+	45,  // 206: gobale.bale.reference.StickerMessage.id:type_name -> gobale.bale.reference.Int32Value
+	59,  // 207: gobale.bale.reference.StickerMessage.fast_preview:type_name -> gobale.bale.reference.BytesValue
+	114, // 208: gobale.bale.reference.StickerMessage.image512:type_name -> gobale.bale.reference.StickerImage
+	114, // 209: gobale.bale.reference.StickerMessage.image256:type_name -> gobale.bale.reference.StickerImage
+	45,  // 210: gobale.bale.reference.StickerMessage.collection_id:type_name -> gobale.bale.reference.Int32Value
+	35,  // 211: gobale.bale.reference.StickerMessage.collection_access_hash:type_name -> gobale.bale.reference.Int64Value
+	114, // 212: gobale.bale.reference.StickerMessage.animation:type_name -> gobale.bale.reference.StickerImage
+	45,  // 213: gobale.bale.reference.AnimatedStickerMessage.id:type_name -> gobale.bale.reference.Int32Value
+	59,  // 214: gobale.bale.reference.AnimatedStickerMessage.fast_preview:type_name -> gobale.bale.reference.BytesValue
+	114, // 215: gobale.bale.reference.AnimatedStickerMessage.file_location:type_name -> gobale.bale.reference.StickerImage
+	45,  // 216: gobale.bale.reference.AnimatedStickerMessage.collection_id:type_name -> gobale.bale.reference.Int32Value
+	35,  // 217: gobale.bale.reference.AnimatedStickerMessage.collection_access_hash:type_name -> gobale.bale.reference.Int64Value
+	49,  // 218: gobale.bale.reference.StickerImage.file:type_name -> gobale.bale.reference.FileLocation
+	116, // 219: gobale.bale.reference.ServiceMessage.ext:type_name -> gobale.bale.reference.ServiceExtensions
+	0,   // 220: gobale.bale.reference.ServiceExtensions.orphaned:type_name -> gobale.bale.reference.Empty
+	117, // 221: gobale.bale.reference.ServiceExtensions.about_changed:type_name -> gobale.bale.reference.ServiceTextChange
+	0,   // 222: gobale.bale.reference.ServiceExtensions.avatar_changed:type_name -> gobale.bale.reference.Empty
+	117, // 223: gobale.bale.reference.ServiceExtensions.nickname_changed:type_name -> gobale.bale.reference.ServiceTextChange
+	118, // 224: gobale.bale.reference.ServiceExtensions.title_changed:type_name -> gobale.bale.reference.ServiceTitle
+	117, // 225: gobale.bale.reference.ServiceExtensions.topic_changed:type_name -> gobale.bale.reference.ServiceTextChange
+	0,   // 226: gobale.bale.reference.ServiceExtensions.chat_archived:type_name -> gobale.bale.reference.Empty
+	0,   // 227: gobale.bale.reference.ServiceExtensions.chat_restored:type_name -> gobale.bale.reference.Empty
+	125, // 228: gobale.bale.reference.ServiceExtensions.contact_registered:type_name -> gobale.bale.reference.UserIDUpdate
+	0,   // 229: gobale.bale.reference.ServiceExtensions.group_created:type_name -> gobale.bale.reference.Empty
+	119, // 230: gobale.bale.reference.ServiceExtensions.phone_call:type_name -> gobale.bale.reference.ServiceCall
+	0,   // 231: gobale.bale.reference.ServiceExtensions.missed_call:type_name -> gobale.bale.reference.Empty
+	125, // 232: gobale.bale.reference.ServiceExtensions.user_invited:type_name -> gobale.bale.reference.UserIDUpdate
+	0,   // 233: gobale.bale.reference.ServiceExtensions.user_joined:type_name -> gobale.bale.reference.Empty
+	125, // 234: gobale.bale.reference.ServiceExtensions.user_removed:type_name -> gobale.bale.reference.UserIDUpdate
+	125, // 235: gobale.bale.reference.ServiceExtensions.user_left:type_name -> gobale.bale.reference.UserIDUpdate
+	120, // 236: gobale.bale.reference.ServiceExtensions.gift_opened:type_name -> gobale.bale.reference.GiftOpened
+	121, // 237: gobale.bale.reference.ServiceExtensions.gift_opened_compact:type_name -> gobale.bale.reference.GiftOpenedCompact
+	0,   // 238: gobale.bale.reference.ServiceExtensions.welcome:type_name -> gobale.bale.reference.Empty
+	0,   // 239: gobale.bale.reference.ServiceExtensions.mini_app_data_sent:type_name -> gobale.bale.reference.Empty
+	1,   // 240: gobale.bale.reference.ServiceTextChange.value:type_name -> gobale.bale.reference.StringValue
+	35,  // 241: gobale.bale.reference.ServiceCall.start_date:type_name -> gobale.bale.reference.Int64Value
+	2,   // 242: gobale.bale.reference.ServiceCall.is_video:type_name -> gobale.bale.reference.BoolValue
+	21,  // 243: gobale.bale.reference.ChatPeerUpdate.peer:type_name -> gobale.bale.reference.Peer
+	21,  // 244: gobale.bale.reference.MessageReceipt.peer:type_name -> gobale.bale.reference.Peer
+	21,  // 245: gobale.bale.reference.ReadByMeUpdate.peer:type_name -> gobale.bale.reference.Peer
+	45,  // 246: gobale.bale.reference.ReadByMeUpdate.unread_count:type_name -> gobale.bale.reference.Int32Value
+	35,  // 247: gobale.bale.reference.ReadByMeUpdate.end_date:type_name -> gobale.bale.reference.Int64Value
+	1,   // 248: gobale.bale.reference.UserTextUpdate.value:type_name -> gobale.bale.reference.StringValue
+	38,  // 249: gobale.bale.reference.GroupPinnedUpdate.message:type_name -> gobale.bale.reference.HistoryItem
+	94,  // 250: gobale.bale.reference.GroupUnpinnedUpdate.message:type_name -> gobale.bale.reference.MessagePosition
+	21,  // 251: gobale.bale.reference.MultipleMessagesUpdate.peer:type_name -> gobale.bale.reference.Peer
+	38,  // 252: gobale.bale.reference.MultipleMessagesUpdate.messages:type_name -> gobale.bale.reference.HistoryItem
+	131, // 253: gobale.bale.reference.PollMessage.options:type_name -> gobale.bale.reference.PollOption
+	132, // 254: gobale.bale.reference.PollMessage.result:type_name -> gobale.bale.reference.PollResult
+	133, // 255: gobale.bale.reference.PollResult.option_results:type_name -> gobale.bale.reference.PollOptionResult
+	256, // [256:256] is the sub-list for method output_type
+	256, // [256:256] is the sub-list for method input_type
+	256, // [256:256] is the sub-list for extension type_name
+	256, // [256:256] is the sub-list for extension extendee
+	0,   // [0:256] is the sub-list for field type_name
 }
 
 func init() { file_wire_bale_proto_init() }
@@ -10052,7 +10113,7 @@ func file_wire_bale_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wire_bale_proto_rawDesc), len(file_wire_bale_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   135,
+			NumMessages:   136,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

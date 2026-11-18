@@ -33,7 +33,11 @@ message AuthResponse { User user = 2; StringValue jwt = 4; }
 message Peer { int32 type = 1; uint32 id = 2; int64 access_hash = 3; }
 message TextMessage { string text = 1; repeated uint32 mentions = 2; }
 message DocumentMessage { int64 file_id = 1; int64 access_hash = 2; int32 file_size = 3; string name = 4; string mime_type = 5; DocumentExt ext = 7; TextMessage caption = 8; }
-message Message { DocumentMessage document = 4; Empty empty = 5; JSONMessage json = 7; ServiceMessage service = 11; StickerMessage sticker = 12; TemplateMessage template = 13; TemplateResponse template_response = 14; TextMessage text = 15; Empty unsupported = 16; GiftMessage gift = 17; AnimatedStickerMessage animated_sticker = 24; GoldGiftMessage gold_gift = 28; PollMessage poll = 29; }
+message Message { DocumentMessage document = 4; Empty empty = 5; JSONMessage json = 7; ServiceMessage service = 11; StickerMessage sticker = 12; TemplateMessage template = 13; TemplateResponse template_response = 14; TextMessage text = 15; Empty unsupported = 16; GiftMessage gift = 17; AnimatedStickerMessage animated_sticker = 24; ProtectedMessage protected = 27; GoldGiftMessage gold_gift = 28; PollMessage poll = 29; }
+// Official web client observed 2026-11-17 (module 77108, ProtectedMessage.tsx):
+// a PIN-protected wrapper. Its inner message is never projected while locked;
+// content is only returned by an explicit FetchProtectedMessage unlock.
+message ProtectedMessage { Message message = 1; }
 message SendMessageRequest { Peer peer = 1; int64 rid = 2; Message message = 3; MessageReference quoted_message = 5; Peer ex_peer = 6; bool is_silent = 7; }
 // 2026-10-06 web capture: field 1 is sequence, field 2 is milliseconds.
 // Neither field is the client RID; message identity uses the persisted request RID.

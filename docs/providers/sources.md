@@ -264,6 +264,48 @@ The official worker treats `INVALID_LOGIN` as a bounded token-renewal request.
 Native renewal persists replacements before activation and never repeats an
 uncertain mutation.
 
+## Protected message evidence (2026-11-17)
+
+Public first-party Bale Web JavaScript was inspected as text, without executing
+or copying the provider implementation. The index digest matches the bundle
+reviewed on 2026-11-14:
+
+| Artifact | SHA-256 | Observation |
+| --- | --- | --- |
+| [Bale index](https://web.bale.ai/static/js/index.002e15f0d2.js) | `6ae0e71ecd4a6dd8659ca9091686a69c714d292c9aa5742e9d7a7d708ab4fed6` | Message `protectedMessage` field 27 wraps `Message message = 1`. `bale.ramz.v1.Ramz/CheckPassword` request `password = 1`, `services_type = 2` (`C2C = 0`, `BOT = 1`); response `token = 1`. `bale.messaging.v2.Messaging/FetchProtectedMessage` request `peer = 1`, `message_id = 2` (`date = 1`, `rid = 2`, `seq = 3`); response `history = 1` with the `LoadHistory` item layout. |
+| [Bale messaging module](https://web.bale.ai/static/js/async/modulesBuilder.6bdcdfb9d0.js) | `aa2c023c3f699011c55159712774a28b52f9a4b5c51e69ff1ef89baae39fc6b5` | The fetch sends the Ramz token only as the `bale_ramz_token` request header. `CheckPassword` excludes `ABORTED` from automatic retry. |
+| [Bale chat bundle](https://web.bale.ai/static/js/async/Chat.d47da891f2.js) | `5ca0719b1426b8174af364be64465c7e8289eee877192448487609f234b5100f` | `ProtectedMessage.tsx` renders a locked placeholder, never the wrapped message, and unlocks with `services_type = BOT` with the current container RID and messageContent.date (creation time in Unix milliseconds). It supplies an empty sequence string, which encodes as field 3 with value zero. Index module 88281 builds the extended peer using the chat subtype (bot 4, private 1) and zero access hash. |
+| [Bale routes bundle](https://web.bale.ai/static/js/async/MainRoutes.f7ab7517ed.js) | `290285f6c59df90d738762a8646b7e1b5e9a0b18af6daccf089dd8d98753c18b` | `CheckPassword` maps `UNAUTHENTICATED` to a wrong PIN, `ABORTED` to an attempt limit and `PERMISSION_DENIED` to provider re-verification. The fetched `history` replaces the wrapper; its inner `protectedMessage.message` is the displayed content. The `ValidateOTP` epic re-issues `CheckPassword` after the session is authorized. |
+| [Bale verification page](https://web.bale.ai/static/js/async/ForgetPassword.c777ecc8ae.js) | `22e8a0dc0bb2d79d7aa01f30286699a85ddde354ab5fa18a4383a14b7cb3bc21` | The `send_otp` route calls `SendOTP` (empty request/response) to deliver an SMS code, then `ValidateOTP` request `otp = 1` (int32, from `Number(code)`), `services_type = 2` (`BOT`); response `otp_valid = 1`. |
+
+When `CheckPassword` returns `PERMISSION_DENIED` (status 7), the account owner
+must complete an SMS step: one `SendOTP` delivers the code and one `ValidateOTP`
+authorizes the account session, after which `CheckPassword` returns the token.
+GoOmni exposes this as `message.protected.verify.start` and
+`message.protected.verify.submit`. The SMS code is int32 on the wire and
+session-bound; the protocol has no challenge identifier, so GoOmni does not
+invent one. `SendOTP` and `ValidateOTP` are mutations: they are never
+auto-retried, and a genuine `UNAUTHENTICATED` reply to them still revokes the
+session (only the PIN check keeps it).
+
+GoOmni projects field 27 as `kind: "protected_message"`, `locked: true`, and
+never projects the wrapped message into events, webhooks or history. The
+explicit `message.protected.unlock` operation performs one `CheckPassword` and
+one `FetchProtectedMessage` per request. The scoped `UNAUTHENTICATED` reply of
+these two calls does not revoke the account session; every other
+`UNAUTHENTICATED` reply still does. Literal protobuf fixtures and fake-provider
+tests cover recognition, locked projection, unlock outcomes and redaction.
+On 2026-11-18 the operator reported successful live SMS verification. A
+read-only comparison matched four protected events to provider history by RID
+and timestamp. LoadUsers identified their peer as a bot. The deployed revision
+used private-user type 1 in all four cases. The following remain unverified:
+live acceptance of the corrected unlock,
+the token header on the WebSocket transport, server-side verification expiry,
+attempt limits and resend throttling, the exact provider status codes for an
+expired or exhausted SMS challenge, the meaning of `seq`, non-text protected
+variants, protected messages outside private bot chats, and whether all banks
+use this wrapper.
+
 ## Service notification evidence (2026-11-14)
 
 Public first-party JavaScript was inspected as text, without executing the

@@ -18,3 +18,28 @@ message FolderCreateResponse { int32 folder_id = 1; int32 index = 2; repeated Pe
 message FolderDeleteRequest { int32 folder_id = 1; }
 message FolderEditRequest { int32 folder_id = 1; string name = 2; repeated Peer added_peers = 3; repeated Peer deleted_peers = 4; }
 message FolderEditResponse { repeated Peer unread_peers = 1; }
+
+// Official web client observed 2026-11-17 (modules 18913/82787, ProtectedMessage.tsx).
+// The account owner's Ramz PIN is exchanged for a short-lived token with
+// services_type BOT (1); the token travels only as bale_ramz_token request
+// metadata of one FetchProtectedMessage call. message_id is MessageId
+// {date, rid, seq}. The returned history.message is a ProtectedMessage whose
+// inner message is the unlocked content. Peer is restricted to private users.
+message RamzCheckPasswordRequest { string password = 1; int32 services_type = 2; }
+message RamzCheckPasswordResponse { string token = 1; }
+message FetchProtectedMessageRequest { ProtectedFetchPeer peer = 1; ProtectedFetchPosition message_id = 2; }
+message FetchProtectedMessageResponse { HistoryItem history = 1; }
+
+// Ramz SMS verification (official web client 2026-11-17, module 82787,
+// ForgetPassword.tsx / send_otp route). When CheckPassword returns
+// PERMISSION_DENIED (status 7), the client sends an empty SendOTP to deliver an
+// SMS code, then ValidateOTP authorizes the account session so a later
+// CheckPassword succeeds. services_type BOT (1) matches the protected-message
+// unlock. otp is an int32, mirroring the client's Number(code) conversion.
+message RamzValidateOTPRequest { int32 otp = 1; int32 services_type = 2; }
+message RamzValidateOTPResponse { bool otp_valid = 1; }
+
+// Extended peer and message position as serialized by ProtectedMessage.tsx.
+// The web encoder writes the empty sequence string as an explicit int64 zero.
+message ProtectedFetchPeer { int32 type = 1; int32 id = 2; }
+message ProtectedFetchPosition { int64 date = 1; int64 rid = 2; optional int64 sequence = 3; }
