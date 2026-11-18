@@ -32,7 +32,7 @@ func protectedHistory(inner *wire.Message) *wire.HistoryItem {
 }
 
 func unlockBody(pin string) json.RawMessage {
-	return json.RawMessage(`{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","date":"1720000000001","pin":"` + pin + `"}`)
+	return json.RawMessage(`{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","pin":"` + pin + `"}`)
 }
 
 func metadataValue(m *wire.Metadata, key string) string {
@@ -50,6 +50,7 @@ type unlockFixture struct {
 	fetchCode       int32
 	silentCheck     bool
 	lateCheckCode   atomic.Int32 // reply after the client's request timeout
+	metadataHistory []*wire.HistoryItem
 	history         *wire.HistoryItem
 }
 
@@ -68,6 +69,10 @@ func newUnlockClient(t *testing.T, f *unlockFixture) *Client {
 		// Provider free-form text deliberately echoes secrets; it must never surface.
 		freeForm := "provider text " + syntheticPIN + " " + syntheticRamzToken
 		switch r.Service + "/" + r.Method {
+		case "bale.messaging.v2.Messaging/LoadHistory":
+			reply.Payload = marshal(t, &wire.HistoryResponse{History: f.metadataHistory})
+		case "bale.users.v1.Users/LoadUsers":
+			reply.Payload = marshal(t, &wire.AccountUsersResponse{Users: []*wire.User{{Id: 42, IsBot: &wire.BoolValue{Value: true}}}})
 		case "bale.ramz.v1.Ramz/CheckPassword":
 			f.checks.Add(1)
 			q := &wire.RamzCheckPasswordRequest{}
@@ -95,7 +100,7 @@ func newUnlockClient(t *testing.T, f *unlockFixture) *Client {
 		case "bale.messaging.v2.Messaging/FetchProtectedMessage":
 			f.fetches.Add(1)
 			q := &wire.FetchProtectedMessageRequest{}
-			if decode(r.Payload, q) != nil || q.Peer.GetType() != 1 || q.Peer.GetId() != 42 || q.MessageId.GetRid() != protectedRID || q.MessageId.GetDate() != protectedDate {
+			if decode(r.Payload, q) != nil || q.Peer.GetType() != 4 || q.MessageId == nil || q.MessageId.Sequence == nil || q.MessageId.GetSequence() != 0 || q.Peer.GetId() != 42 || q.MessageId.GetRid() != protectedRID || q.MessageId.GetDate() != protectedDate {
 				t.Errorf("invalid FetchProtectedMessage request")
 			}
 			if metadataValue(r.Metadata, "bale_ramz_token") != syntheticRamzToken {
@@ -113,7 +118,14 @@ func newUnlockClient(t *testing.T, f *unlockFixture) *Client {
 		fake.send(ws, &wire.ServerMessage{Response: reply})
 	})
 	c := fake.client()
+	c.opts.ResolveMessageDate = func(_ context.Context, _ domains.Peer, mid string) (int64, bool, error) {
+		if mid == sid(protectedRID) {
+			return protectedDate, true, nil
+		}
+		return 0, false, nil
+	}
 	connectTest(t, c, acceptingSink)
+	c.rememberRef("user", &wire.PeerRef{Id: 42, AccessHash: 73})
 	return c
 }
 
@@ -202,13 +214,14 @@ func TestProtectedUnlockLiteralRequests(t *testing.T) {
 	check, err := hex.DecodeString("0a063234363831301001")
 	require.NoError(t, err)
 	require.Equal(t, check, marshal(t, &wire.RamzCheckPasswordRequest{Password: syntheticPIN, ServicesType: 1}))
-	peer := protowire.AppendVarint(protowire.AppendTag(nil, 1, protowire.VarintType), 1)
+	peer := protowire.AppendVarint(protowire.AppendTag(nil, 1, protowire.VarintType), 4)
 	peer = protowire.AppendVarint(protowire.AppendTag(peer, 2, protowire.VarintType), 42)
 	id := protowire.AppendVarint(protowire.AppendTag(nil, 1, protowire.VarintType), uint64(protectedDate))
 	id = protowire.AppendVarint(protowire.AppendTag(id, 2, protowire.VarintType), uint64(protectedRID))
+	id = protowire.AppendVarint(protowire.AppendTag(id, 3, protowire.VarintType), 0)
 	fetch := protowire.AppendBytes(protowire.AppendTag(nil, 1, protowire.BytesType), peer)
 	fetch = protowire.AppendBytes(protowire.AppendTag(fetch, 2, protowire.BytesType), id)
-	require.Equal(t, fetch, marshal(t, &wire.FetchProtectedMessageRequest{Peer: &wire.Peer{Type: 1, Id: 42}, MessageId: &wire.MessagePosition{Date: protectedDate, Rid: protectedRID}}))
+	require.Equal(t, fetch, marshal(t, &wire.FetchProtectedMessageRequest{Peer: &wire.ProtectedFetchPeer{Type: 4, Id: 42}, MessageId: &wire.ProtectedFetchPosition{Date: protectedDate, Rid: protectedRID, Sequence: new(int64)}}))
 }
 
 func TestProtectedUnlockReturnsProviderContentExactly(t *testing.T) {
@@ -294,14 +307,15 @@ func TestProtectedUnlockFetchOutcomes(t *testing.T) {
 		history *wire.HistoryItem
 		want    string
 	}{
-		{"deleted-or-expired", 5, nil, "PROTECTED_MESSAGE_UNAVAILABLE"},
-		{"empty-history", 0, nil, "PROTECTED_MESSAGE_UNAVAILABLE"},
-		{"empty-wrapper", 0, protectedHistory(nil), "PROTECTED_MESSAGE_UNAVAILABLE"},
+		{"not-found", 5, nil, "PROTECTED_MESSAGE_NOT_FOUND"},
+		{"empty-history", 0, nil, "PROTECTED_FETCH_EMPTY"},
+		{"invalid-history", 0, &wire.HistoryItem{Message: text}, "PROTECTED_FETCH_INVALID"},
+		{"empty-wrapper", 0, protectedHistory(nil), "PROTECTED_CONTENT_EMPTY"},
 		{"not-wrapped", 0, &wire.HistoryItem{SenderId: 42, Rid: protectedRID, Date: protectedDate, Message: text}, "PROTECTED_MESSAGE_UNSUPPORTED"},
 		{"nested-lock", 0, protectedHistory(&wire.Message{Protected: &wire.ProtectedMessage{Message: text}}), "PROTECTED_MESSAGE_UNSUPPORTED"},
 		{"unknown-inner", 0, protectedHistory(&wire.Message{Unsupported: &wire.Empty{}}), "PROTECTED_MESSAGE_UNSUPPORTED"},
-		{"other-message", 0, mismatch, "PROTOCOL_ERROR"},
-		{"other-chat", 0, otherSender, "PROTOCOL_ERROR"},
+		{"other-message", 0, mismatch, "PROTECTED_IDENTITY_MISMATCH"},
+		{"other-chat", 0, otherSender, "PROTECTED_IDENTITY_MISMATCH"},
 		{"token-rejected", 16, nil, "PROTECTED_UNLOCK_REJECTED"},
 		{"rate-limited", 8, nil, "PROVIDER_RATE_LIMITED"},
 	} {
@@ -348,15 +362,14 @@ func TestProtectedUnlockRejectsInvalidInputBeforeNetwork(t *testing.T) {
 	f := &unlockFixture{}
 	c := newUnlockClient(t, f)
 	for _, body := range []string{
-		`{"peer":{"type":"group","id":"42"},"message_id":"1","date":"1","pin":"246810"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","date":"1","pin":"24681"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","date":"1","pin":"2468100"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","date":"1","pin":"۲۴۶۸۱۰"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","date":"1","pin":"24681a"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"246810"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"0","date":"1","pin":"246810"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","date":"1","pin":"246810","token":"x"}`,
-		`{"peer":{"type":"user","id":"42"},"message_id":"1","date":"1","pin":"246810","pin":"135790"}`,
+		`{"peer":{"type":"group","id":"42"},"message_id":"1","pin":"246810"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"24681"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"2468100"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"۲۴۶۸۱۰"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"24681a"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"0","pin":"246810"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"246810","token":"x"}`,
+		`{"peer":{"type":"user","id":"42"},"message_id":"1","pin":"246810","pin":"135790"}`,
 	} {
 		_, err := c.Call(context.Background(), "message.protected.unlock", json.RawMessage(body))
 		require.Equal(t, "INVALID_REQUEST", codeOf(err), body)
@@ -366,7 +379,8 @@ func TestProtectedUnlockRejectsInvalidInputBeforeNetwork(t *testing.T) {
 	require.Zero(t, f.checks.Load())
 	require.Zero(t, f.fetches.Load())
 
-	offline := New(Options{})
+	offline := New(Options{ResolveMessageDate: c.opts.ResolveMessageDate})
+	offline.rememberRef("user", &wire.PeerRef{Id: 42, AccessHash: 73})
 	_, err := offline.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
 	require.Equal(t, "CONNECTION_UNAVAILABLE", codeOf(err))
 }
@@ -384,4 +398,65 @@ func TestOrdinaryUnauthenticatedReplyStillRevokesSession(t *testing.T) {
 	require.Equal(t, "AUTH_REQUIRED", codeOf(err))
 	eventually(t, func() bool { return c.Status().Auth == "auth_required" })
 	require.False(t, strings.Contains(err.Error(), "provider text"))
+}
+
+func TestProtectedUnlockResolvesDateFromStoredEvent(t *testing.T) {
+	f := &unlockFixture{history: protectedHistory(&wire.Message{Text: &wire.TextMessage{Text: syntheticOTPText}})}
+	c := newUnlockClient(t, f) // default resolver maps protectedRID -> protectedDate
+	out, err := c.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
+	require.NoError(t, err)
+	require.Contains(t, string(out), syntheticOTPText)
+	require.Contains(t, string(out), `"date":"`+sid(protectedDate)+`"`)
+	require.EqualValues(t, 1, f.fetches.Load())
+}
+
+func TestProtectedUnlockResolvesCurrentNotPreviousMessage(t *testing.T) {
+	// The resolver is keyed by message_id, so the current message's own date is
+	// used, never a neighbouring message's.
+	f := &unlockFixture{history: protectedHistory(&wire.Message{Text: &wire.TextMessage{Text: syntheticOTPText}})}
+	c := newUnlockClient(t, f)
+	var askedFor string
+	c.opts.ResolveMessageDate = func(_ context.Context, _ domains.Peer, mid string) (int64, bool, error) {
+		askedFor = mid
+		return protectedDate, true, nil
+	}
+	_, err := c.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
+	require.NoError(t, err)
+	require.Equal(t, sid(protectedRID), askedFor)
+}
+
+func TestProtectedUnlockMissingMetadataIsNotExpiry(t *testing.T) {
+	// No stored event and no explicit date: a clear metadata error, not a PIN
+	// attempt and not an expiry claim.
+	f := &unlockFixture{history: protectedHistory(&wire.Message{Text: &wire.TextMessage{Text: syntheticOTPText}})}
+	c := newUnlockClient(t, f)
+	c.opts.ResolveMessageDate = func(context.Context, domains.Peer, string) (int64, bool, error) { return 0, false, nil }
+	_, err := c.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
+	require.Equal(t, "PROTECTED_MESSAGE_METADATA_NOT_FOUND", codeOf(err))
+	require.Zero(t, f.checks.Load(), "metadata must resolve before any PIN attempt")
+	require.Zero(t, f.fetches.Load())
+
+	// Resolver error is sanitised and does not spend a PIN attempt.
+	c.opts.ResolveMessageDate = func(context.Context, domains.Peer, string) (int64, bool, error) {
+		return 0, false, errors.New("synthetic db failure 246810")
+	}
+	_, err = c.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
+	require.Equal(t, "PROTECTED_METADATA_LOOKUP_FAILED", codeOf(err))
+	requireNoSecrets(t, err.Error())
+	require.NotContains(t, err.Error(), "synthetic db failure")
+
+	// No resolver hook at all, no date: still a clear metadata error.
+	c.opts.ResolveMessageDate = nil
+	_, err = c.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
+	require.Equal(t, "PROTECTED_MESSAGE_METADATA_NOT_FOUND", codeOf(err))
+}
+
+func TestProtectedUnlockResolvesDateFromRecentHistory(t *testing.T) {
+	item := protectedHistory(&wire.Message{Text: &wire.TextMessage{Text: syntheticOTPText}})
+	item.Previous = &wire.MessagePosition{Date: 1, Rid: 2}
+	c := newUnlockClient(t, &unlockFixture{history: item, metadataHistory: []*wire.HistoryItem{item}})
+	c.opts.ResolveMessageDate = nil
+	out, err := c.Call(context.Background(), "message.protected.unlock", unlockBody(syntheticPIN))
+	require.NoError(t, err)
+	require.Contains(t, string(out), syntheticOTPText)
 }

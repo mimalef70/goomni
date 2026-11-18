@@ -568,20 +568,20 @@ X-Device-Id: <device_id>
 X-Device-Instance: <instance_token>
 Content-Type: application/json
 
-{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","date":"<message_date_ms>","pin":"<six-digit PIN>"}
+{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","pin":"<six-digit PIN>"}
 ```
 
 ```json
 {"code":"SUCCESS","message":"Success","results":{"peer":{"type":"user","id":"<bot_user_id>"},"message_id":"<message_id>","date":"<message_date_ms>","sender_id":"<bot_user_id>","locked":false,"content":{"kind":"text","message":"<provider text, unmodified>"}}}
 ```
 
-Use the event's `message_id` for `message_id`. For `date`, convert the event's
-or history's millisecond-precision RFC 3339 timestamp to Unix milliseconds as a
-decimal string. Each request performs exactly one
+Use the event's `message_id` for `message_id`. GoOmni resolves the current message timestamp
+from the protected event for the same account, instance and chat. If the event is unavailable, GoOmni checks the latest 100 history entries in that chat. A miss in both sources returns `PROTECTED_MESSAGE_METADATA_NOT_FOUND` before the PIN check.
+Each authorized unlock performs one
 provider PIN check and is never retried. Handle `PROTECTED_PIN_REJECTED`,
 `PROTECTED_PIN_ATTEMPTS_LIMITED`, `PROTECTED_PIN_VERIFICATION_REQUIRED` (see SMS
-verification below), `PROTECTED_MESSAGE_UNAVAILABLE`
-(expired, deleted or missing), `PROTECTED_MESSAGE_UNSUPPORTED`,
+verification below), `PROTECTED_MESSAGE_NOT_FOUND` (provider status 5), `PROTECTED_FETCH_EMPTY`,
+`PROTECTED_CONTENT_EMPTY`, `PROTECTED_FETCH_INVALID`, `PROTECTED_IDENTITY_MISMATCH`, `PROTECTED_MESSAGE_UNSUPPORTED`,
 `PROTECTED_UNLOCK_REJECTED`, `PROTECTED_UNLOCK_INCOMPLETE` (timeout, not
 retried) and the usual connection errors. Do not loop over PINs.
 

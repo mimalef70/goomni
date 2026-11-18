@@ -4881,12 +4881,6 @@ paths:
           request:
             type: object
             properties:
-              date:
-                type: string
-                maxLength: 19
-                pattern: ^[0-9]+$
-                format: positive-int64-string
-                additionalProperties: false
               message_id:
                 type: string
                 maxLength: 20
@@ -4924,7 +4918,6 @@ paths:
             required:
             - peer
             - message_id
-            - date
             - pin
             additionalProperties: false
         - operation: message.protected.verify.start
@@ -56714,8 +56707,10 @@ paths:
         GoOmni performs one provider PIN check and one fetch, never retries either, and never stores, logs or reuses
         the PIN or provider token. Unlocked content is returned only in this authenticated no-store response; it
         is not added to events, history, webhooks or operation logs. PROTECTED_PIN_REJECTED, PROTECTED_PIN_ATTEMPTS_LIMITED
-        and PROTECTED_PIN_VERIFICATION_REQUIRED report provider decisions; PROTECTED_MESSAGE_UNAVAILABLE covers
-        expired, deleted or missing content. Requires remote access over TLS. Live acceptance is pending.'
+        and PROTECTED_PIN_VERIFICATION_REQUIRED report provider decisions; GoOmni resolves the current message timestamp
+        from its stored event or the latest 100 chat history entries. Missing metadata returns PROTECTED_MESSAGE_METADATA_NOT_FOUND
+        before PIN verification. PROTECTED_MESSAGE_NOT_FOUND reports fetch status 5. Empty, malformed and mismatched
+        fetch responses have distinct errors. Requires remote access over TLS. Live acceptance is pending.'
       x-goomni-operation: message.protected.unlock
       requestBody:
         required: true
@@ -56725,12 +56720,6 @@ paths:
               anyOf:
               - type: object
                 properties:
-                  date:
-                    type: string
-                    maxLength: 19
-                    pattern: ^[0-9]+$
-                    format: positive-int64-string
-                    additionalProperties: false
                   message_id:
                     type: string
                     maxLength: 20
@@ -56768,7 +56757,6 @@ paths:
                 required:
                 - peer
                 - message_id
-                - date
                 - pin
                 additionalProperties: false
               description: Select the schema for the connection provider; identical provider shapes intentionally
@@ -56779,12 +56767,6 @@ paths:
         bale:
           type: object
           properties:
-            date:
-              type: string
-              maxLength: 19
-              pattern: ^[0-9]+$
-              format: positive-int64-string
-              additionalProperties: false
             message_id:
               type: string
               maxLength: 20
@@ -56822,7 +56804,6 @@ paths:
           required:
           - peer
           - message_id
-          - date
           - pin
           additionalProperties: false
       tags:
@@ -63961,12 +63942,6 @@ paths:
                 additionalProperties: false
               - type: object
                 properties:
-                  date:
-                    type: string
-                    maxLength: 19
-                    pattern: ^[0-9]+$
-                    format: positive-int64-string
-                    additionalProperties: false
                   message_id:
                     type: string
                     maxLength: 20
@@ -64004,7 +63979,6 @@ paths:
                 required:
                 - peer
                 - message_id
-                - date
                 - pin
                 additionalProperties: false
               - type: object

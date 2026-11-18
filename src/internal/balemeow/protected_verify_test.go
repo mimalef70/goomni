@@ -81,6 +81,8 @@ func newVerifyClient(t *testing.T, f *verifyFixture) *Client {
 				f.authorized.Store(true)
 				reply.Payload = marshal(t, &wire.RamzValidateOTPResponse{OtpValid: f.otpValid})
 			}
+		case "bale.users.v1.Users/LoadUsers":
+			reply.Payload = marshal(t, &wire.AccountUsersResponse{Users: []*wire.User{{Id: 42, IsBot: &wire.BoolValue{Value: true}}}})
 		case "bale.ramz.v1.Ramz/CheckPassword":
 			f.checks.Add(1)
 			if f.gatedCheck && !f.authorized.Load() {
@@ -99,6 +101,7 @@ func newVerifyClient(t *testing.T, f *verifyFixture) *Client {
 	})
 	c := fake.client()
 	connectTest(t, c, acceptingSink)
+	c.rememberRef("user", &wire.PeerRef{Id: 42, AccessHash: 73})
 	return c
 }
 
@@ -241,6 +244,7 @@ func TestProtectedUnlockAfterVerificationSucceeds(t *testing.T) {
 	// and the retried unlock returns the content.
 	f := &verifyFixture{gatedCheck: true, otpValid: true}
 	c := newVerifyClient(t, f)
+	c.opts.ResolveMessageDate = func(context.Context, domains.Peer, string) (int64, bool, error) { return protectedDate, true, nil }
 	unlock := unlockBody(syntheticPIN)
 
 	_, err := c.Call(context.Background(), "message.protected.unlock", unlock)

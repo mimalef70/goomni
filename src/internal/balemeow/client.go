@@ -31,17 +31,21 @@ import (
 // framing defaults reflect the inspected official web client. Live verification
 // is documented separately from fake-server coverage.
 type Options struct {
-	GRPCEndpoint           string
-	WebSocketEndpoint      string
-	Origin                 string
-	AppID                  uint32
-	APIKey                 string
-	APIVersion             uint32
-	HandshakeAPIVersion    int64
-	DeviceTitle            string
-	HTTPClient             *http.Client
-	LoadCheckpoint         func(context.Context) (string, error)
-	SaveMediaReference     func(context.Context, domains.Peer, string, domains.ProviderMedia) (bool, error)
+	GRPCEndpoint        string
+	WebSocketEndpoint   string
+	Origin              string
+	AppID               uint32
+	APIKey              string
+	APIVersion          uint32
+	HandshakeAPIVersion int64
+	DeviceTitle         string
+	HTTPClient          *http.Client
+	LoadCheckpoint      func(context.Context) (string, error)
+	SaveMediaReference  func(context.Context, domains.Peer, string, domains.ProviderMedia) (bool, error)
+	// ResolveMessageDate returns the stored native millisecond date of a message
+	// by peer and message ID, used to build a protected-message unlock without a
+	// caller-supplied date. A missing message is (0, false, nil).
+	ResolveMessageDate     func(context.Context, domains.Peer, string) (int64, bool, error)
 	RecoveryVerified       bool
 	MediaSource            func(context.Context, string) (io.ReadCloser, MediaInfo, error)
 	MaxMediaBytes          int64

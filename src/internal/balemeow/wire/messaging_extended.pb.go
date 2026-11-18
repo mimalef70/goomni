@@ -842,9 +842,9 @@ func (x *RamzCheckPasswordResponse) GetToken() string {
 }
 
 type FetchProtectedMessageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Peer          *Peer                  `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
-	MessageId     *MessagePosition       `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Peer          *ProtectedFetchPeer     `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
+	MessageId     *ProtectedFetchPosition `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -879,14 +879,14 @@ func (*FetchProtectedMessageRequest) Descriptor() ([]byte, []int) {
 	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *FetchProtectedMessageRequest) GetPeer() *Peer {
+func (x *FetchProtectedMessageRequest) GetPeer() *ProtectedFetchPeer {
 	if x != nil {
 		return x.Peer
 	}
 	return nil
 }
 
-func (x *FetchProtectedMessageRequest) GetMessageId() *MessagePosition {
+func (x *FetchProtectedMessageRequest) GetMessageId() *ProtectedFetchPosition {
 	if x != nil {
 		return x.MessageId
 	}
@@ -1039,6 +1039,120 @@ func (x *RamzValidateOTPResponse) GetOtpValid() bool {
 	return false
 }
 
+// Extended peer and message position as serialized by ProtectedMessage.tsx.
+// The web encoder writes the empty sequence string as an explicit int64 zero.
+type ProtectedFetchPeer struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          int32                  `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
+	Id            int32                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProtectedFetchPeer) Reset() {
+	*x = ProtectedFetchPeer{}
+	mi := &file_wire_messaging_extended_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProtectedFetchPeer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProtectedFetchPeer) ProtoMessage() {}
+
+func (x *ProtectedFetchPeer) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_messaging_extended_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProtectedFetchPeer.ProtoReflect.Descriptor instead.
+func (*ProtectedFetchPeer) Descriptor() ([]byte, []int) {
+	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ProtectedFetchPeer) GetType() int32 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+func (x *ProtectedFetchPeer) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ProtectedFetchPosition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          int64                  `protobuf:"varint,1,opt,name=date,proto3" json:"date,omitempty"`
+	Rid           int64                  `protobuf:"varint,2,opt,name=rid,proto3" json:"rid,omitempty"`
+	Sequence      *int64                 `protobuf:"varint,3,opt,name=sequence,proto3,oneof" json:"sequence,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProtectedFetchPosition) Reset() {
+	*x = ProtectedFetchPosition{}
+	mi := &file_wire_messaging_extended_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProtectedFetchPosition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProtectedFetchPosition) ProtoMessage() {}
+
+func (x *ProtectedFetchPosition) ProtoReflect() protoreflect.Message {
+	mi := &file_wire_messaging_extended_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProtectedFetchPosition.ProtoReflect.Descriptor instead.
+func (*ProtectedFetchPosition) Descriptor() ([]byte, []int) {
+	return file_wire_messaging_extended_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ProtectedFetchPosition) GetDate() int64 {
+	if x != nil {
+		return x.Date
+	}
+	return 0
+}
+
+func (x *ProtectedFetchPosition) GetRid() int64 {
+	if x != nil {
+		return x.Rid
+	}
+	return 0
+}
+
+func (x *ProtectedFetchPosition) GetSequence() int64 {
+	if x != nil && x.Sequence != nil {
+		return *x.Sequence
+	}
+	return 0
+}
+
 var File_wire_messaging_extended_proto protoreflect.FileDescriptor
 
 const file_wire_messaging_extended_proto_rawDesc = "" +
@@ -1095,18 +1209,26 @@ const file_wire_messaging_extended_proto_rawDesc = "" +
 	"\bpassword\x18\x01 \x01(\tR\bpassword\x12#\n" +
 	"\rservices_type\x18\x02 \x01(\x05R\fservicesType\"1\n" +
 	"\x19RamzCheckPasswordResponse\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"\x96\x01\n" +
-	"\x1cFetchProtectedMessageRequest\x12/\n" +
-	"\x04peer\x18\x01 \x01(\v2\x1b.gobale.bale.reference.PeerR\x04peer\x12E\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\xab\x01\n" +
+	"\x1cFetchProtectedMessageRequest\x12=\n" +
+	"\x04peer\x18\x01 \x01(\v2).gobale.bale.reference.ProtectedFetchPeerR\x04peer\x12L\n" +
 	"\n" +
-	"message_id\x18\x02 \x01(\v2&.gobale.bale.reference.MessagePositionR\tmessageId\"]\n" +
+	"message_id\x18\x02 \x01(\v2-.gobale.bale.reference.ProtectedFetchPositionR\tmessageId\"]\n" +
 	"\x1dFetchProtectedMessageResponse\x12<\n" +
 	"\ahistory\x18\x01 \x01(\v2\".gobale.bale.reference.HistoryItemR\ahistory\"O\n" +
 	"\x16RamzValidateOTPRequest\x12\x10\n" +
 	"\x03otp\x18\x01 \x01(\x05R\x03otp\x12#\n" +
 	"\rservices_type\x18\x02 \x01(\x05R\fservicesType\"6\n" +
 	"\x17RamzValidateOTPResponse\x12\x1b\n" +
-	"\totp_valid\x18\x01 \x01(\bR\botpValidB8Z6github.com/mimalef70/goomni/src/internal/balemeow/wireb\x06proto3"
+	"\totp_valid\x18\x01 \x01(\bR\botpValid\"8\n" +
+	"\x12ProtectedFetchPeer\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\x05R\x04type\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x05R\x02id\"l\n" +
+	"\x16ProtectedFetchPosition\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\x03R\x04date\x12\x10\n" +
+	"\x03rid\x18\x02 \x01(\x03R\x03rid\x12\x1f\n" +
+	"\bsequence\x18\x03 \x01(\x03H\x00R\bsequence\x88\x01\x01B\v\n" +
+	"\t_sequenceB8Z6github.com/mimalef70/goomni/src/internal/balemeow/wireb\x06proto3"
 
 var (
 	file_wire_messaging_extended_proto_rawDescOnce sync.Once
@@ -1120,7 +1242,7 @@ func file_wire_messaging_extended_proto_rawDescGZIP() []byte {
 	return file_wire_messaging_extended_proto_rawDescData
 }
 
-var file_wire_messaging_extended_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_wire_messaging_extended_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_wire_messaging_extended_proto_goTypes = []any{
 	(*ChatPeerRequest)(nil),               // 0: gobale.bale.reference.ChatPeerRequest
 	(*ChatPinRequest)(nil),                // 1: gobale.bale.reference.ChatPinRequest
@@ -1141,30 +1263,32 @@ var file_wire_messaging_extended_proto_goTypes = []any{
 	(*FetchProtectedMessageResponse)(nil), // 16: gobale.bale.reference.FetchProtectedMessageResponse
 	(*RamzValidateOTPRequest)(nil),        // 17: gobale.bale.reference.RamzValidateOTPRequest
 	(*RamzValidateOTPResponse)(nil),       // 18: gobale.bale.reference.RamzValidateOTPResponse
-	(*Peer)(nil),                          // 19: gobale.bale.reference.Peer
-	(*MessagePosition)(nil),               // 20: gobale.bale.reference.MessagePosition
-	(*HistoryItem)(nil),                   // 21: gobale.bale.reference.HistoryItem
+	(*ProtectedFetchPeer)(nil),            // 19: gobale.bale.reference.ProtectedFetchPeer
+	(*ProtectedFetchPosition)(nil),        // 20: gobale.bale.reference.ProtectedFetchPosition
+	(*Peer)(nil),                          // 21: gobale.bale.reference.Peer
+	(*MessagePosition)(nil),               // 22: gobale.bale.reference.MessagePosition
+	(*HistoryItem)(nil),                   // 23: gobale.bale.reference.HistoryItem
 }
 var file_wire_messaging_extended_proto_depIdxs = []int32{
-	19, // 0: gobale.bale.reference.ChatPeerRequest.peer:type_name -> gobale.bale.reference.Peer
-	19, // 1: gobale.bale.reference.ChatPinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
-	20, // 2: gobale.bale.reference.ChatPinRequest.message:type_name -> gobale.bale.reference.MessagePosition
-	19, // 3: gobale.bale.reference.ChatUnpinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
-	20, // 4: gobale.bale.reference.ChatUnpinRequest.messages:type_name -> gobale.bale.reference.MessagePosition
-	21, // 5: gobale.bale.reference.ChatPinsResponse.messages:type_name -> gobale.bale.reference.HistoryItem
-	19, // 6: gobale.bale.reference.ChatFolder.peers:type_name -> gobale.bale.reference.Peer
-	19, // 7: gobale.bale.reference.ChatFolder.unread_peers:type_name -> gobale.bale.reference.Peer
-	19, // 8: gobale.bale.reference.FolderUnreadPeer.peer:type_name -> gobale.bale.reference.Peer
+	21, // 0: gobale.bale.reference.ChatPeerRequest.peer:type_name -> gobale.bale.reference.Peer
+	21, // 1: gobale.bale.reference.ChatPinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
+	22, // 2: gobale.bale.reference.ChatPinRequest.message:type_name -> gobale.bale.reference.MessagePosition
+	21, // 3: gobale.bale.reference.ChatUnpinRequest.ex_peer:type_name -> gobale.bale.reference.Peer
+	22, // 4: gobale.bale.reference.ChatUnpinRequest.messages:type_name -> gobale.bale.reference.MessagePosition
+	23, // 5: gobale.bale.reference.ChatPinsResponse.messages:type_name -> gobale.bale.reference.HistoryItem
+	21, // 6: gobale.bale.reference.ChatFolder.peers:type_name -> gobale.bale.reference.Peer
+	21, // 7: gobale.bale.reference.ChatFolder.unread_peers:type_name -> gobale.bale.reference.Peer
+	21, // 8: gobale.bale.reference.FolderUnreadPeer.peer:type_name -> gobale.bale.reference.Peer
 	5,  // 9: gobale.bale.reference.FolderListResponse.folders:type_name -> gobale.bale.reference.ChatFolder
 	6,  // 10: gobale.bale.reference.FolderListResponse.unread_peers:type_name -> gobale.bale.reference.FolderUnreadPeer
-	19, // 11: gobale.bale.reference.FolderCreateRequest.peers:type_name -> gobale.bale.reference.Peer
-	19, // 12: gobale.bale.reference.FolderCreateResponse.unread_peers:type_name -> gobale.bale.reference.Peer
-	19, // 13: gobale.bale.reference.FolderEditRequest.added_peers:type_name -> gobale.bale.reference.Peer
-	19, // 14: gobale.bale.reference.FolderEditRequest.deleted_peers:type_name -> gobale.bale.reference.Peer
-	19, // 15: gobale.bale.reference.FolderEditResponse.unread_peers:type_name -> gobale.bale.reference.Peer
-	19, // 16: gobale.bale.reference.FetchProtectedMessageRequest.peer:type_name -> gobale.bale.reference.Peer
-	20, // 17: gobale.bale.reference.FetchProtectedMessageRequest.message_id:type_name -> gobale.bale.reference.MessagePosition
-	21, // 18: gobale.bale.reference.FetchProtectedMessageResponse.history:type_name -> gobale.bale.reference.HistoryItem
+	21, // 11: gobale.bale.reference.FolderCreateRequest.peers:type_name -> gobale.bale.reference.Peer
+	21, // 12: gobale.bale.reference.FolderCreateResponse.unread_peers:type_name -> gobale.bale.reference.Peer
+	21, // 13: gobale.bale.reference.FolderEditRequest.added_peers:type_name -> gobale.bale.reference.Peer
+	21, // 14: gobale.bale.reference.FolderEditRequest.deleted_peers:type_name -> gobale.bale.reference.Peer
+	21, // 15: gobale.bale.reference.FolderEditResponse.unread_peers:type_name -> gobale.bale.reference.Peer
+	19, // 16: gobale.bale.reference.FetchProtectedMessageRequest.peer:type_name -> gobale.bale.reference.ProtectedFetchPeer
+	20, // 17: gobale.bale.reference.FetchProtectedMessageRequest.message_id:type_name -> gobale.bale.reference.ProtectedFetchPosition
+	23, // 18: gobale.bale.reference.FetchProtectedMessageResponse.history:type_name -> gobale.bale.reference.HistoryItem
 	19, // [19:19] is the sub-list for method output_type
 	19, // [19:19] is the sub-list for method input_type
 	19, // [19:19] is the sub-list for extension type_name
@@ -1178,13 +1302,14 @@ func file_wire_messaging_extended_proto_init() {
 		return
 	}
 	file_wire_bale_proto_init()
+	file_wire_messaging_extended_proto_msgTypes[20].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wire_messaging_extended_proto_rawDesc), len(file_wire_messaging_extended_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

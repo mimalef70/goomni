@@ -2374,12 +2374,6 @@
           "pattern": "^-?[0-9]+$",
           "format": "int64-string"
         },
-        "date": {
-          "type": "string",
-          "maxLength": 19,
-          "pattern": "^[0-9]+$",
-          "format": "positive-int64-string"
-        },
         "pin": {
           "type": "string",
           "minLength": 6,
@@ -2392,7 +2386,6 @@
       "required": [
         "peer",
         "message_id",
-        "date",
         "pin"
       ],
       "additionalProperties": false

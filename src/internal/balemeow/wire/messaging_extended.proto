@@ -27,7 +27,7 @@ message FolderEditResponse { repeated Peer unread_peers = 1; }
 // inner message is the unlocked content. Peer is restricted to private users.
 message RamzCheckPasswordRequest { string password = 1; int32 services_type = 2; }
 message RamzCheckPasswordResponse { string token = 1; }
-message FetchProtectedMessageRequest { Peer peer = 1; MessagePosition message_id = 2; }
+message FetchProtectedMessageRequest { ProtectedFetchPeer peer = 1; ProtectedFetchPosition message_id = 2; }
 message FetchProtectedMessageResponse { HistoryItem history = 1; }
 
 // Ramz SMS verification (official web client 2026-11-17, module 82787,
@@ -38,3 +38,8 @@ message FetchProtectedMessageResponse { HistoryItem history = 1; }
 // unlock. otp is an int32, mirroring the client's Number(code) conversion.
 message RamzValidateOTPRequest { int32 otp = 1; int32 services_type = 2; }
 message RamzValidateOTPResponse { bool otp_valid = 1; }
+
+// Extended peer and message position as serialized by ProtectedMessage.tsx.
+// The web encoder writes the empty sequence string as an explicit int64 zero.
+message ProtectedFetchPeer { int32 type = 1; int32 id = 2; }
+message ProtectedFetchPosition { int64 date = 1; int64 rid = 2; optional int64 sequence = 3; }

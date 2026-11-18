@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/mimalef70/goomni/src/domains"
 	"github.com/mimalef70/goomni/src/internal/balemeow/wire"
@@ -29,7 +30,6 @@ func (c *Client) unlockProtectedMessage(ctx context.Context, raw json.RawMessage
 	var p struct {
 		Peer      domains.Peer `json:"peer"`
 		MessageID string       `json:"message_id"`
-		Date      string       `json:"date"`
 		PIN       string       `json:"pin"`
 	}
 	if json.Unmarshal(raw, &p) != nil {
@@ -45,11 +45,12 @@ func (c *Client) unlockProtectedMessage(ctx context.Context, raw json.RawMessage
 	if err != nil {
 		return nil, boundedError("INVALID_REQUEST", "message_id must be a nonzero signed int64 string", 400)
 	}
-	date, err := positiveID(p.Date)
+	// Resolve the current message before spending a PIN attempt.
+	date, err := c.resolveProtectedDate(ctx, p.Peer, sid(rid))
 	if err != nil {
-		return nil, boundedError("INVALID_REQUEST", "date is the protected message's millisecond date", 400)
+		return nil, err
 	}
-	peer, err := c.messagePeer(ctx, p.Peer)
+	peer, err := c.protectedPeer(ctx, p.Peer)
 	if err != nil {
 		return nil, err
 	}
@@ -64,27 +65,31 @@ func (c *Client) unlockProtectedMessage(ctx context.Context, raw json.RawMessage
 	if decode(data, check) != nil || check.Token == "" || len(check.Token) > maxRamzTokenBytes {
 		return nil, protocolError()
 	}
-	request := &wire.FetchProtectedMessageRequest{Peer: peer, MessageId: &wire.MessagePosition{Rid: rid, Date: date}}
+	sequence := int64(0)
+	request := &wire.FetchProtectedMessageRequest{Peer: peer, MessageId: &wire.ProtectedFetchPosition{Rid: rid, Date: date, Sequence: &sequence}}
 	// A rejected fetch concerns the per-request Ramz token, not the account
 	// session, so keep the session on its UNAUTHENTICATED reply.
 	data, err = c.rpcWith(ctx, "bale.messaging.v2.Messaging", protectedMessageMethod, request, rpcOptions{metadata: [][2]string{{ramzTokenMetadataKey, check.Token}}, status: protectedFetchStatus, keepSession: true})
 	if err != nil {
+		c.reportDiagnostic("PROTECTED_PIN_ACCEPTED_FETCH_FAILED")
 		return nil, unlockIncomplete(err)
 	}
 	reply := &wire.FetchProtectedMessageResponse{}
 	if decode(data, reply) != nil {
-		return nil, protocolError()
+		return nil, boundedError("PROTECTED_FETCH_INVALID", "invalid protected message response", 502)
 	}
+	// From here the PIN was accepted and a token obtained; any failure is in the
+	// fetch phase. The codes below distinguish the exact cause for diagnosis.
 	h := reply.History
 	if h == nil {
-		return nil, protectedUnavailable()
+		return nil, boundedError("PROTECTED_FETCH_EMPTY", "the PIN was accepted but the provider returned no message for the unlock", 502)
 	}
 	if validateHistoryItem(h) != nil {
-		return nil, protocolError()
+		return nil, boundedError("PROTECTED_FETCH_INVALID", "invalid protected history item", 502)
 	}
 	// The unlock must belong to the requested private chat and message.
-	if h.Rid != rid || h.Date != date || h.SenderId != peer.Id {
-		return nil, protocolError()
+	if h.Rid != rid || h.Date != date || h.SenderId != uint32(peer.Id) {
+		return nil, boundedError("PROTECTED_IDENTITY_MISMATCH", "the provider returned a different message than requested", 502)
 	}
 	wrapper := h.Message.GetProtected()
 	if wrapper == nil {
@@ -92,7 +97,7 @@ func (c *Client) unlockProtectedMessage(ctx context.Context, raw json.RawMessage
 	}
 	inner := wrapper.Message
 	if inner == nil {
-		return nil, protectedUnavailable()
+		return nil, boundedError("PROTECTED_CONTENT_EMPTY", "the provider returned a protected wrapper with no content", 422)
 	}
 	content := contentBody(inner, 0)
 	if inner.Protected != nil || content["kind"] == "unsupported" {
@@ -133,14 +138,69 @@ func protectedFetchStatus(code int32) error {
 	case 16:
 		return boundedError("PROTECTED_UNLOCK_REJECTED", "provider rejected the unlock authorization", 403)
 	case 5:
-		return protectedUnavailable()
+		// The PIN was accepted; the provider could not match this id and date.
+		return boundedError("PROTECTED_MESSAGE_NOT_FOUND", "the PIN was accepted but the provider did not find a protected message with this id and date for the peer", 404)
 	default:
 		return providerError(code, "")
 	}
 }
 
-func protectedUnavailable() error {
-	return boundedError("PROTECTED_MESSAGE_UNAVAILABLE", "protected message is unavailable, expired or deleted", 404)
+// ProtectedMessage.tsx constructs an extended peer with a zero access hash.
+func (c *Client) protectedPeer(ctx context.Context, public domains.Peer) (*wire.ProtectedFetchPeer, error) {
+	ref, err := c.accountUserRef(ctx, public)
+	if err != nil {
+		return nil, err
+	}
+	data, err := c.readRPC(ctx, accountUsersService, "LoadUsers", &wire.AccountPeersRequest{Peers: []*wire.PeerRef{ref}})
+	if err != nil {
+		return nil, err
+	}
+	var reply wire.AccountUsersResponse
+	if decode(data, &reply) != nil || len(reply.Users) != 1 || reply.Users[0].GetId() != ref.Id {
+		return nil, protocolError()
+	}
+	fetchPeer := &wire.ProtectedFetchPeer{Type: 1, Id: int32(ref.Id)}
+	if reply.Users[0].GetIsBot().GetValue() {
+		fetchPeer.Type = 4
+	}
+	return fetchPeer, nil
+}
+
+func (c *Client) resolveProtectedDate(ctx context.Context, peer domains.Peer, messageID string) (int64, error) {
+	if c.opts.ResolveMessageDate != nil {
+		ms, found, err := c.opts.ResolveMessageDate(ctx, peer, messageID)
+		if err != nil {
+			return 0, boundedError("PROTECTED_METADATA_LOOKUP_FAILED", "could not resolve the protected message date", 500)
+		}
+		if found && ms > 0 {
+			return ms, nil
+		}
+	}
+
+	// LoadHistory takes a date cursor, with no RID-only filter. Bound the
+	// fallback to one page. The cursor is never used as the unlock date.
+	native, err := c.messagePeer(ctx, peer)
+	if err != nil {
+		return 0, err
+	}
+	const limit = 100
+	data, err := c.readRPC(ctx, "bale.messaging.v2.Messaging", "LoadHistory", &wire.HistoryRequest{Peer: native, Date: time.Now().UnixMilli(), LoadMode: 2, Limit: limit})
+	if err != nil {
+		return 0, err
+	}
+	var page wire.HistoryResponse
+	if decode(data, &page) != nil || len(page.History) > limit {
+		return 0, protocolError()
+	}
+	for _, item := range page.History {
+		if item.GetSenderId() == native.Id && sid(item.GetRid()) == messageID && item.GetMessage().GetProtected() != nil {
+			if validateHistoryItem(item) != nil {
+				return 0, protocolError()
+			}
+			return item.Date, nil
+		}
+	}
+	return 0, boundedError("PROTECTED_MESSAGE_METADATA_NOT_FOUND", "protected message metadata unavailable in stored events and recent chat history", 404)
 }
 
 func protectedUnsupported() error {

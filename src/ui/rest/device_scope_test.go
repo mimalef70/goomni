@@ -90,7 +90,7 @@ func TestHTTPAccountSelectionSurvivesAliasReuse(t *testing.T) {
 		{"provider-read", "GET", "/user/info", `{}`, true},
 		{"provider-mutation", "POST", "/group", `{"title":"Synthetic group","users":[{"type":"user","id":"42"}]}`, true},
 		{"generic-operation", "POST", "/operations/account.name", `{"push_name":"Synthetic name"}`, true},
-		{"protected-unlock", "POST", "/message/protected/unlock", `{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","date":"1720000000001","pin":"246810"}`, true},
+		{"protected-unlock", "POST", "/message/protected/unlock", `{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","pin":"246810"}`, true},
 		{"protected-verify-start", "POST", "/message/protected/verify/start", `{}`, true},
 		{"protected-verify-submit", "POST", "/message/protected/verify/submit", `{"verification_code":"135790"}`, true},
 		{"login", "POST", "/devices/shared/login", `{"phone":"+10000000000"}`, false},

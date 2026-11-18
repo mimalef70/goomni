@@ -33,7 +33,7 @@ func TestProtectedUnlockPINIsBodyOnlyAndNeverPersisted(t *testing.T) {
 	device, err := svc.CreateDevice(context.Background(), "one", domains.ProviderBale)
 	require.NoError(t, err)
 	body := func(pin string) string {
-		return `{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","date":"1720000000001","pin":"` + pin + `"}`
+		return `{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","pin":"` + pin + `"}`
 	}
 	do := func(path, payload string) (int, string) {
 		r := httptest.NewRequest("POST", path, bytes.NewBufferString(payload))
@@ -51,7 +51,7 @@ func TestProtectedUnlockPINIsBodyOnlyAndNeverPersisted(t *testing.T) {
 	}
 
 	for _, path := range []string{"/message/protected/unlock?pin=" + pin, "/operations/message.protected.unlock?pin=" + pin} {
-		status, out := do(path, `{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993","date":"1720000000001"}`)
+		status, out := do(path, `{"peer":{"type":"user","id":"42"},"message_id":"9007199254740993"}`)
 		require.Equal(t, 400, status, out)
 		require.Contains(t, out, "INVALID_REQUEST")
 		status, out = do(path, body(pin))
