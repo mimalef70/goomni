@@ -20,7 +20,14 @@ func (c *Client) invokeWithProfile(ctx context.Context, method string, params ob
 	if anonymous || !errors.As(err, &de) || de.Code != "SESSION_REFRESH_REQUIRED" {
 		return response, err
 	}
-	if renewalErr := c.renewSession(ctx, token); renewalErr != nil {
+	renewalErr := c.renewSession(ctx, token)
+	if diag := domains.TextSendDiagnosticFrom(ctx); diag != nil && method == "messages.sendMessage" {
+		diag.Renewal = "completed"
+		if renewalErr != nil {
+			diag.Renewal = "failed"
+		}
+	}
+	if renewalErr != nil {
 		if mutating {
 			return nil, &domains.Error{Code: "SEND_UNKNOWN", Message: "write outcome is unknown after session renewal failed", HTTP: 502, Ambiguous: true}
 		}

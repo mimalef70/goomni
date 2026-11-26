@@ -112,6 +112,11 @@ func (s *serviceRuntime) processOperation(op domains.Operation) {
 	ctx = domains.WithOperationStageRecorder(ctx, func(stageCtx context.Context, stage domains.OperationStage) error {
 		return s.sendStore.RecordOperationStage(stageCtx, op.ConnectionID, op.ID, op.Request.RequestID, stage)
 	})
+	var diagnostic *domains.TextSendDiagnostic
+	if (d.Provider == domains.ProviderBale || d.Provider == domains.ProviderEitaa) && (op.Request.Kind == "" || op.Request.Kind == "text") {
+		diagnostic = &domains.TextSendDiagnostic{Stage: "prepare"}
+		ctx = domains.WithTextSendDiagnostic(ctx, diagnostic)
+	}
 	started := time.Now()
 	var result domains.SendResult
 	if op.Request.Kind == "operation" {
@@ -129,6 +134,9 @@ func (s *serviceRuntime) processOperation(op domains.Operation) {
 	cancel()
 	var sendErr *domains.Error
 	unknown := err != nil && (!errors.As(err, &sendErr) || sendErr.Ambiguous)
+	if diagnostic != nil {
+		e.observeTextSendAttempt(d.Provider, op, diagnostic, err)
+	}
 	s.observeSend(started, unknown)
 	if err == nil {
 		finish("succeeded", &result, "", "")

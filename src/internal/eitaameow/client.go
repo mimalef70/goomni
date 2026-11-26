@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -245,17 +246,38 @@ func (c *Client) invokeProfile(ctx context.Context, method string, params object
 	}
 	req.Header.Set("Origin", "https://web.eitaa.com")
 	req.Header.Set("Content-Type", "application/octet-stream")
+	// Peer lookups and renewal use the same context. Record only the original send.
+	var diag *domains.TextSendDiagnostic
+	if method == "messages.sendMessage" {
+		diag = domains.TextSendDiagnosticFrom(ctx)
+		if diag != nil {
+			diag.Stage = "http_request"
+		}
+	}
 	res, err := c.http.Do(req)
 	if err != nil {
+		if diag != nil {
+			diag.Reason = transportReason(err)
+		}
 		return nil, &domains.Error{Code: "PROVIDER_TRANSPORT_ERROR", Message: "Eitaa request did not complete", HTTP: 502, Ambiguous: mutating, Retryable: !mutating}
 	}
 	defer res.Body.Close()
+	if diag != nil {
+		diag.Stage = "http_response"
+		diag.HTTPStatus = res.StatusCode
+	}
 	if res.StatusCode != http.StatusOK {
 		return nil, &domains.Error{Code: "PROVIDER_HTTP_ERROR", Message: "Eitaa returned an unsuccessful HTTP response", HTTP: 502, Ambiguous: mutating, Retryable: !mutating}
+	}
+	if diag != nil {
+		diag.Stage = "read_response"
 	}
 	raw, err := io.ReadAll(io.LimitReader(res.Body, maxWireBytes+1))
 	if err != nil || len(raw) > maxWireBytes {
 		return nil, &domains.Error{Code: "PROVIDER_PROTOCOL_ERROR", Message: "Eitaa response could not be decoded", HTTP: 502, Ambiguous: mutating}
+	}
+	if diag != nil {
+		diag.Stage = "decode_response"
 	}
 	value, err := c.codec.decodeResponse(method, raw)
 	if err != nil {
@@ -272,14 +294,48 @@ func (c *Client) invokeProfile(ctx context.Context, method string, params object
 		return nil, &domains.Error{Code: "PROVIDER_PROTOCOL_ERROR", Message: "Eitaa response could not be decoded", HTTP: 502, Ambiguous: mutating}
 	}
 	if obj.str("_") == "error" || obj.str("_") == "eitta_error" {
-		return nil, rpcError(obj)
+		rejection := rpcError(obj)
+		if diag != nil {
+			diag.Stage = "provider_error"
+			diag.ProviderCode = obj.num("code")
+			// rpcError maps free-form text to fixed codes. INVALID_LOGIN is a distinct renewal signal.
+			diag.Reason = rejection.Code
+			if obj.str("text") == "INVALID_LOGIN" {
+				diag.Reason = "INVALID_LOGIN"
+			}
+		}
+		return nil, rejection
 	}
 	if obj.str("_") == "eitaa_updates_expire_token" || obj.str("_") == "eitaa_token_updating" {
+		if diag != nil {
+			diag.Stage = "provider_error"
+			diag.Reason = obj.str("_") // exact constructors checked above
+		}
 		return nil, &domains.Error{Code: "SESSION_REFRESH_REQUIRED", Message: "Eitaa session requires renewal", HTTP: 503, Ambiguous: mutating}
 	}
 	return obj, nil
 }
-func rpcError(o object) error {
+func transportReason(err error) string {
+	var dns *net.DNSError
+	var op *net.OpError
+	var netErr net.Error
+	switch {
+	case errors.As(err, &dns):
+		return "dns"
+	case errors.As(err, &op) && op.Op == "dial":
+		return "dial"
+	case errors.As(err, &netErr) && netErr.Timeout():
+		return "timeout"
+	case errors.Is(err, context.Canceled):
+		return "canceled"
+	case errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF):
+		return "eof"
+	default:
+		return "transport"
+	}
+}
+
+func rpcError(o object) *domains.Error {
 	text := o.str("text")
 	code, status := "PROVIDER_REJECTED", 502
 	switch text {

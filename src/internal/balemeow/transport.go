@@ -58,22 +58,53 @@ func (c *Client) rpc(ctx context.Context, service, method string, payload proto.
 	}
 	select {
 	case reply := <-pending.result:
-		return reply.payload, reply.err
+		return reply.unpack(ctx, method)
 	case <-callCtx.Done():
 		select {
 		case reply := <-pending.result:
-			return reply.payload, reply.err
+			return reply.unpack(ctx, method)
 		default:
 			return nil, ambiguous()
 		}
 	case <-conn.ctx.Done():
 		select {
 		case reply := <-pending.result:
-			return reply.payload, reply.err
+			return reply.unpack(ctx, method)
 		default:
 			return nil, ambiguous()
 		}
 	}
+}
+
+func (r rpcReply) unpack(ctx context.Context, method string) ([]byte, error) {
+	if d := domains.TextSendDiagnosticFrom(ctx); d != nil && method == "SendMessage" && r.providerCode != 0 {
+		d.Stage = "provider_error"
+		d.ProviderCode = int64(r.providerCode)
+		d.Reason, d.RejectedField = r.reason, r.rejectedField
+	}
+	return r.payload, r.err
+}
+
+// Never log arbitrary Status.Message or Metadata values. A provider may omit
+// details or use an unknown label, in which case the rejected field stays empty.
+func rejectionDetails(s *wire.Status) (string, string) {
+	reason := "unclassified"
+	switch s.Message {
+	case "PEER_ID_INVALID", "USER_ID_INVALID", "ACCESS_HASH_INVALID", "INVALID_ARGUMENT":
+		reason = s.Message
+	}
+	items := s.GetDetails().GetItems()
+	for _, item := range items[:min(len(items), 16)] {
+		switch item.GetKey() {
+		case "field", "field_name", "argument":
+			field := item.GetValue().GetStringValue()
+			switch field {
+			case "peer", "peer.id", "peer.type", "peer.access_hash", "ex_peer", "rid", "message", "message.text", "quoted_message":
+				return reason, field
+			}
+		}
+	}
+	return reason, ""
 }
 
 func (c *Client) readLoop(conn *connection) {
@@ -123,6 +154,8 @@ func (c *Client) readLoop(conn *connection) {
 			reply := rpcReply{payload: r.Payload}
 			if r.Error != nil && r.Error.Code != 0 {
 				reply.err = providerError(r.Error.Code, r.Error.Message)
+				reply.providerCode = r.Error.Code
+				reply.reason, reply.rejectedField = rejectionDetails(r.Error)
 			}
 			conn.mu.Lock()
 			if pending := conn.pending[r.Index]; pending != nil {

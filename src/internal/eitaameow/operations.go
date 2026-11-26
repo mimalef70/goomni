@@ -181,6 +181,10 @@ func (c *Client) Send(ctx context.Context, r domains.SendRequest) (domains.SendR
 	if err != nil || rid <= 0 {
 		return domains.SendResult{}, domains.E("INVALID_REQUEST_ID", "persist a positive int64 request ID before sending", 400)
 	}
+	diag := domains.TextSendDiagnosticFrom(ctx)
+	if diag != nil {
+		diag.Stage = "resolve_peer"
+	}
 	peer, err := c.inputPeer(ctx, r.Peer)
 	if err != nil {
 		return domains.SendResult{}, err
@@ -192,11 +196,24 @@ func (c *Client) Send(ctx context.Context, r domains.SendRequest) (domains.SendR
 	if r.ReplyMessageID != "" {
 		params["reply_to_msg_id"], _ = messageNumber(r.ReplyMessageID)
 	}
+	if diag != nil {
+		diag.Stage = "prepare_rpc"
+	}
 	response, err := c.invoke(ctx, "messages.sendMessage", params, true, false)
 	if err != nil {
 		return domains.SendResult{}, err
 	}
-	return sendResult(response, rid)
+	result, err := sendResult(response, rid)
+	if err != nil && diag != nil {
+		diag.Stage = "verify_send_id"
+		switch response.str("_") {
+		case "updates", "updatesCombined", "updateShort", "updatesTooLong", "updateShortSentMessage":
+			diag.Reason = response.str("_")
+		default:
+			diag.Reason = "other_response"
+		}
+	}
+	return result, err
 }
 func sendResult(o object, rid int64) (domains.SendResult, error) {
 	if o.str("_") == "updateShortSentMessage" && o.num("id") > 0 && o.num("date") > 0 {

@@ -36,6 +36,9 @@ type Options struct {
 }
 
 type clientEntry struct {
+	// Last RPC-confirmed text DM for this Bale connection, protected by mu.
+	lastBaleDMOperation, lastBaleDMPeerHash string
+
 	provider          domains.Provider
 	persistMu         sync.Mutex
 	persistGeneration uint64

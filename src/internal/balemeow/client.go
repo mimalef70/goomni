@@ -64,8 +64,10 @@ type authChallenge struct {
 	expires                            time.Time
 }
 type rpcReply struct {
-	payload []byte
-	err     error
+	providerCode          int32
+	reason, rejectedField string
+	payload               []byte
+	err                   error
 }
 type pendingRPC struct{ result chan rpcReply }
 type connection struct {
@@ -553,6 +555,10 @@ func (c *Client) Send(ctx context.Context, request domains.SendRequest) (domains
 		return domains.SendResult{}, err
 	}
 
+	diag := domains.TextSendDiagnosticFrom(ctx)
+	if diag != nil {
+		diag.Stage = "resolve_peer"
+	}
 	if request.Phone != "" {
 		resolved, err := c.ResolvePhone(ctx, request.Phone)
 		if err != nil {
@@ -580,9 +586,19 @@ func (c *Client) Send(ctx context.Context, request domains.SendRequest) (domains
 		}
 		payload.QuotedMessage = &wire.MessageReference{Peer: peer, Rid: quoted}
 	}
+	if diag != nil {
+		diag.Stage = "send_rpc"
+		diag.PeerHash = "absent"
+		if peer.AccessHash != 0 {
+			diag.PeerHash = "present"
+		}
+	}
 	data, err := c.rpc(ctx, "bale.messaging.v2.Messaging", "SendMessage", payload)
 	if err != nil {
 		return domains.SendResult{}, err
+	}
+	if diag != nil {
+		diag.Stage = "verify_ack"
 	}
 	reply := &wire.SendMessageResponse{}
 	if decode(data, reply) != nil || reply.Date <= 0 {
