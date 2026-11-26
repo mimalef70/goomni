@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.4.5 — 2026-11-26
+
+GoOmni logs a diagnostic entry with the operation ID when a Bale or Eitaa
+text send reaches the adapter and fails. Look for `Text send attempt failed`
+in the gateway logs.
+
+- For Eitaa, the entry identifies the stage reached, the HTTP status if a
+  response arrived, recognized provider errors and the outcome of any session
+  renewal requested by the send. It also identifies replies that could not be
+  matched to a sent message.
+- For Bale, the entry records the provider status, recognized rejection details
+  and whether the request included a nonzero peer access hash. For a direct
+  message, it includes the last confirmed direct send from that connection
+  when one is available in memory. This lets operators compare the presence
+  of a hash across those two requests.
+- Message content, credentials, raw access hashes and free-form provider error
+  text are excluded from these diagnostics. The new entries cover future
+  attempts. A send with an uncertain outcome still requires confirmation
+  before it can be treated as successful.
+
 ## 2.4.4 — 2026-11-14
 
 Distinguish Eitaa and Rubika service notifications from ordinary user messages

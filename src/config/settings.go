@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const AppVersion = "2.4.4"
+const AppVersion = "2.4.5"
 
 type Settings struct {
 	RubikaDirectMessagesOnly                                                                      bool
